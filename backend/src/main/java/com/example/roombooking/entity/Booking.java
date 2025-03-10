@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Set;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "bookings")
@@ -32,9 +33,11 @@ public class Booking {
     private BookingStatus status;
     
     @Column(name = "conflict_detected")
+    @JsonIgnore
     private Boolean conflictDetected;
     
     @OneToMany(mappedBy = "booking")
+    @JsonIgnore
     private Set<Notification> notifications;
     
     public enum BookingStatus {

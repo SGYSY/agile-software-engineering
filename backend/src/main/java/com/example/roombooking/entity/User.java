@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "users")
 @Data
@@ -31,9 +33,11 @@ public class User {
     
     @ManyToOne
     @JoinColumn(name = "role_id")
+    @JsonIgnore
     private Role role;
     
     @OneToMany(mappedBy = "user")
+    @JsonIgnore
     private Set<Booking> bookings;
 
     public Role getRole() {

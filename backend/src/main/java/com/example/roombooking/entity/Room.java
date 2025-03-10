@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "rooms")
 @Data
@@ -25,12 +27,15 @@ public class Room {
     private Boolean restricted;
     
     @OneToMany(mappedBy = "room")
+    @JsonIgnore
     private Set<RoomEquipment> equipment;
     
     @OneToMany(mappedBy = "room")
+    @JsonIgnore
     private Set<Booking> bookings;
     
     @OneToMany(mappedBy = "room")
+    @JsonIgnore
     private Set<Schedule> schedules;
 
 

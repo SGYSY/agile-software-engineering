@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Set;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @Entity
 @Table(name = "roles")
 @Data
@@ -17,6 +19,7 @@ public class Role {
     private String name;
     
     @OneToMany(mappedBy = "role")
+    @JsonIgnore
     private Set<User> users;
     
     @ManyToMany
@@ -25,6 +28,7 @@ public class Role {
         joinColumns = @JoinColumn(name = "role_id"),
         inverseJoinColumns = @JoinColumn(name = "permission_id")
     )
+    @JsonIgnore
     private Set<Permission> permissions;
 
     public String getName() {
