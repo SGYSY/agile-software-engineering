@@ -66,7 +66,8 @@ public class BookingService {
         booking.setConflictDetected(hasConflict);
         
         // 如果是管理员创建的预订，或者没有冲突，则自动确认
-        if (!booking.getUser().getRole().getName().equals("Administrator") || hasConflict) {
+        if (!booking.getUser().getRole().getName().equals("Administrator") //|| hasConflict
+        ) {
             booking.setStatus(Booking.BookingStatus.pending);
         } else {
             booking.setStatus(Booking.BookingStatus.confirmed);
