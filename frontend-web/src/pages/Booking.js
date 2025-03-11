@@ -1,15 +1,8 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { Card, DatePicker, TimePicker, Button, message, Descriptions } from "antd";
 import moment from "moment";
-
-const getRooms = () => JSON.parse(localStorage.getItem("rooms")) || [];
-const getBookings = () => JSON.parse(localStorage.getItem("bookings")) || [];
-const saveBooking = (newBooking) => {
-  const bookings = getBookings();
-  bookings.push(newBooking);
-  localStorage.setItem("bookings", JSON.stringify(bookings));
-};
+import { getRooms, saveBooking } from "../utils/demoData";
 
 const Booking = () => {
   const { roomId } = useParams();
@@ -20,42 +13,38 @@ const Booking = () => {
   const navigate = useNavigate();
   const userRole = localStorage.getItem("userRole");
 
-  if (!room) return <p style={{ textAlign: "center", marginTop: 50 }}>未找到教室信息</p>;
+  if (!room) return <p style={{ textAlign: "center", marginTop: 50 }}>Room not found</p>;
 
   const handleBooking = () => {
     if (!date || !time) {
-      return message.error("请选择日期和时间！");
+      return message.error("Please select a date and time!");
     }
 
     const startTime = moment(`${date.format("YYYY-MM-DD")} ${time.format("HH:mm")}`).toISOString();
-    const newBooking = {
-      id: Date.now().toString(),
-      roomId,
-      user: userRole,
-      startTime,
-      status: "pending", // 预定默认“待审核”状态
-    };
+    const newBooking = { id: Date.now().toString(), roomId, user: userRole, startTime, status: "pending" };
     saveBooking(newBooking);
-
-    message.success("预定提交成功，等待管理员审核！");
+    
+    message.success("Booking submitted successfully. Awaiting admin approval!");
     navigate("/my-bookings");
   };
 
   return (
-    <Card title={`预定教室 ${room.name}`} style={{ maxWidth: 600, margin: "20px auto" }}>
-      <Descriptions bordered column={1} size="middle">
-        <Descriptions.Item label="容量">{room.capacity} 人</Descriptions.Item>
-        <Descriptions.Item label="设备">{room.equipment.join(", ")}</Descriptions.Item>
-      </Descriptions>
+    <div style={{ padding: "20px", background: "#f5f5f5", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
+      <Card title={`Book Room: ${room.name}`} style={{ maxWidth: 500, borderRadius: "8px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)" }}>
+        <Descriptions bordered column={1} size="middle">
+          <Descriptions.Item label="Capacity">{room.capacity} people</Descriptions.Item>
+          <Descriptions.Item label="Equipment">{room.equipment.join(", ")}</Descriptions.Item>
+        </Descriptions>
 
-      <div style={{ marginTop: 20 }}>
-        <DatePicker onChange={setDate} style={{ width: "100%", marginBottom: 10 }} />
-        <TimePicker onChange={setTime} format="HH:mm" style={{ width: "100%", marginBottom: 20 }} />
-        <Button type="primary" block onClick={handleBooking} size="large">
-          提交预定（待审核）
-        </Button>
-      </div>
-    </Card>
+        <div style={{ marginTop: 20 }}>
+          <DatePicker onChange={setDate} style={{ width: "100%", marginBottom: 10 }} />
+          <TimePicker onChange={setTime} format="HH:mm" style={{ width: "100%", marginBottom: 20 }} />
+          <Button type="primary" block onClick={handleBooking} size="large" style={{ borderRadius: "5px" }}>
+            Submit Booking (Pending Approval)
+          </Button>
+        </div>
+      </Card>
+    </div>
   );
 };
 

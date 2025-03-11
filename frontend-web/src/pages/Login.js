@@ -12,22 +12,38 @@ const Login = () => {
     else if (userId === "456") role = "teacher";
     else if (userId === "789") role = "admin";
     else {
-      message.error("无效的用户 ID");
+      message.error("Invalid User ID");
       return;
     }
 
     localStorage.setItem("userRole", role);
-    message.success(`登录成功，角色：${role}`);
-    navigate("/");
+    message.success(`Login successful! Role: ${role}`);
+
+    // Redirect based on role
+    if (role === "admin") {
+      navigate("/admin");
+    } else {
+      navigate("/");
+    }
   };
 
   return (
-    <Card title="DIICSU 预定系统登录" style={{ maxWidth: 400, margin: "50px auto" }}>
-      <Input placeholder="输入用户 ID（123/456/789）" value={userId} onChange={(e) => setUserId(e.target.value)} />
-      <Button type="primary" block onClick={handleLogin} style={{ marginTop: 10 }}>
-        登录
-      </Button>
-    </Card>
+    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh", background: "#f5f5f5" }}>
+      <Card 
+        title="DIICSU Room Booking Login" 
+        style={{ maxWidth: 400, textAlign: "center", boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)" }}
+      >
+        <Input 
+          placeholder="Enter User ID (123 - Student, 456 - Teacher, 789 - Admin)" 
+          value={userId} 
+          onChange={(e) => setUserId(e.target.value)} 
+          style={{ marginBottom: 10 }}
+        />
+        <Button type="primary" block onClick={handleLogin}>
+          Login
+        </Button>
+      </Card>
+    </div>
   );
 };
 

@@ -10,17 +10,30 @@ import MainLayout from "./components/Layout";
 
 const PrivateRoute = ({ element, roles }) => {
   const userRole = localStorage.getItem("userRole");
-  if (!userRole) return <Navigate to="/login" />;
-  if (roles && !roles.includes(userRole)) return <Navigate to="/" />;
+  if (!userRole) return <Navigate to="/login" replace />;
+  if (roles && !roles.includes(userRole)) return <Navigate to="/" replace />;
   return element;
+};
+
+const ProtectedLayout = () => {
+  const userRole = localStorage.getItem("userRole");
+  
+  // If user is not logged in, redirect to login
+  if (!userRole) return <Navigate to="/login" replace />;
+
+  return <MainLayout />;
 };
 
 function App() {
   return (
     <Router>
       <Routes>
+        {/* Default route should go to login */}
+        <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
-        <Route path="/" element={<MainLayout />}>
+
+        {/* Protected Layout: Only accessible if logged in */}
+        <Route path="/*" element={<ProtectedLayout />}>
           <Route index element={<Home />} />
           <Route path="booking/:roomId" element={<Booking />} />
           <Route path="my-bookings" element={<MyBookings />} />
