@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Button, message, Card } from "antd";
+import { Button, message, Card, Badge } from "antd";
 import ProTable from "@ant-design/pro-table";
-
-const getBookings = () => JSON.parse(localStorage.getItem("bookings")) || [];
-const updateBookingStatus = (id, status) => {
-  const bookings = getBookings().map(b => (b.id === id ? { ...b, status } : b));
-  localStorage.setItem("bookings", JSON.stringify(bookings));
-};
+import { saveNotification, getBookings, updateBookingStatus } from "../utils/demoData"; 
 
 const Admin = () => {
   const [bookings, setBookings] = useState([]);
@@ -17,36 +12,56 @@ const Admin = () => {
 
   const handleApprove = (id) => {
     updateBookingStatus(id, "approved");
-    message.success("预定已批准");
+    const booking = getBookings().find(b => b.id === id);
+    saveNotification(booking.user, `Your booking for room ${booking.roomId} has been approved.`);
+    message.success("Booking approved!");
     setBookings(getBookings());
   };
 
   const handleReject = (id) => {
     updateBookingStatus(id, "rejected");
-    message.warning("预定已拒绝");
+    message.warning("Booking rejected!");
     setBookings(getBookings());
   };
 
   const columns = [
-    { title: "教室", dataIndex: "roomId", key: "roomId" },
-    { title: "预定人", dataIndex: "user", key: "user" },
-    { title: "时间", dataIndex: "startTime", key: "startTime", render: time => new Date(time).toLocaleString() },
-    { title: "状态", dataIndex: "status", key: "status", render: status => status === "approved" ? "✅ 已批准" : status === "pending" ? "⏳ 待审核" : "❌ 已拒绝" },
+    { title: "Room", dataIndex: "roomId", key: "roomId" },
+    { title: "Booked By", dataIndex: "user", key: "user" },
+    { 
+      title: "Time", 
+      dataIndex: "startTime", 
+      key: "startTime", 
+      render: time => new Date(time).toLocaleString() 
+    },
+    { 
+      title: "Status", 
+      dataIndex: "status", 
+      key: "status", 
+      render: status => (
+        <Badge
+          status={status === "approved" ? "success" : status === "pending" ? "warning" : "error"}
+          text={status === "approved" ? "✅ Approved" : status === "pending" ? "⏳ Pending" : "❌ Rejected"}
+        />
+      ) 
+    },
     {
-      title: "操作",
+      title: "Actions",
       render: (_, record) => record.status === "pending" && (
         <>
-          <Button type="primary" onClick={() => handleApprove(record.id)} style={{ marginRight: 10 }}>批准</Button>
-          <Button danger onClick={() => handleReject(record.id)}>拒绝</Button>
+          <Button type="primary" onClick={() => handleApprove(record.id)} style={{ marginRight: 10 }}>Approve</Button>
+          <Button danger onClick={() => handleReject(record.id)}>Reject</Button>
         </>
       )
     },
   ];
 
   return (
-    <Card title="所有预定（管理员审核）">
-      <ProTable columns={columns} dataSource={bookings} rowKey="id" />
-    </Card>
+    <div style={{ padding: "20px", background: "#f5f5f5", minHeight: "100vh" }}>
+      <h1>Booking Approval (Admin)</h1>
+      <Card style={{ borderRadius: "8px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)" }}>
+        <ProTable columns={columns} dataSource={bookings} rowKey="id" search={{ labelWidth: "auto" }} />
+      </Card>
+    </div>
   );
 };
 
