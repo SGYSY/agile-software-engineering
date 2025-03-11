@@ -4,6 +4,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -14,33 +15,11 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-import static org.springframework.security.config.Customizer.withDefaults;
+// import static org.springframework.security.config.Customizer.withDefaults;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
-
-//    @Bean
-//    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
-//        http
-//                // (1) 允许所有用户访问首页、静态资源等
-//                .authorizeHttpRequests(auth -> auth
-//                        .requestMatchers("/", "/login", "/css/**", "/js/**").permitAll()
-//                        .anyRequest().authenticated()
-//                )
-//                // (2) 开启基于 OAuth2 的登录
-//                .oauth2Login(oauth2 -> oauth2
-//                        .loginPage("/login")  // 自定义登录页(可选)
-//                        .defaultSuccessUrl("/home", true)  // 登录成功后跳转页面
-//                )
-//                // (3) 开启退出登录支持(可选)
-//                .logout(logout -> logout
-//                        .logoutSuccessUrl("/").permitAll()
-//                );
-//
-//        return http.build();
-//    }
-//
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -57,6 +36,23 @@ public class SecurityConfig {
         
         return http.build();
     }
+
+    // @Bean
+    // public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
+    //     http
+    //         .csrf(csrf -> csrf.disable())
+    //         .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+    //         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+    //         .formLogin(form -> form.disable())
+    //         .httpBasic(basic -> basic.disable())
+    //         .anonymous(withDefaults())  // 启用匿名访问
+    //         .authorizeHttpRequests(auth -> auth
+    //             .requestMatchers("/**").permitAll()
+    //             .anyRequest().permitAll()
+    //         );
+        
+    //     return http.build();
+    // }
     
     @Bean
     public PasswordEncoder passwordEncoder() {

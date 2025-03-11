@@ -1,7 +1,6 @@
 package com.example.roombooking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -34,45 +33,5 @@ public class Notification {
     
     public enum NotificationStatus {
         sent, pending, failed
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public void setStatus(NotificationStatus status) {
-        this.status = status;
-    }
-
-    public void setBooking(Booking booking) {
-        this.booking = booking;
-    }
-
-    public void setMessage(String message) {
-        this.message = message;
-    }
-
-    public void setNotificationType(NotificationType notificationType) {
-        this.notificationType = notificationType;
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    public Booking getBooking() {
-        return booking;
-    }
-
-    public String getMessage() {
-        return message;
-    }
-
-    public NotificationStatus getStatus() {
-        return status;
-    }
-
-    public NotificationType getNotificationType() {
-        return notificationType;
     }
 }

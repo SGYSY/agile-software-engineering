@@ -1,7 +1,6 @@
 package com.example.roombooking.entity;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,5 +19,10 @@ public class RoomEquipment {
     private Room room;
     
     @Column(name = "equipment_name")
-    private String equipmentName;
+    private String name;
+    
+    private String description;
+    
+    @Column(name = "is_available")
+    private Boolean isAvailable;
 }

@@ -1,10 +1,10 @@
 package com.example.roombooking.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 import java.util.Set;
-import com.fasterxml.jackson.annotation.JsonIgnore;
 
 @Entity
 @Table(name = "bookings")
@@ -33,7 +33,6 @@ public class Booking {
     private BookingStatus status;
     
     @Column(name = "conflict_detected")
-    @JsonIgnore
     private Boolean conflictDetected;
     
     @OneToMany(mappedBy = "booking")
@@ -42,69 +41,5 @@ public class Booking {
     
     public enum BookingStatus {
         pending, confirmed, cancelled
-    }
-
-    public void setId(Long id){
-        this.id = id;
-    }
-
-    public Long getId(){
-        return this.id;
-    }
-
-    public Room getRoom(){
-        return this.room;
-    }
-
-    public void setRoom(Room room){
-        this.room = room;
-    }
-
-    public LocalDateTime getStartTime() {
-        return startTime;
-    }
-
-    public LocalDateTime getEndTime() {
-        return endTime;
-    }
-
-    public void setConflictDetected(Boolean conflictDetected) {
-        this.conflictDetected = conflictDetected;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setStatus(BookingStatus status) {
-        this.status = status;
-    }
-
-    public void setStartTime(LocalDateTime startTime) {
-        this.startTime = startTime;
-    }
-
-    public Boolean getConflictDetected() {
-        return conflictDetected;
-    }
-
-    public BookingStatus getStatus() {
-        return status;
-    }
-
-    public Set<Notification> getNotifications() {
-        return notifications;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public void setEndTime(LocalDateTime endTime) {
-        this.endTime = endTime;
-    }
-
-    public void setNotifications(Set<Notification> notifications) {
-        this.notifications = notifications;
     }
 }

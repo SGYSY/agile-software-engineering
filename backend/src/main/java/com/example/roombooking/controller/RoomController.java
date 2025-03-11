@@ -1,4 +1,4 @@
- package com.example.roombooking.controller;
+package com.example.roombooking.controller;
 
 import com.example.roombooking.entity.Room;
 import com.example.roombooking.service.RoomService;
