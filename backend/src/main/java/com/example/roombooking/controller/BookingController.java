@@ -68,7 +68,7 @@ public class BookingController {
 
     @PutMapping("/{id}")
     public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking booking) {
-        // 确保ID一致
+        // make sure ID consistence
         booking.setId(id);
         Booking updatedBooking = bookingService.updateBooking(booking);
         

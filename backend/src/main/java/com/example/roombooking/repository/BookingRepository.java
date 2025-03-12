@@ -5,6 +5,7 @@ import com.example.roombooking.entity.Room;
 import com.example.roombooking.entity.User;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.time.LocalDateTime;
@@ -22,4 +23,12 @@ public interface BookingRepository extends JpaRepository<Booking, Long> {
     List<Booking> findConflictingBookings(Long roomId, LocalDateTime start, LocalDateTime end);
     
     List<Booking> findByUserAndStartTimeAfter(User user, LocalDateTime now);
+
+    @Query("SELECT b FROM Booking b WHERE b.room.id = :roomId AND b.status = :status " +
+           "AND ((b.startTime <= :endTime AND b.endTime >= :startTime))")
+    List<Booking> findByRoomIdAndStatusAndTimeOverlap(
+            @Param("roomId") Long roomId, 
+            @Param("status") Booking.BookingStatus status,
+            @Param("startTime") LocalDateTime startTime, 
+            @Param("endTime") LocalDateTime endTime);
 }
