@@ -25,8 +25,10 @@ const RoomSchedule = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
 
   useEffect(() => {
-    // 这里只显示已批准的预定
-    const roomBookings = getBookings().filter(booking => booking.roomId === roomId && booking.status === "approved");
+    // 这里改成获取 "approved" 和 "pending" 状态的预订
+    const roomBookings = getBookings().filter(
+      (booking) => booking.roomId === roomId && (booking.status === "approved" || booking.status === "pending")
+    );
     setBookings(roomBookings);
   }, [roomId]);
 
@@ -40,9 +42,7 @@ const RoomSchedule = () => {
 
     weekdays.forEach((day) => {
       const booking = bookings.find((b) => b.weekday === day && b.timeSlot === time);
-      row[day] = booking
-        ? { text: booking.courseName || "Booked", teacher: booking.teacher || "", location: booking.location || "", color: booking.color || "blue" }
-        : null;
+      row[day] = booking ? booking : null; // 直接存完整的 booking 数据
     });
 
     return row;
@@ -56,8 +56,8 @@ const RoomSchedule = () => {
       key: day,
       render: (booking) =>
         booking ? (
-          <Tag color={booking.color} style={{ cursor: "pointer" }} onClick={() => handleBookingClick(booking)}>
-            {booking.text}
+          <Tag color={booking.status === "pending" ? "orange" : "blue"} style={{ cursor: "pointer" }} onClick={() => handleBookingClick(booking)}>
+            {booking.status === "pending" ? "Pending Approval" : "Booked"}
           </Tag>
         ) : null,
     })),
@@ -66,8 +66,25 @@ const RoomSchedule = () => {
   return (
     <Card title={`Room ${roomId} Schedule`} style={{ padding: 20 }}>
       <Table columns={columns} dataSource={scheduleData} pagination={false} bordered size="middle" />
-      <Modal title={selectedBooking?.text} open={isModalVisible} onCancel={() => setIsModalVisible(false)} footer={null}>
-        {selectedBooking && <p><strong>Teacher:</strong> {selectedBooking.teacher}</p>}
+      <Modal
+        title="Booking Details"
+        open={isModalVisible}
+        onCancel={() => setIsModalVisible(false)}
+        footer={null}
+      >
+        {selectedBooking && (
+          <div>
+            <p><strong>ID:</strong> {selectedBooking.id}</p>
+            <p><strong>Room ID:</strong> {selectedBooking.roomId}</p>
+            <p><strong>User:</strong> {selectedBooking.user}</p>
+            <p><strong>Start Time:</strong> {selectedBooking.startTime}</p>
+            <p><strong>Weekday:</strong> {selectedBooking.weekday}</p>
+            <p><strong>Time Slot:</strong> {selectedBooking.timeSlot}</p>
+            <p><strong>Participants:</strong> {selectedBooking.participants}</p>
+            <p><strong>Status:</strong> {selectedBooking.status}</p>
+            <p><strong>Lock Room:</strong> {selectedBooking.lock ? "Yes" : "No"}</p>
+          </div>
+        )}
       </Modal>
     </Card>
   );
