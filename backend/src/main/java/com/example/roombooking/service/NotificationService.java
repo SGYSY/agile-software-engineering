@@ -32,7 +32,7 @@ public class NotificationService {
     }
 
     public void createBookingNotification(Booking booking) {
-        // 创建邮件通知
+        // create email notification
         Notification emailNotification = new Notification();
         emailNotification.setBooking(booking);
         emailNotification.setNotificationType(Notification.NotificationType.email);
@@ -43,7 +43,7 @@ public class NotificationService {
         
         notificationRepository.save(emailNotification);
         
-        // 创建短信通知
+        // create SMS notification
         Notification smsNotification = new Notification();
         smsNotification.setBooking(booking);
         smsNotification.setNotificationType(Notification.NotificationType.sms);
@@ -55,7 +55,7 @@ public class NotificationService {
     }
 
     public void createApprovalNotification(Booking booking) {
-        // 创建邮件通知
+        // create email notification
         Notification emailNotification = new Notification();
         emailNotification.setBooking(booking);
         emailNotification.setNotificationType(Notification.NotificationType.email);
@@ -66,7 +66,7 @@ public class NotificationService {
         
         notificationRepository.save(emailNotification);
         
-        // 创建短信通知
+        // create SMS notification
         Notification smsNotification = new Notification();
         smsNotification.setBooking(booking);
         smsNotification.setNotificationType(Notification.NotificationType.sms);

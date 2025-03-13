@@ -28,6 +28,7 @@ public class BookingService {
     @Autowired
     private NotificationService notificationService;
 
+
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
@@ -59,8 +60,8 @@ public class BookingService {
     public boolean hasConflict(Long roomId, LocalDateTime start, LocalDateTime end) {
         // List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(roomId, start, end);
         // return !conflictingBookings.isEmpty();
-        List<Booking> existingBookings = bookingRepository.findByRoomIdAndStatusAndTimeOverlap(
-            roomId, Booking.BookingStatus.confirmed, start, end);
+        List<Booking> existingBookings = bookingRepository.findByRoomIdAndStatusNotAndTimeOverlap(
+            roomId, Booking.BookingStatus.cancelled, start, end);
         return !existingBookings.isEmpty();
     }
 

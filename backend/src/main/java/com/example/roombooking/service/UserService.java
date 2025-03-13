@@ -35,7 +35,7 @@ public class UserService {
     }
 
     public User saveUser(User user) {
-        // 如果是新用户且密码未加密，进行加密
+        // if it is new user and password is not hashed, hash it
         if (user.getId() == null && user.getPasswordHash() != null 
                 && !user.getPasswordHash().startsWith("$2a$")) {
             user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
