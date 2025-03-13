@@ -1,0 +1,25 @@
+<navigation-bar title="DIICSU Room Booking" back="{{true}}" color="#e2e4e6" background="#2b4b6b"></navigation-bar>
+<view class="floating-button" style="{{isFloatingVisible ? 'display: block;' : 'display: none;'}}" bindtap="backToTop">
+    BackToTop
+</view>
+<view class="container">
+  <!-- 待审核预约列表 -->
+  <scroll-view class="list" scroll-y="true">
+    <block wx:for="{{reservationList}}" wx:key="id">
+      <view class="reservation-card">
+        <view class="reservation-info">
+          <text class="info-item">学生：{{item.studentName}}</text>
+          <text class="info-item">自习室：{{item.roomName}}</text>
+          <text class="info-item">预约时间：{{item.startTime}} - {{item.endTime}}</text>
+          <text class="info-item">提交时间：{{item.submitTime}}</text>
+          <!-- 如有必要，可展示申请理由 -->
+          <text wx:if="{{item.reason}}" class="info-item">理由：{{item.reason}}</text>
+        </view>
+        <view class="action-buttons">
+          <button data-id="{{item.id}}" bindtap="approveReservation" class="btn-approve">通过</button>
+          <button data-id="{{item.id}}" bindtap="rejectReservation" class="btn-reject">拒绝</button>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+</view>

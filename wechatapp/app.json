@@ -1,0 +1,58 @@
+{
+  "pages": [
+    "pages/manager/manager",
+    "pages/index/index",
+
+    "pages/login/login",
+    "pages/record/record",
+    "pages/timetable/timetable",
+    "pages/timetable/calendar/calendar",
+    "pages/manager/audit/audit",
+    "pages/manager/manageRooms/manageRooms"
+  ],
+  "window": {
+    "navigationBarTextStyle": "black",
+    "navigationStyle": "custom",
+    "backgroundColor": "#b2b4b6",
+    "enablePullDownRefresh": true
+  },
+  "tabBar": {
+    "backgroundColor": "#2b4b6b",
+    "color": "#ffffff",
+    "selectedColor": "#aaaaaa",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "home",
+        "iconPath": "/img/tabBar/default/House_white.png",
+        "selectedIconPath": "/img/tabBar/activate/House_grey.png"
+      },
+      {
+        "pagePath": "pages/record/record",
+        "text": "record",
+        "iconPath": "/img/tabBar/default/Inventory_white.png",
+        "selectedIconPath": "/img/tabBar/activate/Inventory_grey.png"
+      },
+      {
+        "pagePath": "pages/timetable/timetable",
+        "text": "timetable",
+        "iconPath": "/img/tabBar/default/Calendar_white.png",
+        "selectedIconPath": "/img/tabBar/activate/Calendar_grey.png"
+      }
+    ]
+  },
+  "style": "v2",
+  "rendererOptions": {
+    "skyline": {
+      "defaultDisplayBlock": true,
+      "defaultContentBox": true,
+      "tagNameStyleIsolation": "legacy",
+      "disableABTest": true,
+      "sdkVersionBegin": "3.0.0",
+      "sdkVersionEnd": "15.255.255"
+    }
+  },
+  "componentFramework": "glass-easel",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

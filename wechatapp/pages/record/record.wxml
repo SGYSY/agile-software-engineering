@@ -1,0 +1,34 @@
+<!--pages/record/record.wxml-->
+<navigation-bar title="DIICSU Room Booking" back="{{false}}" color="#e2e4e6" background="#2b4b6b"></navigation-bar>
+<!-- 悬浮窗 -->
+<view class="floating-button" style="{{isFloatingVisible ? 'display: block;' : 'display: none;'}}" bindtap="backToTop">BackToTop</view>
+
+<view class="main">
+  <!-- 记录 -->
+  <view class="scrollContent">
+    <!-- 记录列表 -->
+    <block wx:for="{{records}}" wx:key="index">
+      <view class="recordItem" data-index="{{index}}" bindtap="openDrawer">        
+        <view class="stateBar" style="{{item.state==='unexpired'? 'background-color: #0dac41' : 'background-color: #D22527'}}" ></view>
+        <view class="roomName">{{item.name}}</view>
+        <view class="roomCapacity">{{item.capacity}}</view>
+        <view class="roomDevice">{{item.device}}</view>
+      </view>
+    </block>
+
+    <!-- details -->
+    <view class="mask" style="{{isDrawerVisible? 'display: block;' : 'display: none;'}}">
+    </view>
+
+    <view class="drawer" style="{{isDrawerVisible? 'display: block;' : 'display: none;'}}" >
+      <view class="recordPresenter" >        
+        {{currentRecord.name}}
+      </view>
+      <view class="recordSelection">
+        <button bindtap="closeDrawer" class="maintheme" > Cancel </button>
+        <button bindtap="bookRoom" class="maintheme" > Book </button>
+      </view>
+    </view>   
+  
+  </view>    
+</view>
