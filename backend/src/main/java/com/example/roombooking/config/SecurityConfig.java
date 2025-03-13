@@ -26,12 +26,12 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .cors(cors -> cors.configurationSource(corsConfigurationSource()))
-            // 明确禁用表单登录
+            // Explicitly disable form login
             .formLogin(form -> form.disable())
-            // 禁用 HTTP Basic 认证
+            // Disabling HTTP Basic Authentication
             .httpBasic(basic -> basic.disable())
             .authorizeHttpRequests(auth -> auth
-                .anyRequest().permitAll() // 开发阶段允许所有请求，后期可调整为需要认证
+                .anyRequest().permitAll() // All requests are allowed during the development phase, and can be adjusted to require authentication later
             );
         
         return http.build();
@@ -45,7 +45,7 @@ public class SecurityConfig {
     //         .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
     //         .formLogin(form -> form.disable())
     //         .httpBasic(basic -> basic.disable())
-    //         .anonymous(withDefaults())  // 启用匿名访问
+    //         .anonymous(withDefaults())  // Enable anonymous access
     //         .authorizeHttpRequests(auth -> auth
     //             .requestMatchers("/**").permitAll()
     //             .anyRequest().permitAll()
@@ -62,7 +62,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(List.of("*"));  // 允许所有来源
+        configuration.setAllowedOrigins(List.of("*"));  // Allow all origins
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"));
         configuration.setAllowedHeaders(Arrays.asList("authorization", "content-type", "x-auth-token"));
         configuration.setExposedHeaders(List.of("x-auth-token"));

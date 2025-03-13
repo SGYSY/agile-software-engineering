@@ -28,6 +28,7 @@ public class BookingService {
     @Autowired
     private NotificationService notificationService;
 
+
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
     }
@@ -57,25 +58,41 @@ public class BookingService {
     }
 
     public boolean hasConflict(Long roomId, LocalDateTime start, LocalDateTime end) {
-        List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(roomId, start, end);
-        return !conflictingBookings.isEmpty();
+        // List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(roomId, start, end);
+        // return !conflictingBookings.isEmpty();
+        List<Booking> existingBookings = bookingRepository.findByRoomIdAndStatusNotAndTimeOverlap(
+            roomId, Booking.BookingStatus.cancelled, start, end);
+        return !existingBookings.isEmpty();
     }
 
     public Booking createBooking(Booking booking) {
-        boolean hasConflict = hasConflict(booking.getRoom().getId(), booking.getStartTime(), booking.getEndTime());
+        // 1. 首先加载完整的用户信息，包括角色
+        User user = userRepository.findById(booking.getUser().getId())
+            .orElseThrow(() -> new RuntimeException("User not found"));
+        booking.setUser(user);
+        
+        // 2. 加载完整的房间信息
+        Room room = roomRepository.findById(booking.getRoom().getId())
+            .orElseThrow(() -> new RuntimeException("Room not found"));
+        booking.setRoom(room);
+        
+        // 3. 检测时间冲突
+        boolean hasConflict = hasConflict(room.getId(), booking.getStartTime(), booking.getEndTime());
         booking.setConflictDetected(hasConflict);
         
-        // 如果是管理员创建的预订，或者没有冲突，则自动确认
-        if (!booking.getUser().getRole().getName().equals("Administrator") //|| hasConflict
-        ) {
-            booking.setStatus(Booking.BookingStatus.pending);
-        } else {
+        // 4. 设置预订状态：仅管理员且无冲突的预订自动确认，其他情况均为待批准
+        if (user.getRole() != null && 
+            "Administrator".equals(user.getRole().getName()) && 
+            !hasConflict) {
             booking.setStatus(Booking.BookingStatus.confirmed);
+        } else {
+            booking.setStatus(Booking.BookingStatus.pending);
         }
         
+        // 5. 保存预订
         Booking savedBooking = bookingRepository.save(booking);
         
-        // 创建通知
+        // 6. 创建通知
         notificationService.createBookingNotification(savedBooking);
         
         return savedBooking;

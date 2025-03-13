@@ -42,11 +42,35 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getRoomsByMinCapacity(capacity));
     }
 
+    // @GetMapping("/available-between")
+    // public ResponseEntity<List<Room>> getAvailableRoomsBetween(
+    //         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+    //         @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+    //     return ResponseEntity.ok(roomService.getAvailableRoomsBetween(start, end));
+    // }
+
     @GetMapping("/available-between")
-    public ResponseEntity<List<Room>> getAvailableRoomsBetween(
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        return ResponseEntity.ok(roomService.getAvailableRoomsBetween(start, end));
+    public ResponseEntity<?> getAvailableRoomsBetween(
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
+        try {
+            // Verify Parameters
+            if (start.isAfter(end)) {
+                return ResponseEntity.badRequest().body("Start time cannot be later than the ending time");
+            }
+            
+            // log for debug
+            System.out.println("Search available room - start time: " + start + ", end time: " + end);
+            
+            List<Room> rooms = roomService.getAvailableRoomsBetween(start, end);
+            
+            System.out.println("Found " + rooms.size() + " available rooms");
+            
+            return ResponseEntity.ok(rooms);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Search failure: " + e.getMessage());
+        }
     }
 
     @PostMapping

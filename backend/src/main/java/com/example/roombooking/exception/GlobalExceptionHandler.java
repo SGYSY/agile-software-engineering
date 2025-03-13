@@ -20,7 +20,7 @@ public class GlobalExceptionHandler {
         body.put("message", ex.getMessage());
         body.put("exceptionType", ex.getClass().getName());
         
-        // 获取并添加堆栈跟踪的第一部分以帮助调试
+        // Get and add the first part of the stack trace to help debugging
         StackTraceElement[] stackTrace = ex.getStackTrace();
         if (stackTrace != null && stackTrace.length > 0) {
             StringBuilder trace = new StringBuilder();
@@ -32,7 +32,7 @@ public class GlobalExceptionHandler {
         
         body.put("path", request.getDescription(false));
         
-        // 打印整个错误到控制台
+        // Print the entire error to the console
         ex.printStackTrace();
         
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -57,7 +57,7 @@ public class GlobalExceptionHandler {
         body.put("exceptionDetails", ex.getMessage());
         body.put("path", request.getDescription(false));
         
-        ex.printStackTrace(); // 打印堆栈跟踪到控制台
+        ex.printStackTrace(); // Prints a stack trace to the console
         
         return new ResponseEntity<>(body, HttpStatus.INTERNAL_SERVER_ERROR);
     }
