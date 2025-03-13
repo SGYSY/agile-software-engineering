@@ -1,0 +1,30 @@
+<navigation-bar title="DIICSU Room Booking" back="{{true}}" color="#e2e4e6" background="#2b4b6b"></navigation-bar>
+<view class="container">
+  <!-- 统计信息卡片（顶部） -->
+  <view class="stats-card">
+    <text class="stats-title">统计信息</text>
+    <view class="stats-list">
+      <view class="stats-item">
+        <text class="stats-label">总预约数：</text>
+        <text class="stats-value">120</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-label">待审核申请：</text>
+        <text class="stats-value">15</text>
+      </view>
+      <view class="stats-item">
+        <text class="stats-label">自习室总数：</text>
+        <text class="stats-value">8</text>
+      </view>
+    </view>
+  </view>
+
+  <!-- 占据剩余空间，按钮居中显示 -->
+  <view class="content">
+    <view class="button-group">
+      <button class="btn-primary" bindtap="navigateToAudit">审核预约申请</button>
+      <button class="btn-primary" bindtap="navigateToManageRooms">管理自习室</button>
+    </view>
+  </view>
+</view>
+
