@@ -51,25 +51,25 @@ public class RoomController {
 
     @GetMapping("/available-between")
     public ResponseEntity<?> getAvailableRoomsBetween(
-        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime start,
-        @RequestParam @DateTimeFormat(pattern = "yyyy-MM-dd HH:mm:ss") LocalDateTime end) {
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+        @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
         try {
             // Verify Parameters
             if (start.isAfter(end)) {
-                return ResponseEntity.badRequest().body("start time cannot be latter than the ending time");
+                return ResponseEntity.badRequest().body("Start time cannot be later than the ending time");
             }
             
             // log for debug
-            System.out.println("search available room - start time: " + start + ", end time: " + end);
+            System.out.println("Search available room - start time: " + start + ", end time: " + end);
             
             List<Room> rooms = roomService.getAvailableRoomsBetween(start, end);
             
-            System.out.println("find " + rooms.size() + " available rooms");
+            System.out.println("Found " + rooms.size() + " available rooms");
             
             return ResponseEntity.ok(rooms);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("search failure: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Search failure: " + e.getMessage());
         }
     }
 

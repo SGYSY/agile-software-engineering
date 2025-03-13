@@ -9,10 +9,10 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
-        registry.addMapping("/**") // 允许所有路径
-                .allowedOrigins("*") // 允许所有域名
+        registry.addMapping("/**") // Allow all paths
+                .allowedOrigins("*") // Allow all domains
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "HEAD", "PATCH") // 允许所有请求方法
-                .allowedHeaders("*") // 允许所有请求头
-                .maxAge(3600); // 缓存预检请求结果的时间（秒）
+                .allowedHeaders("*") // Allow all request headers
+                .maxAge(3600); // How long to cache preflight request results (in seconds)
     }
 }
