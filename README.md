@@ -1,4 +1,4 @@
-# **DIICSU Room Booking System**
+# **DIICSU Room Booking System - Team Search X Repository**
 
 ## **Project Overview**
 
