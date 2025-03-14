@@ -52,7 +52,7 @@ const Login = () => {
     }, 500);
   };
 
-  // 自定义验证函数：既判断必填，又判断格式和后缀
+  // 自定义验证函数：统一校验必填、格式和后缀
   const validateDundeeEmail = (_, value) => {
     if (!value) {
       return Promise.reject("Please enter your email address");
@@ -76,7 +76,9 @@ const Login = () => {
         justifyContent: "center",
         alignItems: "center",
         height: "100vh",
-        background: "#f5f5f5"
+        backgroundImage: "url(/login.jpg)",
+        backgroundSize: "cover",
+        backgroundPosition: "center",
       }}
     >
       <Card
@@ -84,14 +86,14 @@ const Login = () => {
         style={{
           maxWidth: 400,
           textAlign: "center",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)"
+          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
+          borderRadius: 8,
         }}
       >
         <Form layout="vertical" onFinish={onFinish} initialValues={{ email: "", password: "" }}>
           <Form.Item
             label="Email"
             name="email"
-            // 仅用一个自定义规则，统一校验“必填、格式、后缀”
             rules={[{ validator: validateDundeeEmail }]}
           >
             <Input placeholder="Enter Email (must be Dundee email)" />
