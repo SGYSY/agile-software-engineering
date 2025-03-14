@@ -1,0 +1,211 @@
+#backimage {
+  width: calc(750rpx*375/375);
+  height: 50vh;
+}
+#imagemask {
+  width: calc(750rpx*375/375);
+  height: 50vh;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.6), rgba(121, 121, 121, 0));
+  position: absolute;
+  top: 0;
+}
+#imagemask text {
+  display: block;
+  color: #ffffff;
+  margin-left: calc(750rpx*30/375);
+  font-weight: bolder;
+  font-family: "Arial Narrow";
+  font-size: 70rpx;
+  line-height: 95rpx;
+}
+#imagemask #textlineone {
+  margin-top: calc(750rpx*70/375);
+  font-size: 78rpx;
+}
+#loginhead {
+  background-color: #ffffff;
+  height: 62vh;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  border-top-right-radius: 80rpx;
+  border-top-left-radius: 80rpx;
+}
+#loginhead #logintext {
+  display: block;
+  color: #472634;
+  margin-left: calc(750rpx*30/375);
+  font-weight: 550;
+  margin-top: calc(750rpx*20/375);
+  font-family: "Franklin Gothic Medium";
+  font-size: 65rpx;
+  line-height: 95rpx;
+}
+#loginhead #usericon {
+  display: flex;
+  justify-content: center;
+  margin-top: 3vh;
+}
+#loginhead #usericon view {
+  width: 35vw;
+  height: 35vw;
+  border-radius: 50%;
+  border: 2px solid #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+#loginhead #usernickname {
+  display: flex;
+  justify-content: center;
+  height: 7vh;
+  margin-top: 1.5vh;
+  width: 100%;
+  font-size: 5vw;
+}
+#loginhead #usernickname #userNickName {
+  color: #472634;
+  height: 7vh;
+  font-size: medium;
+}
+#loginhead button {
+  width: calc(750rpx*253/375);
+  height: calc(750rpx*48/375);
+  background-color: #f54764;
+  color: #fff;
+  font-size: 38rpx;
+  font-weight: 300;
+  border-radius: 100rpx;
+  box-shadow: #ffced6 0 4rpx 10rpx 5rpx;
+  margin-top: 1vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.userhome {
+  position: relative;
+  margin: 2vw 8vw 0 8vw;
+}
+.userhome .userhead {
+  background-color: #fff;
+  width: 100%;
+  border-radius: 5vw;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+.userhome .userhead #userbackimage {
+  width: 100%;
+  height: 35vh;
+  border-radius: 5vw;
+}
+.userhome .userhead #userimagemask {
+  width: 100%;
+  height: 35vh;
+  border-radius: 5vw;
+  background: linear-gradient(rgba(0, 0, 0, 0.8), rgba(128, 128, 128, 0.075));
+  position: absolute;
+  top: 0;
+}
+.userhome .userhead view {
+  position: relative;
+  padding: 1rpx 0 ;
+}
+.userhome .userhead view #userinfoicon {
+  position: absolute;
+  top: -32vw;
+  left: 24.5vw;
+  width: 35vw;
+  height: 35vw;
+  border-radius: 50%;
+  border: 2vw solid #fff;
+  overflow: hidden;
+}
+.userhome .userhead view #userinfoicon image {
+  width: 100%;
+  height: 100%;
+}
+.userhome .userhead view .userinfoname {
+  color: #472634;
+  margin: 2vw 8vw 3vw 3vw;
+  font-weight: 550;
+  text-align: center;
+  font-family: "Franklin Gothic Medium";
+  font-size: 6.3vw;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+.userhome .userhead view .userinfoname text {
+  font-size: 6.5vw;
+  text-align: center;
+  font-weight: 600;
+}
+.userhome .userhead view .userinfoname #weirenzheng {
+  color: #d41900;
+}
+.userhome .userhead view .userinfoname #renzheng {
+  color: #00b21e;
+}
+.userhome .userhead view .userverify {
+  display: flex;
+  margin: 0 18vw 0 18vw;
+  width: 100%;
+}
+.userhome #useroption {
+  background-color: #fff;
+  width: 100%;
+  border-radius: 5vw;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  padding-top: 1rpx;
+  margin: 5vw 0;
+  position: relative;
+}
+.userhome #useroption view {
+  display: flex;
+  align-items: center;
+  color: #472634;
+  height: 15vw;
+  padding-left: 5vw;
+  font-size: 4.2vw;
+  border-bottom: #d6d6d6 2rpx solid;
+}
+.userhome #useroption view text {
+  margin-right: 3vw;
+  font-weight: 600;
+}
+.userhome #useroption view .jiantou {
+  position: absolute;
+  right: 4vw;
+}
+.userhome #useroption view #yuyueguize {
+  color: #16c2c2;
+}
+.userhome #useroption view #iconger {
+  color: #705ee6;
+}
+.userhome #useroption view #iconrenzhen {
+  color: #00b21e;
+}
+.userhome #useroption view #iconweirenzheng {
+  color: #bb1903;
+}
+.userhome #useroption view #kefuButton {
+  position: absolute;
+  left: 0;
+  height: 15vw;
+  width: 100%;
+  background-color: transparent;
+  border-radius: 0 0 5vw 5vw;
+}
+.userhome #useroption :last-child {
+  border-bottom: 0;
+  border-radius: 0 0 5vw 5vw;
+}
+.userhome #useroption view:active {
+  background-color: #f8f8f8;
+}
+.userhome #useroption .button-hover {
+  border-radius: 0 0 5vw 5vw;
+  background-color: #f8f8f8;
+}
+.userhome #useroption :first-child:active {
+  border-radius: 5vw 5vw 0 0;
+}

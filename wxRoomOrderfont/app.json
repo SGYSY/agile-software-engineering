@@ -1,0 +1,41 @@
+{
+  "pages": [
+    "pages/user/user",
+    "pages/index/index",
+    "pages/orderrule/orderrule",
+    "pages/roomdetail/roomdetail",
+    "pages/myorders/myorders",
+    "pages/orderdetails/orderdetails",
+    "pages/innerverify/innerverify",
+    "pages/edituserinfo/edituserinfo"
+  ],
+  "window": {
+    "backgroundTextStyle": "dark",
+    "enablePullDownRefresh": false,
+    "backgroundColor": "#666666",
+    "font-weight":500,
+    "navigationBarBackgroundColor": "#fff",
+    "navigationBarTitleText": "RoomOrder",
+    "navigationBarTextStyle": "black"
+  },
+  "tabBar":{
+    "color": "#666666",
+    "selectedColor": "#472634",
+    "borderStyle":"black",
+    "list":[{
+      "pagePath": "pages/index/index",
+      "text":"首页",
+      "iconPath": "/Icon/home.png",
+      "selectedIconPath": "/Icon/home2.png"
+    },{
+      "pagePath": "pages/user/user",
+      "text":"我的",
+      "iconPath": "/Icon/user.png",
+      "selectedIconPath": "/Icon/user_selected.png"
+    }
+  ]
+  },
+  "style": "v2",
+  "sitemapLocation": "sitemap.json",
+  "lazyCodeLoading": "requiredComponents"
+}

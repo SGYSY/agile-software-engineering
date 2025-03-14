@@ -51,19 +51,25 @@ public class UserController {
 
     @PutMapping("/{id}")
     public ResponseEntity<User> updateUser(@PathVariable Long id, @RequestBody User user) {
-        Optional<User> existingUser = userService.getUserById(id);
-        if (existingUser.isEmpty()) {
+        Optional<User> existingUserOpt = userService.getUserById(id);
+        if (existingUserOpt.isEmpty()) {
             return ResponseEntity.notFound().build();
         }
+
+        User existingUser = existingUserOpt.get();
         
-        // 检查用户名和邮箱是否与其他用户冲突
-        Optional<User> userWithSameUsername = userService.getUserByUsername(user.getUsername());
-        if (userWithSameUsername.isPresent() && !userWithSameUsername.get().getId().equals(id)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT).build();
+        // 只更新不为空的字段，避免覆盖旧值
+        if (user.getUsername() != null) existingUser.setUsername(user.getUsername());
+        if (user.getFirstName() != null) existingUser.setFirstName(user.getFirstName());
+        if (user.getLastName() != null) existingUser.setLastName(user.getLastName());
+        if (user.getEmail() != null) existingUser.setEmail(user.getEmail());
+        if (user.getPhoneNumber() != null) existingUser.setPhoneNumber(user.getPhoneNumber());
+        if (user.getRole() != null) existingUser.setRole(user.getRole());
+        if (user.getPasswordHash() != null && !user.getPasswordHash().isBlank()) {
+            existingUser.setPasswordHash(user.getPasswordHash()); // 交给 `saveUser()` 处理
         }
-        
-        user.setId(id);
-        User updatedUser = userService.saveUser(user);
+
+        User updatedUser = userService.saveUser(existingUser);
         return ResponseEntity.ok(updatedUser);
     }
 
