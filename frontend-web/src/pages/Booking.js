@@ -1,12 +1,21 @@
 import React, { useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import { Card, DatePicker, Select, Button, message, Descriptions, InputNumber, Checkbox } from "antd";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
+import {
+  Card,
+  DatePicker,
+  Select,
+  Button,
+  message,
+  Descriptions,
+  InputNumber,
+  Checkbox
+} from "antd";
 import moment from "moment";
 import { getRooms, getBookings, saveBooking } from "../utils/demoData";
 
 const { Option } = Select;
 
-// 定义可用的时间段
+// 固定时间段
 const timeSlots = [
   "08:00 - 08:45",
   "08:55 - 09:40",
@@ -22,18 +31,24 @@ const timeSlots = [
 
 const Booking = () => {
   const { roomId } = useParams();
-  const rooms = getRooms();
-  const room = rooms.find(r => r.id === roomId);
   const navigate = useNavigate();
+  const rooms = getRooms();
+  const room = rooms.find((r) => r.id === roomId);
+
   const userRole = localStorage.getItem("userRole");
 
-  // 所有 Hook 均放在组件最顶部
-  const [date, setDate] = useState(null);
-  const [timeSlot, setTimeSlot] = useState(null);
+  // 从 URL 查询参数获取初始 date & timeSlot
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const initialDate = searchParams.get("date"); // e.g. "2025-03-20"
+  const initialTimeSlot = searchParams.get("timeSlot"); // e.g. "08:00 - 08:45"
+
+  // 状态
+  const [date, setDate] = useState(initialDate ? moment(initialDate) : null);
+  const [timeSlot, setTimeSlot] = useState(initialTimeSlot || null);
   const [participants, setParticipants] = useState(1);
   const [lockRoom, setLockRoom] = useState(false); // 仅教师可用
 
-  // 如果房间不存在
   if (!room) {
     return <p style={{ textAlign: "center", marginTop: 50 }}>Room not found</p>;
   }
@@ -48,53 +63,51 @@ const Booking = () => {
   }
 
   const handleBooking = () => {
-    // 基础校验
+    // 校验
     if (!date || !timeSlot) {
       return message.error("Please select a date and time slot!");
     }
     if (!participants) {
       return message.error("Please input number of participants!");
     }
-    // 单次预约人数不得超过房间的 bookingLimit
     if (participants > room.bookingLimit) {
       return message.error(`This room can only be booked for up to ${room.bookingLimit} participant(s) per booking.`);
     }
 
+    const dateStr = date.format("YYYY-MM-DD");
+
     // 获取已有预约（非 rejected）
     const allBookings = getBookings();
-    const dateStr = date.format("YYYY-MM-DD");
-    const existingBookings = allBookings.filter(b =>
-      b.roomId === roomId &&
-      b.timeSlot === timeSlot &&
-      moment(b.startTime).format("YYYY-MM-DD") === dateStr &&
-      b.status !== "rejected"
+    const existingBookings = allBookings.filter(
+      (b) =>
+        b.roomId === roomId &&
+        b.timeSlot === timeSlot &&
+        moment(b.startTime).format("YYYY-MM-DD") === dateStr &&
+        b.status !== "rejected"
     );
 
-    // 1) 若已存在 pending 预约，则拒绝新的预约
-    const pendingExists = existingBookings.some(b => b.status === "pending");
-    if (pendingExists) {
-      return message.error("There is already a pending booking for this time slot.");
-    }
-
-    // 2) 若存在教师锁定预约，则拒绝新的预约
-    const lockedBooking = existingBookings.find(b => b.lock === true);
+    // 如果已存在教师锁定
+    const lockedBooking = existingBookings.find((b) => b.lock === true);
     if (lockedBooking) {
       return message.error("This time slot has been locked by a teacher. Cannot book.");
     }
 
-    // 3) 若有已审批的预约，则计算已用人数
-    const approvedBookings = existingBookings.filter(b => b.status === "approved");
-    const totalApprovedParticipants = approvedBookings.reduce((sum, b) => sum + (b.participants || 0), 0);
-
-    // 若本次预约 + 已审批人数 > 教室容量，则拒绝
-    if (totalApprovedParticipants + participants > room.capacity) {
-      return message.error(
-        `Not enough capacity. Already booked: ${totalApprovedParticipants} participants, room capacity: ${room.capacity}`
-      );
+    // 计算已审批人数
+    const approvedBookings = existingBookings.filter((b) => b.status === "approved");
+    const totalApproved = approvedBookings.reduce((sum, b) => sum + (b.participants || 0), 0);
+    if (totalApproved + participants > room.capacity) {
+      return message.error(`Not enough capacity. Already booked: ${totalApproved} participants.`);
     }
 
-    // 通过所有校验后，创建新的预约
-    const weekday = date.format("dddd"); // 如 "Monday"
+    // 如果已存在 pending 预约，是否允许多条 pending？
+    // 这里示例：不允许多条 pending
+    const pendingExists = existingBookings.some((b) => b.status === "pending");
+    if (pendingExists) {
+      return message.error("There is already a pending booking for this time slot.");
+    }
+
+    // 通过校验后，保存预约
+    const weekday = date.format("dddd");
     const startTime = moment(`${dateStr} ${timeSlot.split(" - ")[0]}`).toISOString();
 
     const newBooking = {
@@ -106,7 +119,7 @@ const Booking = () => {
       timeSlot,
       participants,
       lock: userRole === "teacher" ? lockRoom : false,
-      status: "pending" // 默认是待审批
+      status: "pending"
     };
 
     saveBooking(newBooking);
@@ -127,9 +140,10 @@ const Booking = () => {
         </Descriptions>
 
         <div style={{ marginTop: 20 }}>
-          <DatePicker 
-            onChange={setDate} 
-            style={{ width: "100%", marginBottom: 10 }} 
+          <DatePicker
+            value={date}
+            onChange={(value) => setDate(value)}
+            style={{ width: "100%", marginBottom: 10 }}
           />
           <Select
             placeholder="Select a time slot"
@@ -147,14 +161,14 @@ const Booking = () => {
             min={1}
             max={room.bookingLimit}
             value={participants}
-            onChange={value => setParticipants(value)}
+            onChange={(value) => setParticipants(value)}
             style={{ width: "100%", marginBottom: 10 }}
             placeholder="Number of Participants"
           />
           {userRole === "teacher" && (
             <Checkbox
               checked={lockRoom}
-              onChange={e => setLockRoom(e.target.checked)}
+              onChange={(e) => setLockRoom(e.target.checked)}
               style={{ marginBottom: 20 }}
             >
               Lock Room (prevent others from booking)
