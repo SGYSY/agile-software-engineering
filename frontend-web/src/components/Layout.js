@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Layout, Menu, Button } from "antd";
 import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 import {
@@ -10,12 +10,13 @@ import {
   TeamOutlined,
   HistoryOutlined,
   ApartmentOutlined,
-  BarChartOutlined
+  BarChartOutlined,
 } from "@ant-design/icons";
 
 const { Header, Sider, Content, Footer } = Layout;
 
 const MainLayout = () => {
+  const [collapsed, setCollapsed] = useState(false); // 管理 Sider 是否展开
   const location = useLocation();
   const navigate = useNavigate();
   const userRole = localStorage.getItem("userRole");
@@ -26,7 +27,6 @@ const MainLayout = () => {
     navigate("/login");
   };
 
-  // 基本菜单项：Room List 与 My Bookings
   const menuItems = [
     {
       key: "/",
@@ -40,7 +40,6 @@ const MainLayout = () => {
     },
   ];
 
-  // 管理员菜单：增加 Dashboard、Booking Approvals、Users、History、Rooms
   if (userRole === "admin") {
     menuItems.push(
       {
@@ -77,42 +76,97 @@ const MainLayout = () => {
   }
 
   return (
-    <Layout style={{ minHeight: "100vh" }}>
-      <Sider collapsible style={{ background: "#001529" }}>
+    <Layout style={{ minHeight: "100vh", backgroundColor: "#F7F8FA" }}>
+      <Sider
+        collapsible
+        collapsed={collapsed}
+        onCollapse={(value) => setCollapsed(value)}
+        width={250}
+        style={{
+          background: "#FFFFFF",
+          boxShadow: "2px 0 8px rgba(0, 0, 0, 0.1)",
+        }}
+      >
+        {/* 根据collapsed状态切换 logo */}
         <div
           style={{
-            color: "white",
             textAlign: "center",
             padding: "16px 0",
-            fontSize: "18px",
-            fontWeight: "bold",
           }}
         >
-          DIICSU Room Booking System
+          <img
+            src={collapsed ? "/logo2.jpg" : "/logo1.jpg"} // 切换 logo
+            alt="University of Dundee"
+            style={{
+              width: collapsed ? "35px" : "150px", // collapsed 时设置 logo2 为 50px，其他时 logo1 为 150px
+              height: "50px", // 设置 logo 的高度为 50px
+            }}
+          />
         </div>
-        <Menu theme="dark" mode="inline" selectedKeys={[location.pathname]} items={menuItems} />
+        <Menu
+          theme="light"
+          mode="inline"
+          selectedKeys={[location.pathname]}
+          items={menuItems}
+          style={{
+            padding: "16px 0",
+            backgroundColor: "#FFFFFF",
+          }}
+          onSelect={(item) => {}}
+        />
       </Sider>
 
       <Layout>
-        <Header style={{ background: "#fff", textAlign: "right", paddingRight: 20 }}>
-          <UserOutlined style={{ fontSize: 20, marginRight: 10 }} />
-          <span>
-            {userRole
-              ? `Logged in as: ${localStorage.getItem("displayName") || userRole}`
-              : "Not logged in"}
-          </span>
-          {userRole && (
-            <Button type="link" onClick={handleLogout} style={{ marginLeft: 10 }}>
-              Logout
-            </Button>
-          )}
+        {/* 头部用户信息和登出按钮调整到右侧 */}
+        <Header
+          style={{
+            background: "#FFFFFF",
+            textAlign: "right",
+            paddingRight: 20,
+            borderBottom: "1px solid #F0F0F0",
+          }}
+        >
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
+            <UserOutlined style={{ fontSize: 20, marginRight: 10, color: "#4161d9" }} />
+            <span style={{ fontSize: 14, color: "#333" }}>
+              {userRole
+                ? `Logged in as: ${localStorage.getItem("displayName") || userRole}`
+                : "Not logged in"}
+            </span>
+            {userRole && (
+              <Button
+                type="link"
+                onClick={handleLogout}
+                style={{ marginLeft: 10, color: "#4161d9" }} // 修改为统一颜色
+              >
+                Logout
+              </Button>
+            )}
+          </div>
         </Header>
 
-        <Content style={{ margin: "16px", padding: "16px", background: "#fff", borderRadius: 8 }}>
+        <Content
+          style={{
+            margin: "16px",
+            padding: "24px",
+            background: "#FFFFFF",
+            borderRadius: 8,
+            minHeight: "calc(100vh - 140px)",
+            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+          }}
+        >
           <Outlet />
         </Content>
 
-        <Footer style={{ textAlign: "center" }}>
+        <Footer
+          style={{
+            textAlign: "center",
+            background: "#FFFFFF",  // 采用白色背景
+            padding: "10px 20px",
+            borderTop: "1px solid #F0F0F0",
+            color: "#999999", // 页脚文字颜色调整为灰色
+          }}
+        >
           DIICSU Room Booking System ©{new Date().getFullYear()} Created by You
         </Footer>
       </Layout>
