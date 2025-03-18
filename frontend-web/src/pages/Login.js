@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Form, Input, Button, message } from "antd";
+import { Form, Input, Button, message } from "antd";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
@@ -10,7 +10,6 @@ const Login = () => {
     setLoading(true);
     const { email, password } = values;
 
-    // 假密码验证
     if (password !== "password123") {
       message.error("Incorrect password.");
       setLoading(false);
@@ -18,8 +17,6 @@ const Login = () => {
     }
 
     const lowerEmail = email.toLowerCase();
-
-    // 根据邮箱映射角色及显示名称
     let role = "";
     let displayName = "";
     if (lowerEmail === "admin@dundee.ac.uk") {
@@ -43,60 +40,76 @@ const Login = () => {
     message.success(`Login successful! Welcome, ${displayName}`);
 
     setTimeout(() => {
-      if (role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
+      navigate(role === "admin" ? "/admin" : "/");
       setLoading(false);
     }, 500);
   };
 
-  // 自定义验证函数：统一校验必填、格式和后缀
   const validateDundeeEmail = (_, value) => {
-    if (!value) {
-      return Promise.reject("Please enter your email address");
-    }
-    // 简易邮箱格式检测
+    if (!value) return Promise.reject("Please enter your email address");
+
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) {
+    if (!emailRegex.test(value))
       return Promise.reject("Please enter a valid email address");
-    }
-    // 后缀判断
-    if (!value.toLowerCase().endsWith("dundee.ac.uk")) {
+
+    if (!value.toLowerCase().endsWith("dundee.ac.uk"))
       return Promise.reject("Please enter a valid Dundee email address");
-    }
+
     return Promise.resolve();
   };
 
   return (
     <div
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
         height: "100vh",
         backgroundImage: "url(/login.jpg)",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Card
-        title="DIICSU Room Booking Login"
+      {/* 顶部白色背景区域，clipPath 形状调整，让登录框进入白色部分 */}
+      <div
         style={{
-          maxWidth: 400,
-          textAlign: "center",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
-          borderRadius: 8,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%", // 调整白色区域高度
+          backgroundColor: "rgba(255,255,255,0.9)",
+          clipPath: "ellipse(100% 40% at 50% 20%)", // 让白色部分更靠上
+          zIndex: 1,
+        }}
+      />
+
+      <div
+        style={{
+          zIndex: 2,
+          padding: "40px 30px",
+          width: 400,
+          marginTop: "10vh", // 让登录框往上移动
         }}
       >
-        <Form layout="vertical" onFinish={onFinish} initialValues={{ email: "", password: "" }}>
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[{ validator: validateDundeeEmail }]}
-          >
-            <Input placeholder="Enter Email (must be Dundee email)" />
+        <h2 style={{ textAlign: "center", marginBottom: 30, color: "#4161d9" }}>
+          DIICSU Room Booking
+        </h2>
+        <Form
+          layout="vertical"
+          onFinish={onFinish}
+          style={{
+            background: "rgba(255,255,255,0.9)",
+            padding: "30px",
+            borderRadius: "12px",
+            boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+          }}
+        >
+          <Form.Item label="Email" name="email" rules={[{ validator: validateDundeeEmail }]}>            
+            <Input placeholder="Enter Dundee email" />
           </Form.Item>
 
           <Form.Item
@@ -104,16 +117,22 @@ const Login = () => {
             name="password"
             rules={[{ required: true, message: "Please enter your password" }]}
           >
-            <Input.Password placeholder="Enter Password (e.g. password123)" />
+            <Input.Password placeholder="Enter your password" />
           </Form.Item>
 
           <Form.Item>
-            <Button type="primary" block htmlType="submit" loading={loading}>
+            <Button
+              type="primary"
+              htmlType="submit"
+              block
+              loading={loading}
+              style={{ backgroundColor: "#4161d9", borderColor: "#4161d9" }}
+            >
               Login
             </Button>
           </Form.Item>
         </Form>
-      </Card>
+      </div>
     </div>
   );
 };
