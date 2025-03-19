@@ -20,6 +20,7 @@ SET time_zone = "+00:00";
 --
 -- 数据库： `diicsu_room_booking_system_v3.sql`
 --
+DROP DATABASE IF EXISTS `diicsu_room_booking_system_v3.sql`;
 CREATE DATABASE IF NOT EXISTS `diicsu_room_booking_system_v3.sql` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
 USE `diicsu_room_booking_system_v3.sql`;
 
@@ -332,6 +333,20 @@ INSERT INTO `users` (`user_id`, `school_number`, `username`, `password_hash`, `f
 (11, 251234, 'john_doe', '$2a$10$agW12Ty9Z2FEUr52a6WVw.loLZDrjUB47ikam8bZ4C1BmyVCnuVQe', 'John', 'Doe', 'john.doe@example.com', '1234567890', NULL);
 
 --
+-- 表的结构 `verification_codes`
+--
+
+DROP TABLE IF EXISTS `verification_codes`;
+CREATE TABLE `verification_codes` (
+  `id` bigint NOT NULL,
+  `email` varchar(255) NOT NULL,
+  `code` varchar(6) NOT NULL,
+  `expiry_time` datetime NOT NULL,
+  `used` tinyint(1) DEFAULT '0',
+  `create_time` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
 -- 转储表的索引
 --
 
@@ -414,6 +429,13 @@ ALTER TABLE `users`
   ADD UNIQUE KEY `email` (`email`),
   ADD KEY `role_id` (`role_id`);
 
+
+ALTER TABLE `verification_codes`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `idx_verification_email` (`email`),
+  ADD KEY `idx_verification_code` (`code`);
+
+
 --
 -- 在导出的表使用AUTO_INCREMENT
 --
@@ -478,6 +500,10 @@ ALTER TABLE `schedule`
 ALTER TABLE `users`
   MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
+
+
+ALTER TABLE `verification_codes`
+  MODIFY `id` bigint NOT NULL AUTO_INCREMENT;
 --
 -- 限制导出的表
 --
@@ -528,6 +554,11 @@ ALTER TABLE `schedule`
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`);
 COMMIT;
+
+ALTER TABLE `verification_codes`
+  ADD CONSTRAINT `fk_verification_user_email` FOREIGN KEY (`email`) 
+    REFERENCES `users` (`email`) ON DELETE CASCADE;
+
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
 /*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
