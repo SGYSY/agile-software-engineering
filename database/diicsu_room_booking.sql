@@ -2,15 +2,10 @@
 -- version 5.2.1
 -- https://www.phpmyadmin.net/
 --
--- host: 127.0.0.1
--- date: 2025-03-11 11:15:45
--- server version: 9.0.1
--- PHP version: 8.2.12
-
-DROP DATABASE IF EXISTS `diicsu_room_booking_system_v2`;
-
-CREATE DATABASE IF NOT EXISTS `diicsu_room_booking_system_v2` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
-USE `diicsu_room_booking_system_v2`;
+-- 主机： 127.0.0.1
+-- 生成日期： 2025-03-18 13:27:16
+-- 服务器版本： 9.0.1
+-- PHP 版本： 8.2.12
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
@@ -23,12 +18,15 @@ SET time_zone = "+00:00";
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- database: `diicsu_room_booking_system_v2`
+-- 数据库： `diicsu_room_booking_system_v3.sql`
+--
+CREATE DATABASE IF NOT EXISTS `diicsu_room_booking_system_v3.sql` DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+USE `diicsu_room_booking_system_v3.sql`;
 
 -- --------------------------------------------------------
 
 --
--- table structure for `bookings`
+-- 表的结构 `bookings`
 --
 
 DROP TABLE IF EXISTS `bookings`;
@@ -43,18 +41,18 @@ CREATE TABLE `bookings` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `bookings`
+-- 转存表中的数据 `bookings`
 --
 
 INSERT INTO `bookings` (`booking_id`, `user_id`, `room_id`, `start_time`, `end_time`, `status`, `conflict_detected`) VALUES
-(1, 1, 1, '2025-03-05 09:00:00', '2025-03-05 11:00:00', 'confirmed', 0),
-(2, 2, 2, '2025-03-06 02:00:00', '2025-03-06 04:00:00', 'pending', 0),
-(31, 2, 2, '2025-03-07 02:00:00', '2025-03-07 04:00:00', 'cancelled', 0);
+(1, 1, 9, '2025-03-05 09:00:00', '2025-03-05 11:00:00', 'confirmed', 0),
+(2, 2, 8, '2025-03-06 02:00:00', '2025-03-06 04:00:00', 'pending', 0),
+(31, 2, 10, '2025-03-07 02:00:00', '2025-03-07 04:00:00', 'cancelled', 0);
 
 -- --------------------------------------------------------
 
 --
--- table structure for `logs`
+-- 表的结构 `logs`
 --
 
 DROP TABLE IF EXISTS `logs`;
@@ -66,7 +64,7 @@ CREATE TABLE `logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `logs`
+-- 转存表中的数据 `logs`
 --
 
 INSERT INTO `logs` (`log_id`, `book_type`, `booking_at`, `booking_data`) VALUES
@@ -75,7 +73,7 @@ INSERT INTO `logs` (`log_id`, `book_type`, `booking_at`, `booking_data`) VALUES
 -- --------------------------------------------------------
 
 --
--- table structure for `notifications`
+-- 表的结构 `notifications`
 --
 
 DROP TABLE IF EXISTS `notifications`;
@@ -88,7 +86,7 @@ CREATE TABLE `notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `notifications`
+-- 转存表中的数据 `notifications`
 --
 
 INSERT INTO `notifications` (`notification_id`, `booking_id`, `notification_type`, `message`, `status`) VALUES
@@ -100,7 +98,7 @@ INSERT INTO `notifications` (`notification_id`, `booking_id`, `notification_type
 -- --------------------------------------------------------
 
 --
--- table structure for `permissions`
+-- 表的结构 `permissions`
 --
 
 DROP TABLE IF EXISTS `permissions`;
@@ -110,7 +108,7 @@ CREATE TABLE `permissions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `permissions`
+-- 转存表中的数据 `permissions`
 --
 
 INSERT INTO `permissions` (`permission_id`, `permission_name`) VALUES
@@ -120,12 +118,13 @@ INSERT INTO `permissions` (`permission_id`, `permission_name`) VALUES
 (4, 'Manage Rooms'),
 (5, 'Approve Reservations'),
 (6, 'Manage User Permissions'),
-(7, 'Maintenance User System');
+(7, 'Maintenance User System'),
+(8, 'Manage users');
 
 -- --------------------------------------------------------
 
 --
--- table structure for `roles`
+-- 表的结构 `roles`
 --
 
 DROP TABLE IF EXISTS `roles`;
@@ -135,7 +134,7 @@ CREATE TABLE `roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `roles`
+-- 转存表中的数据 `roles`
 --
 
 INSERT INTO `roles` (`role_id`, `role_name`) VALUES
@@ -148,7 +147,7 @@ INSERT INTO `roles` (`role_id`, `role_name`) VALUES
 -- --------------------------------------------------------
 
 --
--- table structure for `role_permissions`
+-- 表的结构 `role_permissions`
 --
 
 DROP TABLE IF EXISTS `role_permissions`;
@@ -158,7 +157,7 @@ CREATE TABLE `role_permissions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `role_permissions`
+-- 转存表中的数据 `role_permissions`
 --
 
 INSERT INTO `role_permissions` (`role_id`, `permission_id`) VALUES
@@ -175,12 +174,13 @@ INSERT INTO `role_permissions` (`role_id`, `permission_id`) VALUES
 (5, 4),
 (1, 5),
 (1, 6),
-(4, 7);
+(4, 7),
+(1, 8);
 
 -- --------------------------------------------------------
 
 --
--- table structure for `rooms`
+-- 表的结构 `rooms`
 --
 
 DROP TABLE IF EXISTS `rooms`;
@@ -194,45 +194,91 @@ CREATE TABLE `rooms` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `rooms`
+-- 转存表中的数据 `rooms`
 --
 
 INSERT INTO `rooms` (`room_id`, `room_name`, `capacity`, `location`, `available`, `restricted`) VALUES
-(1, 'Room A', 20, 'Building 1, Floor 2', 1, 0),
-(2, 'Room B', 50, 'Building 2, Floor 1', 1, 0),
-(3, 'Room 634', 30, 'Building 1, Floor 3', 1, 0);
+(8, 'A207', 60, 'Building A, Floor 2, 207', 1, 0),
+(9, 'A206', 60, 'Building A, Floor 2, 206', 1, 0),
+(10, 'A208', 60, 'Building A, Floor 2, 208', 1, 0),
+(11, 'A310', 90, 'Building A, Floor 3, 310', 1, 0),
+(12, 'A311', 90, 'Building A, Floor 3, 311', 1, 0),
+(13, 'A410', 90, 'Building A, Floor 4, 410', 1, 0),
+(14, 'Foreign Language Network Building 101', 20, 'Foreign Language Network Building, Floor 1, 101', 1, 0),
+(15, 'Foreign Language Network Building 102', 20, 'Foreign Language Network Building, Floor 1, 102', 1, 0),
+(16, 'Foreign Language Network Building 103', 20, 'Foreign Language Network Building, Floor 1, 103', 1, 0),
+(17, 'Foreign Language Network Building 104', 20, 'Foreign Language Network Building, Floor 1, 104', 1, 0),
+(18, 'Foreign Language Network Building 105', 20, 'Foreign Language Network Building, Floor 1, 105', 1, 0),
+(19, 'Foreign Language Network Building 106', 20, 'Foreign Language Network Building, Floor 1, 106', 1, 0),
+(20, 'Foreign Language Network Building 107', 20, 'Foreign Language Network Building, Floor 1, 107', 1, 0),
+(21, 'Foreign Language Network Building 108', 20, 'Foreign Language Network Building, Floor 1, 108', 1, 0),
+(22, 'Foreign Language Network Building 116', 20, 'Foreign Language Network Building, Floor 1, 116', 1, 0),
+(23, 'Foreign Language Network Building 117', 20, 'Foreign Language Network Building, Floor 1, 117', 1, 0),
+(24, 'Foreign Language Network Building 118', 20, 'Foreign Language Network Building, Floor 1, 118', 1, 0),
+(25, 'Foreign Language Network Building 119', 20, 'Foreign Language Network Building, Floor 1, 119', 1, 0);
 
 -- --------------------------------------------------------
 
 --
--- table structure for `room_equipment`
+-- 表的结构 `room_issue`
 --
 
-DROP TABLE IF EXISTS `room_equipment`;
-CREATE TABLE `room_equipment` (
-  `equipment_id` bigint NOT NULL,
+DROP TABLE IF EXISTS `room_issue`;
+CREATE TABLE `room_issue` (
+  `issue_id` bigint NOT NULL,
   `room_id` int DEFAULT NULL,
-  `equipment_name` varchar(255) DEFAULT NULL,
-  `description` varchar(255) DEFAULT NULL,
-  `is_available` bit(1) DEFAULT NULL
+  `issue_name` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `description` varchar(255) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `room_equipment`
+-- 转存表中的数据 `room_issue`
 --
 
-INSERT INTO `room_equipment` (`equipment_id`, `room_id`, `equipment_name`, `description`, `is_available`) VALUES
-(1, 1, 'Projector', NULL, NULL),
-(2, 1, 'Whiteboard', NULL, NULL),
-(3, 2, 'Projector', NULL, NULL),
-(4, 2, 'Conference Phone', NULL, NULL),
-(5, 3, 'Whiteboard', NULL, NULL),
-(6, 3, 'Conference Phone', NULL, NULL);
+INSERT INTO `room_issue` (`issue_id`, `room_id`, `issue_name`, `description`) VALUES
+(1, 9, 'Windows broken', NULL),
+(2, 8, 'Tables broken', ''),
+(3, 10, 'Projector broken', NULL),
+(4, 11, 'Power interruption', NULL),
+(5, 12, 'Whiteboard broken', NULL),
+(6, 13, 'No WIFI signal', NULL);
 
 -- --------------------------------------------------------
 
 --
--- table structure for `schedule`
+-- 表的结构 `room_permission`
+--
+
+DROP TABLE IF EXISTS `room_permission`;
+CREATE TABLE `room_permission` (
+  `id` int NOT NULL,
+  `room_id` int NOT NULL,
+  `role_id` int DEFAULT NULL,
+  `user_id` int DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+--
+-- 转存表中的数据 `room_permission`
+--
+
+INSERT INTO `room_permission` (`id`, `room_id`, `role_id`, `user_id`) VALUES
+(1, 9, 3, NULL),
+(2, 9, 2, NULL),
+(3, 8, 2, NULL),
+(4, 8, 3, NULL),
+(5, 10, 2, NULL),
+(6, 10, 3, NULL),
+(7, 11, 2, NULL),
+(8, 11, 3, NULL),
+(9, 12, 2, NULL),
+(10, 12, 3, NULL),
+(11, 13, 2, NULL),
+(12, 13, 3, NULL);
+
+-- --------------------------------------------------------
+
+--
+-- 表的结构 `schedule`
 --
 
 DROP TABLE IF EXISTS `schedule`;
@@ -241,26 +287,29 @@ CREATE TABLE `schedule` (
   `room_id` int DEFAULT NULL,
   `start_time` datetime DEFAULT NULL,
   `end_time` datetime DEFAULT NULL,
-  `usage` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL
+  `usage` varchar(255) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci DEFAULT NULL,
+  `day_of_week` varchar(255) DEFAULT NULL,
+  `is_available` bit(1) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `schedule`
+-- 转存表中的数据 `schedule`
 --
 
-INSERT INTO `schedule` (`schedule_id`, `room_id`, `start_time`, `end_time`, `usage`) VALUES
-(1, 1, '2025-03-05 09:00:00', '2025-03-05 11:00:00', 'None'),
-(2, 2, '2025-03-05 11:00:00', '2025-03-05 13:00:00', 'None');
+INSERT INTO `schedule` (`schedule_id`, `room_id`, `start_time`, `end_time`, `usage`, `day_of_week`, `is_available`) VALUES
+(1, 9, '2025-03-05 09:00:00', '2025-03-05 11:00:00', 'None', NULL, NULL),
+(2, 8, '2025-03-05 11:00:00', '2025-03-05 13:00:00', 'None', NULL, NULL);
 
 -- --------------------------------------------------------
 
 --
--- table structure for `users`
+-- 表的结构 `users`
 --
 
 DROP TABLE IF EXISTS `users`;
 CREATE TABLE `users` (
   `user_id` int NOT NULL,
+  `school_number` int DEFAULT NULL,
   `username` varchar(255) NOT NULL,
   `password_hash` varchar(255) NOT NULL,
   `first_name` varchar(255) DEFAULT NULL,
@@ -271,22 +320,23 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- dumping data for table `users`
+-- 转存表中的数据 `users`
 --
 
-INSERT INTO `users` (`user_id`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `role_id`) VALUES
-(1, 'admin1', '123456', 'Admin', 'One', 'admin1@example.com', '1234567890', 1),
-(2, 'faculty1', '123456', 'Faculty', 'One', 'faculty1@example.com', '2345678901', 2),
-(3, 'student1', '123456', 'Student', 'One', 'student1@example.com', '3456789012', 3),
-(4, 'itteam1', '123456', 'IT', 'Team', 'itteam1@example.com', '4567890123', 4),
-(5, 'facilities1', '123456', 'Facilities', 'Manager', 'facilities1@example.com', '5678901234', 5);
+INSERT INTO `users` (`user_id`, `school_number`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `role_id`) VALUES
+(1, NULL, 'admin1', '123456', 'Admin', 'One', 'admin1@example.com', '1234567890', 1),
+(2, NULL, 'faculty1', '123456', 'Faculty', 'One', 'faculty1@example.com', '2345678901', 2),
+(3, NULL, 'student1', '123456', 'Student', 'One', 'student1@example.com', '3456789012', 3),
+(4, NULL, 'itteam1', '123456', 'IT', 'Team', 'itteam1@example.com', '4567890123', 4),
+(5, NULL, 'facilities1', '123456', 'Facilities', 'Manager', 'facilities1@example.com', '5678901234', 5),
+(11, 251234, 'john_doe', '$2a$10$agW12Ty9Z2FEUr52a6WVw.loLZDrjUB47ikam8bZ4C1BmyVCnuVQe', 'John', 'Doe', 'john.doe@example.com', '1234567890', NULL);
 
 --
--- indexes for dumped tables
+-- 转储表的索引
 --
 
 --
--- indexes for table `bookings`
+-- 表的索引 `bookings`
 --
 ALTER TABLE `bookings`
   ADD PRIMARY KEY (`booking_id`),
@@ -294,60 +344,69 @@ ALTER TABLE `bookings`
   ADD KEY `room_id` (`room_id`);
 
 --
--- indexes for table `logs`
+-- 表的索引 `logs`
 --
 ALTER TABLE `logs`
   ADD PRIMARY KEY (`log_id`);
 
 --
--- indexes for table `notifications`
+-- 表的索引 `notifications`
 --
 ALTER TABLE `notifications`
   ADD PRIMARY KEY (`notification_id`),
   ADD KEY `booking_id` (`booking_id`);
 
 --
--- indexes for table `permissions`
+-- 表的索引 `permissions`
 --
 ALTER TABLE `permissions`
   ADD PRIMARY KEY (`permission_id`);
 
 --
--- indexes for table `roles`
+-- 表的索引 `roles`
 --
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`role_id`);
 
 --
--- indexes for table `role_permissions`
+-- 表的索引 `role_permissions`
 --
 ALTER TABLE `role_permissions`
   ADD PRIMARY KEY (`role_id`,`permission_id`),
   ADD KEY `permission_id` (`permission_id`);
 
 --
--- indexes for table `rooms`
+-- 表的索引 `rooms`
 --
 ALTER TABLE `rooms`
   ADD PRIMARY KEY (`room_id`),
   ADD UNIQUE KEY `room_name` (`room_name`);
 
 --
--- indexes for table `room_equipment`
+-- 表的索引 `room_issue`
 --
-ALTER TABLE `room_equipment`
-  ADD PRIMARY KEY (`equipment_id`),
+ALTER TABLE `room_issue`
+  ADD PRIMARY KEY (`issue_id`),
   ADD KEY `room_id` (`room_id`);
 
 --
--- indexes for table `schedule`
+-- 表的索引 `room_permission`
+--
+ALTER TABLE `room_permission`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `room_id` (`room_id`),
+  ADD KEY `role_id` (`role_id`),
+  ADD KEY `user_id` (`user_id`);
+
+--
+-- 表的索引 `schedule`
 --
 ALTER TABLE `schedule`
   ADD PRIMARY KEY (`schedule_id`),
   ADD KEY `room_id` (`room_id`);
 
 --
--- indexes for table `users`
+-- 表的索引 `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
@@ -356,101 +415,115 @@ ALTER TABLE `users`
   ADD KEY `role_id` (`role_id`);
 
 --
--- AUTO_INCREMENT for dumped tables
+-- 在导出的表使用AUTO_INCREMENT
 --
 
 --
--- AUTO_INCREMENT for table `bookings`
+-- 使用表AUTO_INCREMENT `bookings`
 --
 ALTER TABLE `bookings`
   MODIFY `booking_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
--- AUTO_INCREMENT for table `logs`
+-- 使用表AUTO_INCREMENT `logs`
 --
 ALTER TABLE `logs`
   MODIFY `log_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- AUTO_INCREMENT for table `notifications`
+-- 使用表AUTO_INCREMENT `notifications`
 --
 ALTER TABLE `notifications`
   MODIFY `notification_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
--- AUTO_INCREMENT for table `permissions`
+-- 使用表AUTO_INCREMENT `permissions`
 --
 ALTER TABLE `permissions`
-  MODIFY `permission_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
+  MODIFY `permission_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- AUTO_INCREMENT for table `roles`
+-- 使用表AUTO_INCREMENT `roles`
 --
 ALTER TABLE `roles`
   MODIFY `role_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT for table `rooms`
+-- 使用表AUTO_INCREMENT `rooms`
 --
 ALTER TABLE `rooms`
-  MODIFY `room_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
+  MODIFY `room_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=26;
 
 --
--- AUTO_INCREMENT for table `room_equipment`
+-- 使用表AUTO_INCREMENT `room_issue`
 --
-ALTER TABLE `room_equipment`
-  MODIFY `equipment_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+ALTER TABLE `room_issue`
+  MODIFY `issue_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- AUTO_INCREMENT for table `schedule`
+-- 使用表AUTO_INCREMENT `room_permission`
+--
+ALTER TABLE `room_permission`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
+
+--
+-- 使用表AUTO_INCREMENT `schedule`
 --
 ALTER TABLE `schedule`
   MODIFY `schedule_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
--- AUTO_INCREMENT for table `users`
+-- 使用表AUTO_INCREMENT `users`
 --
 ALTER TABLE `users`
-  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- constraints for dumped tables
+-- 限制导出的表
 --
 
 --
--- constraints for table `bookings`
+-- 限制表 `bookings`
 --
 ALTER TABLE `bookings`
   ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
 
 --
--- constraints for table `notifications`
+-- 限制表 `notifications`
 --
 ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`);
 
 --
--- constraints for table `role_permissions`
+-- 限制表 `role_permissions`
 --
 ALTER TABLE `role_permissions`
   ADD CONSTRAINT `role_permissions_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`),
   ADD CONSTRAINT `role_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`permission_id`);
 
 --
--- constraints for table `room_equipment`
+-- 限制表 `room_issue`
 --
-ALTER TABLE `room_equipment`
-  ADD CONSTRAINT `room_equipment_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
+ALTER TABLE `room_issue`
+  ADD CONSTRAINT `room_issue_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
 
 --
--- constraints for table `schedule`
+-- 限制表 `room_permission`
+--
+ALTER TABLE `room_permission`
+  ADD CONSTRAINT `room_permission_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `room_permission_ibfk_2` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`) ON DELETE SET NULL,
+  ADD CONSTRAINT `room_permission_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
+
+--
+-- 限制表 `schedule`
 --
 ALTER TABLE `schedule`
   ADD CONSTRAINT `schedule_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
 
 --
--- constraints for table `users`
+-- 限制表 `users`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`);
