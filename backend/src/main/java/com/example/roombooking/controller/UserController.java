@@ -1,10 +1,12 @@
 package com.example.roombooking.controller;
 
+import com.example.roombooking.dto.UserDTO;
 import com.example.roombooking.entity.User;
 import com.example.roombooking.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -17,6 +19,9 @@ public class UserController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
 
     @GetMapping
     public ResponseEntity<List<User>> getAllUsers() {
@@ -36,15 +41,21 @@ public class UserController {
     }
 
     @PostMapping
-    public ResponseEntity<User> createUser(@RequestBody User user) {
+    public ResponseEntity<User> createUser(@RequestBody UserDTO userdto) {
         // 检查用户名和邮箱是否已存在
-        if (userService.existsByUsername(user.getUsername())) {
+        if (userService.existsByUsername(userdto.getUsername())) {
+            System.out.println("Username already exists");
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        if (userService.existsByEmail(user.getEmail())) {
+        if (userService.existsByEmail(userdto.getEmail())) {
+            System.out.println("Email already exists");
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
-        
+
+        User user = new User();
+        user.setUsername(userdto.getUsername());
+        user.setEmail(userdto.getEmail());
+        user.setPasswordHash(passwordEncoder.encode(userdto.getPassword()));
         User savedUser = userService.saveUser(user);
         return ResponseEntity.status(HttpStatus.CREATED).body(savedUser);
     }
