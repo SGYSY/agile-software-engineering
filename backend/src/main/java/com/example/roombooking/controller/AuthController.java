@@ -3,6 +3,7 @@ package com.example.roombooking.controller;
 import com.example.roombooking.dto.AuthRequest;
 import com.example.roombooking.dto.AuthResponse;
 import com.example.roombooking.dto.EmailVerificationRequest;
+import com.example.roombooking.dto.FullAuthRequest;
 import com.example.roombooking.dto.VerifyCodeRequest;
 import com.example.roombooking.service.AuthService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -60,6 +61,23 @@ public class AuthController {
         
         if (response == null) {
             return ResponseEntity.badRequest().body("验证码无效或已过期");
+        }
+        
+        return ResponseEntity.ok(response);
+    }
+
+
+    /**
+     * 三重验证登录 - 邮箱+密码+验证码
+     * @param request 包含邮箱、密码和验证码的请求
+     * @return 登录成功返回token等信息，失败返回错误信息
+     */
+    @PostMapping("/full-login")
+    public ResponseEntity<?> fullLogin(@RequestBody FullAuthRequest request) {
+        AuthResponse response = authService.fullAuthenticate(request);
+        
+        if (response == null) {
+            return ResponseEntity.badRequest().body("登录失败，请检查邮箱、密码和验证码是否正确");
         }
         
         return ResponseEntity.ok(response);

@@ -2,7 +2,10 @@ package com.example.roombooking.service;
 
 import com.example.roombooking.dto.AuthRequest;
 import com.example.roombooking.dto.AuthResponse;
+import com.example.roombooking.dto.FullAuthRequest;
 import com.example.roombooking.entity.User;
+import com.example.roombooking.entity.VerificationCode;
+import com.example.roombooking.repository.VerificationCodeRepository;
 import com.example.roombooking.util.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -10,6 +13,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 
 @Service
@@ -28,6 +32,9 @@ public class AuthService {
     
     @Autowired
     private VerificationCodeService verificationCodeService;
+
+    @Autowired
+    private VerificationCodeRepository verificationCodeRepository;
     
     /**
      * 用户名密码登录
@@ -97,4 +104,53 @@ public class AuthService {
         
         return new AuthResponse(token, user.getId(), user.getUsername(), roleName);
     }
+
+
+    /**
+     * 三重验证登录 - 邮箱+密码+验证码
+     * @param request 包含邮箱、密码和验证码的请求
+     * @return 认证成功返回AuthResponse，失败返回null
+     */
+    public AuthResponse fullAuthenticate(FullAuthRequest request) {
+        // 1. 首先验证用户邮箱和密码
+        Optional<User> userOptional = userService.getUserByEmail(request.getEmail());
+        
+        if (userOptional.isEmpty()) {
+            logger.info("登录失败：邮箱不存在 - {}", request.getEmail());
+            return null; // 用户不存在
+        }
+        
+        User user = userOptional.get();
+        
+        // 验证密码
+        if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
+            logger.info("登录失败：密码错误 - {}", request.getEmail());
+            return null; // 密码错误
+        }
+        
+        // 2. 验证验证码
+        Optional<VerificationCode> verificationCodeOpt = 
+            verificationCodeRepository.findByEmailAndCodeAndUsedFalse(request.getEmail(), request.getCode());
+        
+        if (verificationCodeOpt.isEmpty()) {
+            logger.info("登录失败：验证码无效 - {}", request.getEmail());
+            return null; // 验证码无效
+        }
+        
+        VerificationCode verificationCode = verificationCodeOpt.get();
+        
+        // 检查验证码是否过期
+        if (LocalDateTime.now().isAfter(verificationCode.getExpiryTime())) {
+            logger.info("登录失败：验证码已过期 - {}", request.getEmail());
+            return null; // 验证码已过期
+        }
+        
+        // 验证通过，标记验证码为已使用
+        verificationCode.setUsed(true);
+        verificationCodeRepository.save(verificationCode);
+        
+        logger.info("用户 {} 通过三重验证登录成功", user.getUsername());
+        return generateAuthResponse(user);
+    }
+
 }

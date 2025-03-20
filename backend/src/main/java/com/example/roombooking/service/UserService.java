@@ -68,4 +68,13 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
+    /**
+     * 通过邮箱查询用户
+     * @param email 用户邮箱
+     * @return 用户Optional
+     */
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }
