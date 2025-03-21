@@ -31,15 +31,20 @@ public class NotificationService {
         return notificationRepository.findByStatus(Notification.NotificationStatus.pending);
     }
 
+    // 仅更新相关方法，不修改整个类
+
     public void createBookingNotification(Booking booking) {
+        String weekAndDayInfo = "周" + booking.getWeekNumber() + "，星期" + booking.getDayOfWeek();
+        String timeInfo = booking.getStartTime() + " 至 " + booking.getEndTime();
+        
         // create email notification
         Notification emailNotification = new Notification();
         emailNotification.setBooking(booking);
         emailNotification.setNotificationType(Notification.NotificationType.email);
         emailNotification.setStatus(Notification.NotificationStatus.pending);
-        emailNotification.setMessage("Your room booking has been " + booking.getStatus() + ". " +
-                "Room details: " + booking.getRoom().getName() + ", " +
-                "from " + booking.getStartTime() + " to " + booking.getEndTime() + ".");
+        emailNotification.setMessage("您的房间预订状态为 " + booking.getStatus() + "。" +
+                "房间详情: " + booking.getRoom().getName() + "，" +
+                weekAndDayInfo + "，" + timeInfo);
         
         notificationRepository.save(emailNotification);
         
@@ -48,21 +53,24 @@ public class NotificationService {
         smsNotification.setBooking(booking);
         smsNotification.setNotificationType(Notification.NotificationType.sms);
         smsNotification.setStatus(Notification.NotificationStatus.pending);
-        smsNotification.setMessage("Your room booking has been " + booking.getStatus() + ". " +
-                "Room: " + booking.getRoom().getName());
+        smsNotification.setMessage("您的房间预订状态为 " + booking.getStatus() + "。" +
+                "房间: " + booking.getRoom().getName() + ", " + weekAndDayInfo);
         
         notificationRepository.save(smsNotification);
     }
 
     public void createApprovalNotification(Booking booking) {
+        String weekAndDayInfo = "周" + booking.getWeekNumber() + "，星期" + booking.getDayOfWeek();
+        String timeInfo = booking.getStartTime() + " 至 " + booking.getEndTime();
+        
         // create email notification
         Notification emailNotification = new Notification();
         emailNotification.setBooking(booking);
         emailNotification.setNotificationType(Notification.NotificationType.email);
         emailNotification.setStatus(Notification.NotificationStatus.pending);
-        emailNotification.setMessage("Your room booking has been confirmed. " +
-                "Room details: " + booking.getRoom().getName() + ", " +
-                "from " + booking.getStartTime() + " to " + booking.getEndTime() + ".");
+        emailNotification.setMessage("您的房间预订已确认。" +
+                "房间详情: " + booking.getRoom().getName() + "，" +
+                weekAndDayInfo + "，" + timeInfo);
         
         notificationRepository.save(emailNotification);
         
@@ -71,8 +79,7 @@ public class NotificationService {
         smsNotification.setBooking(booking);
         smsNotification.setNotificationType(Notification.NotificationType.sms);
         smsNotification.setStatus(Notification.NotificationStatus.pending);
-        smsNotification.setMessage("Your room booking has been confirmed. " +
-                "Room: " + booking.getRoom().getName());
+        smsNotification.setMessage("您的房间预订已确认。房间: " + booking.getRoom().getName() + ", " + weekAndDayInfo);
         
         notificationRepository.save(smsNotification);
     }

@@ -3,7 +3,7 @@ package com.example.roombooking.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 
 @Entity
 @Table(name = "schedule")
@@ -16,20 +16,31 @@ public class Schedule {
     
     @ManyToOne
     @JoinColumn(name = "room_id")
-    @JsonIgnore
     private Room room;
     
+    @Column(name = "week_number")
+    private Integer weekNumber;
+    
+    @Column(name = "weekday")
+    private Integer weekday;
+    
+    @Column(name = "period")
+    private Integer period;
+    
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    private LocalTime startTime;
     
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    private LocalTime endTime;
     
-    private String dayOfWeek;
+    @Column(name = "course_name")
+    private String courseName;
     
-    private Boolean isAvailable;
+    @Column(name = "instructor")
+    private String instructor;
     
-    private String usage;
+    @Column(name = "group_id")
+    private String groupId;
 
     // Getters and Setters
     public Long getId() {
@@ -48,36 +59,68 @@ public class Schedule {
         this.room = room;
     }
     
-    public String getDayOfWeek() {
-        return dayOfWeek;
+    public Integer getWeekNumber() {
+        return weekNumber;
     }
     
-    public void setDayOfWeek(String dayOfWeek) {
-        this.dayOfWeek = dayOfWeek;
+    public void setWeekNumber(Integer weekNumber) {
+        this.weekNumber = weekNumber;
     }
     
-    public LocalDateTime getStartTime() {
+    public Integer getWeekday() {
+        return weekday;
+    }
+    
+    public void setWeekday(Integer weekday) {
+        this.weekday = weekday;
+    }
+    
+    public Integer getPeriod() {
+        return period;
+    }
+    
+    public void setPeriod(Integer period) {
+        this.period = period;
+    }
+    
+    public LocalTime getStartTime() {
         return startTime;
     }
     
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
     
-    public LocalDateTime getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
     
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
     }
     
-    public Boolean getIsAvailable() {
-        return isAvailable;
+    public String getCourseName() {
+        return courseName;
     }
     
-    public void setIsAvailable(Boolean isAvailable) {
-        this.isAvailable = isAvailable;
+    public void setCourseName(String courseName) {
+        this.courseName = courseName;
+    }
+    
+    public String getInstructor() {
+        return instructor;
+    }
+    
+    public void setInstructor(String instructor) {
+        this.instructor = instructor;
+    }
+    
+    public String getGroupId() {
+        return groupId;
+    }
+    
+    public void setGroupId(String groupId) {
+        this.groupId = groupId;
     }
     
     @Override
@@ -98,10 +141,14 @@ public class Schedule {
     public String toString() {
         return "Schedule{" +
                "id=" + id +
-               ", dayOfWeek='" + dayOfWeek + '\'' +
+               ", weekNumber=" + weekNumber +
+               ", weekday=" + weekday +
+               ", period=" + period +
                ", startTime=" + startTime +
                ", endTime=" + endTime +
-               ", isAvailable=" + isAvailable +
+               ", courseName='" + courseName + '\'' +
+               ", instructor='" + instructor + '\'' +
+               ", groupId='" + groupId + '\'' +
                '}';
     }
 }

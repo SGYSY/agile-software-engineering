@@ -3,12 +3,10 @@ package com.example.roombooking.controller;
 import com.example.roombooking.entity.Schedule;
 import com.example.roombooking.service.ScheduleService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,28 +36,66 @@ public class ScheduleController {
         return ResponseEntity.ok(schedules);
     }
     
-    @GetMapping("/room/{roomId}/time-range")
-    public ResponseEntity<List<Schedule>> getSchedulesByRoomAndTimeRange(
+    @GetMapping("/current-week")
+    public ResponseEntity<List<Schedule>> getCurrentWeekSchedules() {
+        List<Schedule> schedules = scheduleService.getCurrentWeekSchedules();
+        return ResponseEntity.ok(schedules);
+    }
+    
+    @GetMapping("/room/{roomId}/current-week")
+    public ResponseEntity<List<Schedule>> getCurrentWeekSchedulesByRoom(@PathVariable Long roomId) {
+        List<Schedule> schedules = scheduleService.getCurrentWeekSchedulesByRoom(roomId);
+        return ResponseEntity.ok(schedules);
+    }
+    
+    @GetMapping("/room/{roomId}/week/{weekNumber}/day/{weekday}")
+    public ResponseEntity<List<Schedule>> getSchedulesByRoomAndWeekAndDay(
             @PathVariable Long roomId,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
-            @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end) {
-        List<Schedule> schedules = scheduleService.getSchedulesByRoomAndTimeRange(roomId, start, end);
+            @PathVariable Integer weekNumber,
+            @PathVariable Integer weekday) {
+        List<Schedule> schedules = scheduleService.getSchedulesByRoomAndWeekAndDay(roomId, weekNumber, weekday);
+        return ResponseEntity.ok(schedules);
+    }
+    
+    @GetMapping("/search/instructor")
+    public ResponseEntity<List<Schedule>> searchByInstructor(@RequestParam String name) {
+        List<Schedule> schedules = scheduleService.searchByInstructor(name);
+        return ResponseEntity.ok(schedules);
+    }
+    
+    @GetMapping("/search/course")
+    public ResponseEntity<List<Schedule>> searchByCourseName(@RequestParam String name) {
+        List<Schedule> schedules = scheduleService.searchByCourseName(name);
+        return ResponseEntity.ok(schedules);
+    }
+    
+    @GetMapping("/group/{groupId}")
+    public ResponseEntity<List<Schedule>> getSchedulesByGroupId(@PathVariable String groupId) {
+        List<Schedule> schedules = scheduleService.getSchedulesByGroupId(groupId);
         return ResponseEntity.ok(schedules);
     }
     
     @PostMapping
     public ResponseEntity<Schedule> createSchedule(@RequestBody Schedule schedule) {
-        Schedule createdSchedule = scheduleService.createSchedule(schedule);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdSchedule);
+        try {
+            Schedule createdSchedule = scheduleService.createSchedule(schedule);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdSchedule);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
+        }
     }
     
     @PutMapping("/{id}")
     public ResponseEntity<Schedule> updateSchedule(@PathVariable Long id, @RequestBody Schedule schedule) {
-        Schedule updatedSchedule = scheduleService.updateSchedule(id, schedule);
-        if (updatedSchedule == null) {
-            return ResponseEntity.notFound().build();
+        try {
+            Schedule updatedSchedule = scheduleService.updateSchedule(id, schedule);
+            if (updatedSchedule == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(updatedSchedule);
+        } catch (RuntimeException e) {
+            return ResponseEntity.badRequest().build();
         }
-        return ResponseEntity.ok(updatedSchedule);
     }
     
     @DeleteMapping("/{id}")
