@@ -3,7 +3,7 @@ package com.example.roombooking.entity;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.Data;
-import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Set;
 
 @Entity
@@ -24,10 +24,16 @@ public class Booking {
     private Room room;
     
     @Column(name = "start_time")
-    private LocalDateTime startTime;
+    private LocalTime startTime;
     
     @Column(name = "end_time")
-    private LocalDateTime endTime;
+    private LocalTime endTime;
+    
+    @Column(name = "week_number")
+    private Integer weekNumber;
+    
+    @Column(name = "day_of_week")
+    private Integer dayOfWeek;
     
     @Enumerated(EnumType.STRING)
     private BookingStatus status;
@@ -68,20 +74,36 @@ public class Booking {
         this.room = room;
     }
     
-    public LocalDateTime getStartTime() {
+    public LocalTime getStartTime() {
         return startTime;
     }
     
-    public void setStartTime(LocalDateTime startTime) {
+    public void setStartTime(LocalTime startTime) {
         this.startTime = startTime;
     }
     
-    public LocalDateTime getEndTime() {
+    public LocalTime getEndTime() {
         return endTime;
     }
     
-    public void setEndTime(LocalDateTime endTime) {
+    public void setEndTime(LocalTime endTime) {
         this.endTime = endTime;
+    }
+    
+    public Integer getWeekNumber() {
+        return weekNumber;
+    }
+    
+    public void setWeekNumber(Integer weekNumber) {
+        this.weekNumber = weekNumber;
+    }
+    
+    public Integer getDayOfWeek() {
+        return dayOfWeek;
+    }
+    
+    public void setDayOfWeek(Integer dayOfWeek) {
+        this.dayOfWeek = dayOfWeek;
     }
     
     public BookingStatus getStatus() {
@@ -127,10 +149,16 @@ public class Booking {
     public String toString() {
         return "Booking{" +
                "id=" + id +
+               ", weekNumber=" + weekNumber +
+               ", dayOfWeek=" + dayOfWeek +
                ", startTime=" + startTime +
                ", endTime=" + endTime +
                ", status=" + status +
                ", conflictDetected=" + conflictDetected +
                '}';
+    }
+
+    public boolean isConflictDetected() {
+        return conflictDetected;
     }
 }

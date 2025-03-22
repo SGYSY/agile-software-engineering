@@ -2,13 +2,15 @@ package com.example.roombooking.controller;
 
 import com.example.roombooking.entity.Booking;
 import com.example.roombooking.service.BookingService;
+import com.example.roombooking.service.WeekService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -18,6 +20,9 @@ public class BookingController {
 
     @Autowired
     private BookingService bookingService;
+    
+    @Autowired
+    private WeekService weekService;
 
     @GetMapping
     public ResponseEntity<List<Booking>> getAllBookings() {
@@ -59,13 +64,41 @@ public class BookingController {
         List<Booking> bookings = bookingService.getUserFutureBookings(userId);
         return ResponseEntity.ok(bookings);
     }
-
-    @PostMapping
-    public ResponseEntity<Booking> createBooking(@RequestBody Booking booking) {
-        Booking createdBooking = bookingService.createBooking(booking);
-        return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
+    
+    @GetMapping("/week/{weekNumber}")
+    public ResponseEntity<List<Booking>> getBookingsByWeek(@PathVariable Integer weekNumber) {
+        List<Booking> bookings = bookingService.getBookingsByWeek(weekNumber);
+        return ResponseEntity.ok(bookings);
+    }
+    
+    @GetMapping("/room/{roomId}/week/{weekNumber}/day/{dayOfWeek}")
+    public ResponseEntity<List<Booking>> getBookingsByRoomAndDate(
+            @PathVariable Long roomId,
+            @PathVariable Integer weekNumber,
+            @PathVariable Integer dayOfWeek) {
+        List<Booking> bookings = bookingService.getBookingsByRoomAndDate(roomId, weekNumber, dayOfWeek);
+        return ResponseEntity.ok(bookings);
+    }
+    
+    @GetMapping("/current-week")
+    public ResponseEntity<Integer> getCurrentWeek() {
+        Integer currentWeek = weekService.getCurrentWeekNumber();
+        return ResponseEntity.ok(currentWeek);
     }
 
+    @PostMapping
+    public ResponseEntity<?> createBooking(@RequestBody Booking booking) {
+        try {
+            Booking createdBooking = bookingService.createBooking(booking);
+            return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
+        } catch (Exception e) {
+            // 返回详细错误信息
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "创建预订失败");
+            errorResponse.put("message", e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
+        }
+    }
     @PutMapping("/{id}")
     public ResponseEntity<Booking> updateBooking(@PathVariable Long id, @RequestBody Booking booking) {
         // make sure ID consistence
