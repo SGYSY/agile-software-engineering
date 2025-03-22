@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Table, Modal, Tag, Card } from "antd";
+import { Table, Modal, Tag, Card, Button, message } from "antd";
 import moment from "moment";
-import { getRooms, getBookings } from "../utils/demoData";
 
-// 固定时间段
+// 固定时间段（对应 schedule 的 period 字段，假设 period 从 1 开始）
 const timeSlots = [
   "08:00 - 08:45",
   "08:55 - 09:40",
@@ -18,150 +17,112 @@ const timeSlots = [
   "19:55 - 20:40",
 ];
 
-// 星期数组
+// 星期数组与对应的数字（API 返回 weekday：1=Monday,...,7=Sunday）
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+const weekdayMap = {
+  Monday: 1,
+  Tuesday: 2,
+  Wednesday: 3,
+  Thursday: 4,
+  Friday: 5,
+  Saturday: 6,
+  Sunday: 7,
+};
 
 const RoomSchedule = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const userRole = localStorage.getItem("userRole"); // 获取当前用户角色
+  const userRole = localStorage.getItem("userRole");
 
-  const [room, setRoom] = useState(null);
-  const [bookings, setBookings] = useState([]);
-  const [selectedBooking, setSelectedBooking] = useState(null);
+  const [schedules, setSchedules] = useState([]);
+  const [selectedSchedule, setSelectedSchedule] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
+  // 当前周次，默认当前 ISO 周数
+  const [currentWeek, setCurrentWeek] = useState(moment().isoWeek());
 
   useEffect(() => {
-    // 获取当前房间信息
-    const allRooms = getRooms();
-    const currentRoom = allRooms.find((r) => r.id === roomId);
-    setRoom(currentRoom);
+    // 调用 API 获取指定房间的课程安排
+    const fetchSchedules = async () => {
+      try {
+        const response = await fetch(`http://47.113.186.66:8080/api/schedules/room/${roomId}`);
+        if (!response.ok) {
+          throw new Error("Network response was not ok");
+        }
+        const data = await response.json();
+        console.log("Schedules data:", data);
+        setSchedules(data);
+      } catch (error) {
+        console.error("Error fetching schedules:", error);
+        message.error("获取课程安排失败");
+      }
+    };
 
-    // 获取当前房间的所有未被拒绝的预约（包括 pending 与 approved）
-    const roomBookings = getBookings().filter(
-      (b) => b.roomId === roomId && b.status !== "rejected"
-    );
-    setBookings(roomBookings);
+    fetchSchedules();
   }, [roomId]);
 
-  if (!room) {
-    return <p style={{ textAlign: "center", marginTop: 50 }}>Room not found</p>;
-  }
+  // 如果接口返回数据不为空，从第一个 schedule 中获取房间信息，否则使用 roomId 作为默认信息
+  const roomInfo = schedules.length > 0 ? schedules[0].room : { id: roomId, name: `Room ${roomId}` };
 
-  // 计算表格数据：对每个时段，每个星期几，整理该单元格的预约信息
-  const scheduleData = timeSlots.map((time) => {
-    const row = { key: time, time };
+  // 构造课表数据：每个时间段为一行，每个星期为一列，只显示当前周的记录
+  const scheduleData = timeSlots.map((slot, index) => {
+    const period = index + 1; // 对应 schedule.period
+    const row = { key: slot, time: slot };
     weekdays.forEach((day) => {
-      // 找到同一 weekday + timeSlot 的所有预约
-      const slotBookings = bookings.filter(
-        (b) => b.weekday === day && b.timeSlot === time
+      const dayNumber = weekdayMap[day];
+      // 筛选出当前周、该时间段、该星期的记录（若有重复，只取第一条）
+      const cellSchedules = schedules.filter(
+        (s) => s.period === period && s.weekday === dayNumber && s.weekNumber === currentWeek
       );
-      // 判断是否有教师锁定
-      const locked = slotBookings.some((b) => b.lock === true);
-      // 计算已审批的总人数
-      const approvedBookings = slotBookings.filter((b) => b.status === "approved");
-      const totalApproved = approvedBookings.reduce((sum, b) => sum + (b.participants || 0), 0);
-      // 将所有数据存入 cellData 中
-      row[day] = { slotBookings, locked, totalApproved };
+      row[day] = cellSchedules.length > 0 ? [cellSchedules[0]] : [];
     });
     return row;
   });
 
-  // 点击预约标签显示预约详情；只有管理员可查看详情，老师和学生点击则提示无权限
-  const handleBookingClick = (booking) => {
+  const handleScheduleClick = (schedule) => {
     if (userRole !== "admin") {
       Modal.info({
         title: "No Permission",
-        content: "You do not have permission to view booking details."
+        content: "You do not have permission to view schedule details.",
       });
       return;
     }
-    setSelectedBooking(booking);
+    setSelectedSchedule(schedule);
     setIsModalVisible(true);
   };
 
-  // 点击单元格（空白或未满）则跳转到 Booking 页面，传递日期和时段参数
   const handleCellClick = (cellData, record, day) => {
-    if (!cellData) return;
-
-    // 如果有锁定，则提示不可预约
-    if (cellData.locked && cellData.slotBookings.length > 0) {
-      Modal.info({
-        title: "Cannot Book",
-        content: "This timeslot has been locked by a teacher."
-      });
-      return;
+    // 如果单元格为空，则允许预订
+    if (!cellData || cellData.length === 0) {
+      const targetDate = getDateOfNextWeekday(day);
+      const dateStr = moment(targetDate).format("YYYY-MM-DD");
+      navigate(`/booking/${roomId}?date=${dateStr}&timeSlot=${record.time}`);
     }
-    // 如果已有预约且总人数达到房间容量，则提示已满
-    if (cellData.slotBookings.length > 0 && cellData.totalApproved >= room.capacity) {
-      Modal.info({
-        title: "Cannot Book",
-        content: "This timeslot is already full."
-      });
-      return;
-    }
-    // 否则跳转到 Booking 页面
-    const targetDate = getDateOfNextWeekday(day);
-    const dateStr = moment(targetDate).format("YYYY-MM-DD");
-    navigate(`/booking/${roomId}?date=${dateStr}&timeSlot=${record.time}`);
   };
 
-  // 简单示例：将 weekday 转换为最近的那一天的日期
+  // 计算下一个指定星期的日期
   const getDateOfNextWeekday = (weekday) => {
-    const weekdayMap = {
-      Monday: 1,
-      Tuesday: 2,
-      Wednesday: 3,
-      Thursday: 4,
-      Friday: 5,
-      Saturday: 6,
-      Sunday: 0
-    };
     const targetDay = weekdayMap[weekday];
     const now = moment();
-    let currentDay = now.day();
-    if (currentDay === targetDay) {
-      return now.add(7, "days").toDate();
-    } else {
-      let diff = targetDay - currentDay;
-      if (diff < 0) diff += 7;
-      return now.add(diff, "days").toDate();
-    }
+    let diff = targetDay - now.isoWeekday();
+    if (diff < 0) diff += 7;
+    return now.add(diff, "days").toDate();
   };
 
-  // 构建表格列
   const columns = [
     {
       title: "Time Slot",
       dataIndex: "time",
       key: "time",
-      width: 120
+      width: 120,
+      fixed: "left",
+      render: (text) => <span style={{ fontWeight: "bold", color: "#165DFF" }}>{text}</span>,
     },
     ...weekdays.map((day) => ({
       title: day,
       dataIndex: day,
       key: day,
       render: (cellData, record) => {
-        if (!cellData) return null;
-        const { slotBookings, locked, totalApproved } = cellData;
-        // 如果有预约，则显示每条预约的 Tag
-        if (slotBookings.length > 0) {
-          return slotBookings.map((booking) => {
-            const tagColor = booking.status === "pending" ? "orange" : "blue";
-            const tagText = booking.status === "pending" ? "Pending Approval" : "Booked";
-            return (
-              <Tag
-                key={booking.id}
-                color={tagColor}
-                style={{ cursor: "pointer", display: "block", marginBottom: 4 }}
-                onClick={() => handleBookingClick(booking)}
-              >
-                {tagText}
-              </Tag>
-            );
-          });
-        } else {
-          // 没有预约，则显示 "Free" Tag；点击跳转到 Booking 页面
+        if (!cellData || cellData.length === 0) {
           return (
             <Tag
               color="green"
@@ -171,41 +132,69 @@ const RoomSchedule = () => {
               Free
             </Tag>
           );
+        } else {
+          const schedule = cellData[0];
+          return (
+            <Tag
+              key={schedule.id}
+              color="blue"
+              style={{ cursor: "pointer", display: "block", marginBottom: 4 }}
+              onClick={() => handleScheduleClick(schedule)}
+            >
+              {schedule.courseName}
+            </Tag>
+          );
         }
       },
-      // 同时让整列空白单元格也支持点击预约
-      onCell: (record) => ({
-        onClick: () => handleCellClick(record[day], record, day)
-      })
-    }))
+    })),
   ];
 
   return (
-    <Card title={`Room ${roomId} Schedule`} style={{ padding: 20 }}>
+    <Card
+      title={`Schedule for ${roomInfo.name} - Week ${currentWeek}`}
+      style={{
+        padding: 20,
+        background: "#FFFFFF",
+        border: "1px solid #E6E6E6",
+        borderRadius: 8,
+        boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)",
+      }}
+      headStyle={{ background: "#E8F3FF", color: "#165DFF", fontWeight: "bold" }}
+    >
+      {/* 周次切换控件 */}
+      <div style={{ marginBottom: 20, textAlign: "center" }}>
+        <Button onClick={() => setCurrentWeek(currentWeek - 1)} style={{ marginRight: 10 }}>
+          Previous Week
+        </Button>
+        <span style={{ fontWeight: "bold" }}>Week {currentWeek}</span>
+        <Button onClick={() => setCurrentWeek(currentWeek + 1)} style={{ marginLeft: 10 }}>
+          Next Week
+        </Button>
+      </div>
       <Table
         columns={columns}
         dataSource={scheduleData}
         pagination={false}
         bordered
         size="middle"
+        style={{ borderRadius: 8 }}
       />
       <Modal
-        title="Booking Details"
+        title="Schedule Details"
         open={isModalVisible}
         onCancel={() => setIsModalVisible(false)}
         footer={null}
       >
-        {selectedBooking && (
+        {selectedSchedule && (
           <div>
-            <p><strong>ID:</strong> {selectedBooking.id}</p>
-            <p><strong>Room ID:</strong> {selectedBooking.roomId}</p>
-            <p><strong>User:</strong> {selectedBooking.user}</p>
-            <p><strong>Start Time:</strong> {selectedBooking.startTime}</p>
-            <p><strong>Weekday:</strong> {selectedBooking.weekday}</p>
-            <p><strong>Time Slot:</strong> {selectedBooking.timeSlot}</p>
-            <p><strong>Participants:</strong> {selectedBooking.participants}</p>
-            <p><strong>Status:</strong> {selectedBooking.status}</p>
-            <p><strong>Lock Room:</strong> {selectedBooking.lock ? "Yes" : "No"}</p>
+            <p><strong>ID:</strong> {selectedSchedule.id}</p>
+            <p><strong>Course:</strong> {selectedSchedule.courseName}</p>
+            <p><strong>Instructor:</strong> {selectedSchedule.instructor}</p>
+            <p><strong>Group:</strong> {selectedSchedule.groupId}</p>
+            <p>
+              <strong>Time:</strong> {selectedSchedule.startTime} - {selectedSchedule.endTime}
+            </p>
+            <p><strong>Week Number:</strong> {selectedSchedule.weekNumber}</p>
           </div>
         )}
       </Modal>

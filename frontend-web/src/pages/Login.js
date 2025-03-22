@@ -1,119 +1,226 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, Form, Input, Button, message } from "antd";
+import { Form, Input, Button, message, Tabs } from "antd";
+import axios from "axios";
 
 const Login = () => {
   const [loading, setLoading] = useState(false);
+  const [loginMethod, setLoginMethod] = useState("password");
   const navigate = useNavigate();
+  const [form] = Form.useForm();
 
-  const onFinish = (values) => {
+
+  const onFinish = async (values) => {
     setLoading(true);
     const { email, password } = values;
 
-    // 假密码验证
-    if (password !== "password123") {
-      message.error("Incorrect password.");
+    try {
+      const response = await axios.post("http://47.113.186.66:8080/api/auth/login", {
+        username: email,
+        password: password,
+      });
+      
+      message.success("Login successful!");
+      
+      let role = "";
+
+      if(response.data.role === "Administrator")
+        role = "admin";
+      else if(response.data.role === "Student")
+        role = "student";
+      else if(response.data.role === "Teacher")
+        role = "teacher";
+      localStorage.setItem("userToken", response.data.token);
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("userId", response.data.userId);
+      navigate("/");
+    } catch (error) {
+      message.error("Login failed. Please check your credentials.");
+    } finally {
       setLoading(false);
-      return;
     }
-
-    const lowerEmail = email.toLowerCase();
-
-    // 根据邮箱映射角色及显示名称
-    let role = "";
-    let displayName = "";
-    if (lowerEmail === "admin@dundee.ac.uk") {
-      role = "admin";
-      displayName = "Admin";
-    } else if (lowerEmail === "teacher@dundee.ac.uk") {
-      role = "teacher";
-      displayName = "Teacher";
-    } else if (lowerEmail === "2543301@dundee.ac.uk") {
-      role = "student";
-      displayName = "Siyu Yan";
-    } else {
-      message.error("Invalid Email or unauthorized user.");
-      setLoading(false);
-      return;
-    }
-
-    localStorage.setItem("userRole", role);
-    localStorage.setItem("displayName", displayName);
-
-    message.success(`Login successful! Welcome, ${displayName}`);
-
-    setTimeout(() => {
-      if (role === "admin") {
-        navigate("/admin");
-      } else {
-        navigate("/");
-      }
-      setLoading(false);
-    }, 500);
   };
 
-  // 自定义验证函数：统一校验必填、格式和后缀
   const validateDundeeEmail = (_, value) => {
-    if (!value) {
-      return Promise.reject("Please enter your email address");
-    }
-    // 简易邮箱格式检测
+    if (!value) return Promise.reject("Please enter your email address");
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(value)) {
+    if (!emailRegex.test(value))
       return Promise.reject("Please enter a valid email address");
-    }
-    // 后缀判断
-    if (!value.toLowerCase().endsWith("dundee.ac.uk")) {
+    if (!value.toLowerCase().endsWith("dundee.ac.uk"))
       return Promise.reject("Please enter a valid Dundee email address");
-    }
     return Promise.resolve();
   };
+
+  const handleSendCode = async () => {
+    try {
+      const email = form.getFieldValue("email");
+      console.log(email);
+      await validateDundeeEmail(null, email); // 验证格式
+      await axios.post(
+        "http://47.113.186.66:8080/api/auth/send-code",
+        { email },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );      
+      message.success("Verification code sent. It’s valid for 10 minutes.");
+    } catch (error) {
+      message.error(error.response?.data?.message || "Failed to send code. Please check your email.");
+    }
+  };
+
+  const handleVerifyLogin = async () => {
+    try {
+      const values = await form.validateFields(); // 获取 email 和 code
+      const { email, code } = values;
+  
+      const response = await axios.post(
+        "http://47.113.186.66:8080/api/auth/verify-code",
+        { email, code },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
+        }
+      );
+  
+      message.success("Login successful!");
+  
+      let role = "";
+  
+      if (response.data.role === "Administrator") role = "admin";
+      else if (response.data.role === "Student") role = "student";
+      else if (response.data.role === "Teacher") role = "teacher";
+      else if (response.data.role === "Faculty") role = "teacher"; // ← 这里根据接口响应映射角色
+  
+      localStorage.setItem("userToken", response.data.token);
+      localStorage.setItem("userRole", role);
+      localStorage.setItem("userId", response.data.userId);
+      navigate("/");
+    } catch (error) {
+      console.error("Verify code error:", error);
+      message.error(
+        error.response?.data?.message || "Verification failed. Please check the code."
+      );
+    }
+  };
+  
+  
 
   return (
     <div
       style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
         height: "100vh",
         backgroundImage: "url(/login.jpg)",
         backgroundSize: "cover",
         backgroundPosition: "center",
+        display: "flex",
+        justifyContent: "flex-start",
+        alignItems: "center",
+        flexDirection: "column",
+        position: "relative",
+        overflow: "hidden",
       }}
     >
-      <Card
-        title="DIICSU Room Booking Login"
+      <div
         style={{
-          maxWidth: 400,
-          textAlign: "center",
-          boxShadow: "0 4px 8px rgba(0, 0, 0, 0.15)",
-          borderRadius: 8,
+          position: "absolute",
+          top: 0,
+          left: 0,
+          width: "100%",
+          height: "100%",
+          backgroundColor: "rgba(255,255,255,0.9)",
+          clipPath: "ellipse(100% 40% at 50% 20%)",
+          zIndex: 1,
+        }}
+      />
+
+      <div
+        style={{
+          zIndex: 2,
+          // padding: "40px 30px",
+          width: 400,
+          // marginTop: "10vh",
         }}
       >
-        <Form layout="vertical" onFinish={onFinish} initialValues={{ email: "", password: "" }}>
-          <Form.Item
-            label="Email"
-            name="email"
-            rules={[{ validator: validateDundeeEmail }]}
-          >
-            <Input placeholder="Enter Email (must be Dundee email)" />
-          </Form.Item>
+        <h2 style={{ textAlign: "center", marginBottom: 30, color: "#4161d9" }}>
+          DIICSU Room Booking
+        </h2>
+        <Tabs
+          activeKey={loginMethod}
+          onChange={setLoginMethod}
+          centered
+          items={[
+            { key: "password", label: "Password Login" },
+            { key: "emailCode", label: "Email Code Login" },
+          ]}
+        />
+        <Form
+  form={form}
+  layout="vertical"
+  onFinish={onFinish}
+  style={{
+    background: "rgba(255,255,255,0.9)",
+    padding: "30px",
+    borderRadius: "12px",
+    boxShadow: "0 8px 20px rgba(0,0,0,0.1)",
+  }}
+>
+  {loginMethod === "password" ? (
+    <>
+      <Form.Item label="Email" name="email" rules={[{ validator: validateDundeeEmail }]}>
+        <Input placeholder="Enter Dundee email" />
+      </Form.Item>
 
-          <Form.Item
-            label="Password"
-            name="password"
-            rules={[{ required: true, message: "Please enter your password" }]}
-          >
-            <Input.Password placeholder="Enter Password (e.g. password123)" />
-          </Form.Item>
+      <Form.Item
+        label="Password"
+        name="password"
+        rules={[{ required: true, message: "Please enter your password" }]}
+      >
+        <Input.Password placeholder="Enter your password" />
+      </Form.Item>
 
-          <Form.Item>
-            <Button type="primary" block htmlType="submit" loading={loading}>
-              Login
-            </Button>
-          </Form.Item>
-        </Form>
-      </Card>
+      <Form.Item>
+        <Button
+          type="primary"
+          htmlType="submit"
+          block
+          loading={loading}
+          style={{ backgroundColor: "#4161d9", borderColor: "#4161d9" }}
+        >
+          Login
+        </Button>
+      </Form.Item>
+    </>
+  ) : (
+    <>
+      <Form.Item label="Email" name="email" rules={[{ validator: validateDundeeEmail }]}>
+        <Input placeholder="Enter Dundee email" />
+      </Form.Item>
+      <Form.Item
+        label="Verification Code"
+        name="code"
+        rules={[{ required: true, message: "Enter the code sent to your email" }]}
+      >
+        <div style={{ display: "flex", gap: "10px" }}>
+          <Input placeholder="Enter code" style={{ flex: 1 }} />
+          <Button type="primary" onClick={handleSendCode}>
+            Send Code
+          </Button>
+        </div>
+      </Form.Item>
+      <Form.Item>
+      <Button type="primary" block onClick={handleVerifyLogin}>
+          Verify & Login
+      </Button>
+      </Form.Item>
+    </>
+  )}
+</Form>
+
+      </div>
     </div>
   );
 };

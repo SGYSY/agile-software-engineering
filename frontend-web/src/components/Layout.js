@@ -1,6 +1,5 @@
-import React, { useState } from "react";
-import { Layout, Menu, Button } from "antd";
-import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { Layout, Menu, Button, Badge, Popover, List } from "antd";
 import {
   HomeOutlined,
   ScheduleOutlined,
@@ -11,19 +10,33 @@ import {
   HistoryOutlined,
   ApartmentOutlined,
   BarChartOutlined,
+  BellOutlined,
 } from "@ant-design/icons";
+import { Link, Outlet, useLocation, useNavigate } from "react-router-dom";
 
 const { Header, Sider, Content, Footer } = Layout;
+const API_BASE = "http://47.113.186.66:8080/api";
 
 const MainLayout = () => {
-  const [collapsed, setCollapsed] = useState(false); // 管理 Sider 是否展开
+  const [collapsed, setCollapsed] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
   const userRole = localStorage.getItem("userRole");
 
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    // 获取 pending 通知
+    fetch(`${API_BASE}/notifications/pending`)
+      .then((res) => res.json())
+      .then((data) => setNotifications(data || []))
+      .catch((err) => console.error("Failed to fetch notifications:", err));
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("displayName");
+    localStorage.removeItem("userId");
     navigate("/login");
   };
 
@@ -32,11 +45,6 @@ const MainLayout = () => {
       key: "/",
       icon: <HomeOutlined />,
       label: <Link to="/">Room List</Link>,
-    },
-    {
-      key: "/my-bookings",
-      icon: <ScheduleOutlined />,
-      label: <Link to="/my-bookings">My Bookings</Link>,
     },
   ];
 
@@ -53,19 +61,9 @@ const MainLayout = () => {
         label: <Link to="/admin">Booking Approvals</Link>,
       },
       {
-        key: "/admin/bookings",
-        icon: <CalendarOutlined />,
-        label: <Link to="/admin/bookings">Booking Schedule</Link>,
-      },
-      {
         key: "/admin/users",
         icon: <TeamOutlined />,
         label: <Link to="/admin/users">User Information</Link>,
-      },
-      {
-        key: "/admin/history",
-        icon: <HistoryOutlined />,
-        label: <Link to="/admin/history">Booking History</Link>,
       },
       {
         key: "/admin/rooms",
@@ -74,6 +72,24 @@ const MainLayout = () => {
       }
     );
   }
+
+  const notificationContent = (
+    <div style={{ maxWidth: 300 }}>
+      {notifications.length === 0 ? (
+        <p style={{ margin: 0 }}>No new notifications.</p>
+      ) : (
+        <List
+          size="small"
+          dataSource={notifications}
+          renderItem={(item) => (
+            <List.Item style={{ whiteSpace: "normal" }}>
+              {item.message}
+            </List.Item>
+          )}
+        />
+      )}
+    </div>
+  );
 
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#F7F8FA" }}>
@@ -87,7 +103,6 @@ const MainLayout = () => {
           boxShadow: "2px 0 8px rgba(0, 0, 0, 0.1)",
         }}
       >
-        {/* 根据collapsed状态切换 logo */}
         <div
           style={{
             textAlign: "center",
@@ -95,11 +110,11 @@ const MainLayout = () => {
           }}
         >
           <img
-            src={collapsed ? "/logo2.jpg" : "/logo1.jpg"} // 切换 logo
+            src={collapsed ? "/logo2.jpg" : "/logo1.jpg"}
             alt="University of Dundee"
             style={{
-              width: collapsed ? "35px" : "150px", // collapsed 时设置 logo2 为 50px，其他时 logo1 为 150px
-              height: "50px", // 设置 logo 的高度为 50px
+              width: collapsed ? "35px" : "150px",
+              height: "50px",
             }}
           />
         </div>
@@ -112,12 +127,10 @@ const MainLayout = () => {
             padding: "16px 0",
             backgroundColor: "#FFFFFF",
           }}
-          onSelect={(item) => {}}
         />
       </Sider>
 
       <Layout>
-        {/* 头部用户信息和登出按钮调整到右侧 */}
         <Header
           style={{
             background: "#FFFFFF",
@@ -126,8 +139,26 @@ const MainLayout = () => {
             borderBottom: "1px solid #F0F0F0",
           }}
         >
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "flex-end" }}>
-            <UserOutlined style={{ fontSize: 20, marginRight: 10, color: "#4161d9" }} />
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "flex-end",
+              gap: 16,
+            }}
+          >
+            <Popover
+              title="Notifications"
+              content={notificationContent}
+              trigger="click"
+              placement="bottomRight"
+            >
+              <Badge dot={notifications.length > 0}>
+                <BellOutlined style={{ fontSize: 20, color: "#4161d9", cursor: "pointer" }} />
+              </Badge>
+            </Popover>
+
+            <UserOutlined style={{ fontSize: 20, color: "#4161d9" }} />
             <span style={{ fontSize: 14, color: "#333" }}>
               {userRole
                 ? `Logged in as: ${localStorage.getItem("displayName") || userRole}`
@@ -137,7 +168,7 @@ const MainLayout = () => {
               <Button
                 type="link"
                 onClick={handleLogout}
-                style={{ marginLeft: 10, color: "#4161d9" }} // 修改为统一颜色
+                style={{ marginLeft: 5, color: "#4161d9" }}
               >
                 Logout
               </Button>
@@ -161,10 +192,10 @@ const MainLayout = () => {
         <Footer
           style={{
             textAlign: "center",
-            background: "#FFFFFF",  // 采用白色背景
+            background: "#FFFFFF",
             padding: "10px 20px",
             borderTop: "1px solid #F0F0F0",
-            color: "#999999", // 页脚文字颜色调整为灰色
+            color: "#999999",
           }}
         >
           DIICSU Room Booking System ©{new Date().getFullYear()} Created by You

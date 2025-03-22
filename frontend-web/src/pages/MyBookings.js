@@ -1,25 +1,45 @@
-import React, { useEffect, useState } from "react";
-import { List, Card, Button, message, Badge, Divider } from "antd";
-import { getBookings, deleteBooking, getNotifications, markNotificationAsRead } from "../utils/demoData";
+import React, { useState, useEffect } from "react";
+import { List, Card, Badge, Button, message, Divider } from "antd";
+
+// API 基地址
+const API_BASE = "http://47.113.186.66:8080/api";
+
+// 获取当前用户的所有预订
+const fetchBookings = async (userId) => {
+  try {
+    const response = await fetch(`${API_BASE}/bookings/user/${userId}`);
+    if (!response.ok) {
+      throw new Error("Failed to fetch bookings");
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    message.error("Failed to fetch booking data");
+    return [];
+  }
+};
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
-  const [notifications, setNotifications] = useState([]);
-  const userRole = localStorage.getItem("userRole");
+  
+  // 从 localStorage 获取当前用户ID，并确保它是数字类型
+  const userId = parseInt(localStorage.getItem("userId"), 10);  // 使用 parseInt 转换为数字
 
   useEffect(() => {
-    setBookings(getBookings().filter(b => b.user === userRole));
-    setNotifications(getNotifications().filter(n => n.user === userRole));
-  }, [userRole]);
+    if (userId) {
+      fetchBookings(userId).then(setBookings);  // 获取当前用户的预订记录
+    } else {
+      message.error("User not found");
+    }
+  }, [userId]);
 
-  const refreshNotifications = () => {
-    setNotifications(getNotifications().filter(n => n.user === userRole));
-  };
-
-  const handleMarkAsRead = (id) => {
-    markNotificationAsRead(id);
-    message.success("Notification marked as read.");
-    refreshNotifications();
+  const handleDeleteBooking = (id) => {
+    // 删除预订操作
+    // 这里假设有一个 deleteBooking 函数进行删除
+    // deleteBooking(id); // 可以在这里调用删除 API
+    message.success("Booking cancelled.");
+    fetchBookings(userId).then(setBookings);  // 刷新预订列表
   };
 
   return (
@@ -34,30 +54,6 @@ const MyBookings = () => {
           overflow: "hidden"
         }}
       >
-        <Divider orientation="left">Notifications</Divider>
-        <List
-          dataSource={notifications}
-          locale={{ emptyText: "No notifications" }}
-          itemLayout="vertical"
-          renderItem={(notification) => (
-            <Card
-              size="small"
-              style={{
-                marginBottom: 16,
-                background: notification.read ? "#fafafa" : "#e6f7ff",
-                borderRadius: 4,
-              }}
-            >
-              <p style={{ marginBottom: 8 }}>{notification.message}</p>
-              {!notification.read && (
-                <Button type="link" onClick={() => handleMarkAsRead(notification.id)}>
-                  Mark as Read
-                </Button>
-              )}
-            </Card>
-          )}
-        />
-
         <Divider orientation="left">Booking List</Divider>
         <List
           grid={{ gutter: 16, column: 2 }}
@@ -66,10 +62,15 @@ const MyBookings = () => {
           renderItem={(item) => (
             <List.Item>
               <Card
-                title={`Room: ${item.roomId}`}
+                title={`Room: ${item.room.name}`} // 显示房间名称
                 extra={
                   item.status === "pending" && (
-                    <Button type="primary" danger size="small" onClick={() => deleteBooking(item.id)}>
+                    <Button
+                      type="primary"
+                      danger
+                      size="small"
+                      onClick={() => handleDeleteBooking(item.id)}
+                    >
                       Cancel
                     </Button>
                   )
@@ -80,13 +81,18 @@ const MyBookings = () => {
                 }}
               >
                 <p style={{ marginBottom: 8 }}>
-                  <strong>Time:</strong> {new Date(item.startTime).toLocaleString()}
+                  <strong>Location:</strong> {item.room.location}  {/* 显示房间位置 */}
+                </p>
+                <p style={{ marginBottom: 8 }}>
+                  <strong>Time:</strong>{" "}
+                  {new Date(item.startTime).toLocaleString()} -{" "}
+                  {new Date(item.endTime).toLocaleString()}  {/* 格式化时间 */}
                 </p>
                 <p>
                   <strong>Status:</strong>{" "}
-                  <Badge 
-                    status={item.status === "approved" ? "success" : "warning"} 
-                    text={item.status.charAt(0).toUpperCase() + item.status.slice(1)} 
+                  <Badge
+                    status={item.status === "confirmed" ? "success" : "warning"}
+                    text={item.status.charAt(0).toUpperCase() + item.status.slice(1)}
                   />
                 </p>
               </Card>
