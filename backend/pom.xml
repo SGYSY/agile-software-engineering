@@ -110,6 +110,9 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<configuration>
+					<finalName>
+						room-booking-v2.0
+					</finalName>
 					<excludes>
 						<exclude>
 							<groupId>org.projectlombok</groupId>

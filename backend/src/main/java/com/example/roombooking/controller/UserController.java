@@ -82,4 +82,119 @@ public class UserController {
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(
+        @RequestParam(required = false) String username,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String firstName,
+        @RequestParam(required = false) String lastName,
+        @RequestParam(required = false) String schoolNumber,
+        @RequestParam(required = false) String phoneNumber,
+        @RequestParam(required = false) Long roleId) {
+        
+        try {
+            System.out.println("搜索用户请求 - username: " + username + ", email: " + email + 
+                ", firstName: " + firstName + ", lastName: " + lastName + 
+                ", schoolNumber: " + schoolNumber + ", phoneNumber: " + phoneNumber +
+                ", roleId: " + roleId);
+            
+            // 获取所有用户作为初始结果集
+            List<User> resultUsers = userService.getAllUsers();
+            int originalCount = resultUsers.size();
+            
+            // 根据用户名筛选（如果提供）
+            if (username != null && !username.trim().isEmpty()) {
+                final String searchUsername = username.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getUsername() != null && 
+                            user.getUsername().toLowerCase().contains(searchUsername))
+                    .toList();
+                System.out.println("按用户名筛选后，还剩 " + resultUsers.size() + " 个用户");
+            }
+            
+            // 根据邮箱筛选（如果提供）
+            if (email != null && !email.trim().isEmpty()) {
+                final String searchEmail = email.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getEmail() != null && 
+                            user.getEmail().toLowerCase().contains(searchEmail))
+                    .toList();
+                System.out.println("按邮箱筛选后，还剩 " + resultUsers.size() + " 个用户");
+            }
+            
+            // 根据名字筛选（如果提供）
+            if (firstName != null && !firstName.trim().isEmpty()) {
+                final String searchFirstName = firstName.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getFirstName() != null && 
+                            user.getFirstName().toLowerCase().contains(searchFirstName))
+                    .toList();
+                System.out.println("按名字筛选后，还剩 " + resultUsers.size() + " 个用户");
+            }
+            
+            // 根据姓氏筛选（如果提供）
+            if (lastName != null && !lastName.trim().isEmpty()) {
+                final String searchLastName = lastName.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getLastName() != null && 
+                            user.getLastName().toLowerCase().contains(searchLastName))
+                    .toList();
+                System.out.println("按姓氏筛选后，还剩 " + resultUsers.size() + " 个用户");
+            }
+            
+            // 根据学号筛选（如果提供）
+            if (schoolNumber != null && !schoolNumber.trim().isEmpty()) {
+                final String searchSchoolNumber = schoolNumber.trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getSchoolNumber() != null && 
+                            user.getSchoolNumber().contains(searchSchoolNumber))
+                    .toList();
+                System.out.println("按学号筛选后，还剩 " + resultUsers.size() + " 个用户");
+            }
+            
+            // 根据电话号码筛选（如果提供）
+            if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+                final String searchPhoneNumber = phoneNumber.trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getPhoneNumber() != null && 
+                            user.getPhoneNumber().contains(searchPhoneNumber))
+                    .toList();
+                System.out.println("按电话号码筛选后，还剩 " + resultUsers.size() + " 个用户");
+            }
+            
+            // 根据角色ID筛选（如果提供）
+            if (roleId != null) {
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getRole() != null && 
+                            roleId.equals(user.getRole().getId()))
+                    .toList();
+                System.out.println("按角色ID筛选后，还剩 " + resultUsers.size() + " 个用户");
+            }
+            
+            // 处理筛选结果
+            System.out.println("总计从 " + originalCount + " 个用户过滤到 " + resultUsers.size() + " 个用户");
+            
+            // 出于安全考虑，返回前清除敏感信息
+            List<User> sanitizedUsers = resultUsers.stream().map(user -> {
+                User sanitized = new User();
+                sanitized.setId(user.getId());
+                sanitized.setUsername(user.getUsername());
+                sanitized.setEmail(user.getEmail());
+                sanitized.setFirstName(user.getFirstName());
+                sanitized.setLastName(user.getLastName());
+                sanitized.setPhoneNumber(user.getPhoneNumber());
+                sanitized.setSchoolNumber(user.getSchoolNumber());
+                sanitized.setRole(user.getRole());
+                // 不返回密码哈希和其他敏感信息
+                return sanitized;
+            }).toList();
+            
+            return ResponseEntity.ok(sanitizedUsers);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("搜索失败: " + e.getMessage());
+        }
+    }
 }

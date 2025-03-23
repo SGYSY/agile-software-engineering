@@ -176,4 +176,16 @@ public class WeekService {
         String sql = "SELECT * FROM weeks ORDER BY week_number";
         return jdbcTemplate.queryForList(sql);
     }
+
+    /**
+     * 根据日期获取教学周数
+     * @param date 日期
+     * @return 周数，如果不在教学周内返回null
+     */
+    public Integer getWeekNumberForDate(LocalDate date) {
+        Optional<Week> week = weekRepository.findByDate(date);
+        return week.map(Week::getWeekNumber).orElse(null);
+    }
+
+    
 }

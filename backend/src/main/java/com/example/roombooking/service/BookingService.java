@@ -122,11 +122,11 @@ public class BookingService {
             
             // 4. 设置预订状态
             if (user.getRole() != null && 
-                "Administrator".equals(user.getRole().getName()) && 
+                "Student".equals(user.getRole().getName()) && 
                 !hasConflict) {
-                booking.setStatus(Booking.BookingStatus.confirmed);
-            } else {
                 booking.setStatus(Booking.BookingStatus.pending);
+            } else {
+                booking.setStatus(Booking.BookingStatus.confirmed);
             }
             
             System.out.println("设置预订状态: " + booking.getStatus());
@@ -164,6 +164,11 @@ public class BookingService {
                 notificationService.createBookingNotification(booking);
             } catch (Exception e) {
                 System.err.println("创建通知时出错: " + e.getMessage());
+            }
+
+            // 如果是自动确认的预订（非学生用户或无冲突），直接发送确认邮件
+            if (booking.getStatus() == Booking.BookingStatus.confirmed) {
+                notificationService.sendBookingConfirmationEmail(booking);
             }
             
             return booking;
@@ -213,6 +218,9 @@ public class BookingService {
             
             // 创建确认通知
             notificationService.createApprovalNotification(bookingToApprove);
+
+            // 直接发送确认邮件
+            notificationService.sendBookingConfirmationEmail(bookingToApprove);
             
             return true;
         }
@@ -220,7 +228,16 @@ public class BookingService {
     }
 
     public void deleteBooking(Long id) {
-        bookingRepository.deleteById(id);
+        // 1. 先获取预订信息
+        Optional<Booking> booking = bookingRepository.findById(id);
+        if (booking.isPresent()) {
+            // 2. 删除相关的通知
+            notificationService.deleteNotificationsByBookingId(id);
+            
+            
+            // 3. 最后删除预订记录
+            bookingRepository.deleteById(id);
+        }
     }
     
     // 获取特定周的预订
