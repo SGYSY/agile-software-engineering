@@ -1,63 +1,27 @@
 import React, { useState, useEffect } from "react";
-import { Card, Statistic, Row, Col, Button } from "antd";
+import { Card, Statistic, Row, Col, Button, Select } from "antd";
 import ReactECharts from "echarts-for-react";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
 
 const API_BASE = "http://47.113.186.66:8080/api";
-
-const dashboardCardStyle = {
-  backgroundColor: "#f0f2f5",
-  borderRadius: "10px",
-  border: "none",
-  padding: "20px"
-};
-
-const cardStyle = {
-  borderRadius: "8px",
-  boxShadow: "0 2px 8px rgba(0, 0, 0, 0.1)"
-};
-
-const titleStyle = {
-  color: "#4161d9",
-  fontWeight: "bold"
-};
-
-const EXCEL_TYPE = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8";
+const COLOR_LIST = ['#4161d9', '#5a7dd9', '#7a98d9', '#9bb3d9', '#bbcdeb'];
 
 const AdminDashboard = () => {
   const [bookings, setBookings] = useState([]);
   const [rooms, setRooms] = useState([]);
 
   useEffect(() => {
-    fetch(`${API_BASE}/bookings`)
-      .then((res) => res.json())
-      .then((data) => setBookings(data || []))
-      .catch((err) => {
-        console.error("Error fetching bookings:", err);
-        setBookings([]);
-      });
-
-    fetch(`${API_BASE}/rooms`)
-      .then((res) => res.json())
-      .then((data) => setRooms(data || []))
-      .catch((err) => {
-        console.error("Error fetching rooms:", err);
-        setRooms([]);
-      });
+    fetch(`${API_BASE}/bookings`).then(res => res.json()).then(setBookings).catch(() => setBookings([]));
+    fetch(`${API_BASE}/rooms`).then(res => res.json()).then(setRooms).catch(() => setRooms([]));
   }, []);
 
-  // -----------------------------
-  // Data Processing
-  // -----------------------------
-
   const totalBookings = bookings.length;
-  const approvedBookings = bookings.filter(b => b.status === "approved").length;
+  const approvedBookings = bookings.filter(b => b.status === "confirmed").length;
   const pendingBookings = bookings.filter(b => b.status === "pending").length;
   const rejectedBookings = bookings.filter(b => b.status === "rejected").length;
 
-  // 🏫 Classroom Capacity Chart
-  const roomCapacityOption = {
+  const capacityChartOption = {
     title: {
       text: 'Classroom Capacity Distribution',
       left: 'center',
@@ -80,7 +44,7 @@ const AdminDashboard = () => {
         type: 'bar',
         data: rooms.map((r, index) => ({
           value: r.capacity,
-          itemStyle: { color: ['#4161d9', '#5a7dd9', '#7a98d9'][index % 3] }
+          itemStyle: { color: COLOR_LIST[index % COLOR_LIST.length] }
         })),
         barWidth: 40,
         itemStyle: {
@@ -90,179 +54,136 @@ const AdminDashboard = () => {
     ]
   };
 
-  // ⏰ Usage Heatmap (by time slot)
-  const timeSlots = ['8-10', '10-12', '12-14', '14-16', '16-18', '18-20'];
-  const bookingHeat = timeSlots.map(slot => {
-    const matchSlot = (time) => time.includes(slot.split("-")[0]);
-    return bookings.filter(b => b.time && matchSlot(b.time)).length;
-  });
-
-  const timeHeatOption = {
+  const timeSlots = [
+    "08:00 - 08:45", "08:55 - 09:40", "10:00 - 10:45",
+    "10:55 - 11:40", "14:00 - 14:45", "14:55 - 15:40",
+    "16:00 - 16:45", "16:55 - 17:40", "19:00 - 19:45", "19:55 - 20:40"
+  ];
+  const formatTime = (start, end) => `${start?.slice(0, 5)} - ${end?.slice(0, 5)}`;
+  const bookingHeat = timeSlots.map(slot =>
+    bookings.filter(b => formatTime(b.startTime, b.endTime) === slot).length
+  );
+  const usageLineOption = {
     title: {
-      text: 'Usage Heatmap (by Time Slot)',
+      text: "Classroom Usage (Line Chart)",
       left: 'center',
       textStyle: { color: "#4161d9", fontWeight: "bold" }
     },
-    tooltip: {},
-    xAxis: {
-      type: 'category',
-      data: timeSlots,
-      axisLine: { lineStyle: { color: "#4161d9" } }
-    },
-    yAxis: {
-      type: 'value',
-      axisLine: { lineStyle: { color: "#4161d9" } }
-    },
-    series: [
-      {
-        data: bookingHeat,
-        type: 'bar',
-        barWidth: 40,
-        itemStyle: { color: "#5a7dd9", borderRadius: [10, 10, 0, 0] }
-      }
-    ]
+    tooltip: { trigger: 'axis' },
+    xAxis: { type: 'category', data: timeSlots },
+    yAxis: { type: 'value' },
+    series: [{
+      data: bookingHeat,
+      type: 'line',
+      smooth: true,
+      symbol: 'circle',
+      symbolSize: 8,
+      lineStyle: { color: "#4161d9", width: 3 },
+      itemStyle: { color: "#5a7dd9" },
+      areaStyle: { color: "#dce3f7" }
+    }]
   };
 
-  // 📊 Classroom Usage Ranking (most bookings)
   const usageMap = {};
   bookings.forEach(b => {
-    if (!usageMap[b.roomName]) usageMap[b.roomName] = 0;
-    usageMap[b.roomName]++;
+    const name = b.room?.roomName || "Unknown";
+    if (!usageMap[name]) usageMap[name] = 0;
+    usageMap[name]++;
   });
-
-  const usageData = Object.entries(usageMap)
+  const top5 = Object.entries(usageMap)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 10); // Top 10 most used classrooms
+    .slice(0, 5);
 
-  const usageRankingOption = {
+  const usageDonutOption = {
     title: {
-      text: 'Classroom Usage Ranking',
+      text: "Top 5 Hot Classrooms",
       left: 'center',
-      textStyle: { color: "#4161d9", fontWeight: "bold" }
-    },
-    tooltip: {},
-    xAxis: {
-      type: 'category',
-      data: usageData.map(item => item[0]),
-      axisLabel: { rotate: 30 },
-      axisLine: { lineStyle: { color: "#4161d9" } }
-    },
-    yAxis: {
-      type: 'value',
-      axisLine: { lineStyle: { color: "#4161d9" } }
-    },
-    series: [
-      {
-        data: usageData.map(item => item[1]),
-        type: 'bar',
-        barWidth: 40,
-        itemStyle: { color: "#7a98d9", borderRadius: [10, 10, 0, 0] }
+      top: 10,
+      textStyle: {
+        fontSize: 18,
+        color: "#4161d9",
+        fontWeight: "bold"
       }
-    ]
-  };
-
-  // 🟠 Donut Chart: Booking Status Distribution
-  const donutOption = {
-    title: {
-      text: 'Booking Status Distribution',
-      left: 'center',
-      textStyle: { color: "#4161d9", fontWeight: "bold" }
     },
-    tooltip: { trigger: 'item' },
+    tooltip: {
+      trigger: 'item',
+      formatter: '{b}: {c} times ({d}%)'
+    },
     legend: {
       orient: 'vertical',
       left: 'left',
-      textStyle: { color: "#4161d9" }
+      top: 'middle',
+      textStyle: { color: '#4161d9' },
+      data: top5.map(item => item[0])
     },
     series: [
       {
-        name: 'Booking Count',
+        name: 'Usage Count',
         type: 'pie',
-        radius: ['40%', '70%'],
+        radius: ['45%', '70%'],
         avoidLabelOverlap: false,
-        label: { show: false },
+        label: {
+          show: true,
+          position: 'outside',
+          formatter: '{b}\n{d}%'
+        },
         emphasis: {
           label: {
             show: true,
-            fontSize: '18',
+            fontSize: 16,
             fontWeight: 'bold'
           }
         },
-        labelLine: { show: false },
-        data: [
-          { value: approvedBookings, name: 'Approved' },
-          { value: pendingBookings, name: 'Pending' },
-          { value: rejectedBookings, name: 'Rejected' }
-        ],
-        itemStyle: {
-          color: function(params) {
-            const colorList = ['#4161d9', '#5a7dd9', '#7a98d9'];
-            return colorList[params.dataIndex % colorList.length];
-          }
-        }
+        labelLine: { show: true },
+        data: top5.map((item, index) => ({
+          name: item[0],
+          value: item[1],
+          itemStyle: { color: COLOR_LIST[index % COLOR_LIST.length] }
+        }))
       }
     ]
   };
 
-  // Export report to Excel
   const exportToExcel = () => {
     const ws = XLSX.utils.json_to_sheet(bookings);
     const wb = { Sheets: { data: ws }, SheetNames: ["data"] };
     const excelBuffer = XLSX.write(wb, { bookType: "xlsx", type: "array" });
-    const data = new Blob([excelBuffer], { type: EXCEL_TYPE });
+    const data = new Blob([excelBuffer], {
+      type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8"
+    });
     FileSaver.saveAs(data, "bookings_report.xlsx");
   };
 
   return (
-    <Card title="Admin Dashboard" style={dashboardCardStyle}>
-      {/* Export Button */}
-      <Button 
-        type="primary" 
-        onClick={exportToExcel} 
-        style={{ position: 'absolute', top: 20, right: 20 }}
-      >
+    <Card title="Admin Dashboard" style={{ backgroundColor: "#f0f2f5", borderRadius: "10px", padding: "20px" }}>
+      <Button type="primary" onClick={exportToExcel} style={{ position: 'absolute', top: 20, right: 20 }}>
         Export Report
       </Button>
 
-      {/* Booking Statistics */}
       <Row gutter={16}>
-        <Col span={6}>
-          <Statistic title={<span style={titleStyle}>Total Bookings</span>} value={totalBookings} />
-        </Col>
-        <Col span={6}>
-          <Statistic title={<span style={titleStyle}>Approved</span>} value={approvedBookings} valueStyle={{ color: "#3f8600" }} />
-        </Col>
-        <Col span={6}>
-          <Statistic title={<span style={titleStyle}>Pending</span>} value={pendingBookings} valueStyle={{ color: "#faad14" }} />
-        </Col>
-        <Col span={6}>
-          <Statistic title={<span style={titleStyle}>Rejected</span>} value={rejectedBookings} valueStyle={{ color: "#cf1322" }} />
-        </Col>
+        <Col span={6}><Statistic title="Total Bookings" value={totalBookings} /></Col>
+        <Col span={6}><Statistic title="Approved" value={approvedBookings} valueStyle={{ color: "#3f8600" }} /></Col>
+        <Col span={6}><Statistic title="Pending" value={pendingBookings} valueStyle={{ color: "#faad14" }} /></Col>
+        <Col span={6}><Statistic title="Rejected" value={rejectedBookings} valueStyle={{ color: "#cf1322" }} /></Col>
       </Row>
 
-      {/* Chart Display Section */}
-      <Row gutter={16} style={{ marginTop: 20 }}>
-        <Col span={12}>
-          <Card title="Booking Status Donut Chart" style={cardStyle}>
-            <ReactECharts option={donutOption} style={{ height: '400px' }} />
-          </Card>
-        </Col>
-        <Col span={12}>
-          <Card title="Classroom Capacity Chart" style={cardStyle}>
-            <ReactECharts option={roomCapacityOption} style={{ height: '400px' }} />
+      <Row style={{ marginTop: 24 }}>
+        <Col span={24}>
+          <Card title="Classroom Capacity Chart">
+            <ReactECharts option={capacityChartOption} style={{ height: "400px" }} />
           </Card>
         </Col>
       </Row>
 
       <Row gutter={16} style={{ marginTop: 20 }}>
         <Col span={12}>
-          <Card title="Usage Heatmap (by Time Slot)" style={cardStyle}>
-            <ReactECharts option={timeHeatOption} style={{ height: '400px' }} />
+          <Card title="Usage Trend (Line Chart)">
+            <ReactECharts option={usageLineOption} style={{ height: "400px" }} />
           </Card>
         </Col>
         <Col span={12}>
-          <Card title="Classroom Usage Ranking" style={cardStyle}>
-            <ReactECharts option={usageRankingOption} style={{ height: '400px' }} />
+          <Card title="Top 5 Hot Classrooms (Doughnut Chart)">
+            <ReactECharts option={usageDonutOption} style={{ height: "400px" }} />
           </Card>
         </Col>
       </Row>

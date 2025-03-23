@@ -187,7 +187,6 @@ const RoomSchedule = () => {
       >
         {selectedSchedule && (
           <div>
-            <p><strong>ID:</strong> {selectedSchedule.id}</p>
             <p><strong>Course:</strong> {selectedSchedule.courseName}</p>
             <p><strong>Instructor:</strong> {selectedSchedule.instructor}</p>
             <p><strong>Group:</strong> {selectedSchedule.groupId}</p>
