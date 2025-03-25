@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
 import {
   Card,
@@ -7,15 +7,13 @@ import {
   Button,
   message,
   Descriptions,
-  InputNumber,
-  Checkbox
+  Input,
 } from "antd";
 import moment from "moment";
-import { getRooms, getBookings, saveBooking } from "../utils/demoData";
 
 const { Option } = Select;
 
-// 固定时间段
+// Fixed time slots
 const timeSlots = [
   "08:00 - 08:45",
   "08:55 - 09:40",
@@ -32,29 +30,49 @@ const timeSlots = [
 const Booking = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
-  const rooms = getRooms();
-  const room = rooms.find((r) => r.id === roomId);
 
+  // Get room details from backend
+  const [room, setRoom] = useState(null);
   const userRole = localStorage.getItem("userRole");
+  // Assume user ID is stored in localStorage (replace with your actual logic)
+  const userId = parseInt(localStorage.getItem("userId") || "1", 10);
 
-  // 从 URL 查询参数获取初始 date & timeSlot
+  // Get initial date & timeSlot from URL query parameters
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
-  const initialDate = searchParams.get("date"); // e.g. "2025-03-20"
-  const initialTimeSlot = searchParams.get("timeSlot"); // e.g. "08:00 - 08:45"
+  const initialDate = searchParams.get("date"); // e.g., "2025-03-20"
+  const initialTimeSlot = searchParams.get("timeSlot"); // e.g., "14:00 - 14:45"
 
-  // 状态
   const [date, setDate] = useState(initialDate ? moment(initialDate) : null);
   const [timeSlot, setTimeSlot] = useState(initialTimeSlot || null);
-  const [participants, setParticipants] = useState(1);
-  const [lockRoom, setLockRoom] = useState(false); // 仅教师可用
+  // 新增 purpose 状态
+  const [purpose, setPurpose] = useState("");
+
+  // Fetch room details from backend API
+  useEffect(() => {
+    fetch(`http://47.113.186.66:8080/api/rooms/${roomId}`)
+      .then((res) => {
+        if (!res.ok) {
+          throw new Error("Failed to fetch room details");
+        }
+        return res.json();
+      })
+      .then((data) => setRoom(data))
+      .catch((err) =>
+        message.error("Error fetching room details: " + err.message)
+      );
+  }, [roomId]);
 
   if (!room) {
     return <p style={{ textAlign: "center", marginTop: 50 }}>Room not found</p>;
   }
 
-  // 如果是学生且不在房间的 allowedRoles 中，则提示无权限
-  if (userRole === "student" && !room.allowedRoles.includes("student")) {
+  // If room defines allowedRoles and current user not allowed, show no permission message.
+  if (
+    userRole === "student" &&
+    room.allowedRoles &&
+    !room.allowedRoles.includes("student")
+  ) {
     return (
       <p style={{ textAlign: "center", marginTop: 50 }}>
         You do not have permission to book this room.
@@ -63,80 +81,84 @@ const Booking = () => {
   }
 
   const handleBooking = () => {
-    // 校验
     if (!date || !timeSlot) {
       return message.error("Please select a date and time slot!");
     }
-    if (!participants) {
-      return message.error("Please input number of participants!");
-    }
-    if (participants > room.bookingLimit) {
-      return message.error(`This room can only be booked for up to ${room.bookingLimit} participant(s) per booking.`);
+    if (!purpose) {
+      return message.error("Please enter a purpose for the booking!");
     }
 
     const dateStr = date.format("YYYY-MM-DD");
+    // Use ISO week and weekday
+    const weekNumber = date.isoWeek();
+    const dayOfWeek = date.isoWeekday(); // Monday=1,..., Sunday=7
 
-    // 获取已有预约（非 rejected）
-    const allBookings = getBookings();
-    const existingBookings = allBookings.filter(
-      (b) =>
-        b.roomId === roomId &&
-        b.timeSlot === timeSlot &&
-        moment(b.startTime).format("YYYY-MM-DD") === dateStr &&
-        b.status !== "rejected"
-    );
+    // Split timeSlot to get start and end times; format to HH:mm:ss
+    const [startStr, endStr] = timeSlot.split(" - ");
+    const formattedStartTime = startStr.length === 5 ? startStr + ":00" : startStr;
+    const formattedEndTime = endStr.length === 5 ? endStr + ":00" : endStr;
 
-    // 如果已存在教师锁定
-    const lockedBooking = existingBookings.find((b) => b.lock === true);
-    if (lockedBooking) {
-      return message.error("This time slot has been locked by a teacher. Cannot book.");
-    }
-
-    // 计算已审批人数
-    const approvedBookings = existingBookings.filter((b) => b.status === "approved");
-    const totalApproved = approvedBookings.reduce((sum, b) => sum + (b.participants || 0), 0);
-    if (totalApproved + participants > room.capacity) {
-      return message.error(`Not enough capacity. Already booked: ${totalApproved} participants.`);
-    }
-
-    // 如果已存在 pending 预约，是否允许多条 pending？
-    // 这里示例：不允许多条 pending
-    const pendingExists = existingBookings.some((b) => b.status === "pending");
-    if (pendingExists) {
-      return message.error("There is already a pending booking for this time slot.");
-    }
-
-    // 通过校验后，保存预约
-    const weekday = date.format("dddd");
-    const startTime = moment(`${dateStr} ${timeSlot.split(" - ")[0]}`).toISOString();
-
-    const newBooking = {
-      id: Date.now().toString(),
-      roomId,
-      user: userRole,
-      startTime,
-      weekday,
-      timeSlot,
-      participants,
-      lock: userRole === "teacher" ? lockRoom : false,
-      status: "pending"
+    // Construct booking request according to the new API format
+    const bookingRequest = {
+      user: { id: userId },
+      room: { id: room.id },
+      weekNumber: weekNumber,
+      dayOfWeek: dayOfWeek,
+      startTime: formattedStartTime,
+      endTime: formattedEndTime,
+      purpose: purpose,
     };
 
-    saveBooking(newBooking);
-    message.success("Booking submitted successfully. Awaiting admin approval!");
-    navigate("/my-bookings");
+    fetch("http://47.113.186.66:8080/api/bookings", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(bookingRequest),
+    })
+      .then((response) => {
+        if (!response.ok) {
+          return response.text().then((text) => {
+            throw new Error(text || "Failed to create booking");
+          });
+        }
+        return response.json();
+      })
+      .then((data) => {
+        message.success("Booking submitted successfully!");
+        navigate("/my-bookings");
+      })
+      .catch((err) => {
+        message.error("Booking failed: " + err.message);
+      });
   };
 
   return (
-    <div style={{ padding: "20px", background: "#f5f5f5", minHeight: "100vh", display: "flex", justifyContent: "center" }}>
+    <div
+      style={{
+        padding: "20px",
+        background: "#f5f5f5",
+        minHeight: "100vh",
+        display: "flex",
+        justifyContent: "center",
+      }}
+    >
       <Card
         title={`Book Room: ${room.name}`}
-        style={{ maxWidth: 500, borderRadius: "8px", boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)" }}
+        style={{
+          maxWidth: 500,
+          borderRadius: "8px",
+          boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+        }}
       >
         <Descriptions bordered column={1} size="middle">
-          <Descriptions.Item label="Capacity">{room.capacity} people</Descriptions.Item>
-          <Descriptions.Item label="Equipment">{room.equipment.join(", ")}</Descriptions.Item>
-          <Descriptions.Item label="Booking Limit">Up to {room.bookingLimit} participant(s) per booking</Descriptions.Item>
+          <Descriptions.Item label="Capacity">
+            {room.capacity} people
+          </Descriptions.Item>
+          <Descriptions.Item label="Equipment">
+            {room.equipment ? room.equipment.join(", ") : "N/A"}
+          </Descriptions.Item>
+          <Descriptions.Item label="Booking Limit">
+            Only one booking per time slot
+          </Descriptions.Item>
         </Descriptions>
 
         <div style={{ marginTop: 20 }}>
@@ -157,23 +179,12 @@ const Booking = () => {
               </Option>
             ))}
           </Select>
-          <InputNumber
-            min={1}
-            max={room.bookingLimit}
-            value={participants}
-            onChange={(value) => setParticipants(value)}
+          <Input
+            placeholder="Enter purpose for booking"
+            value={purpose}
+            onChange={(e) => setPurpose(e.target.value)}
             style={{ width: "100%", marginBottom: 10 }}
-            placeholder="Number of Participants"
           />
-          {userRole === "teacher" && (
-            <Checkbox
-              checked={lockRoom}
-              onChange={(e) => setLockRoom(e.target.checked)}
-              style={{ marginBottom: 20 }}
-            >
-              Lock Room (prevent others from booking)
-            </Checkbox>
-          )}
           <Button
             type="primary"
             block
@@ -181,7 +192,7 @@ const Booking = () => {
             size="large"
             style={{ borderRadius: "5px" }}
           >
-            Submit Booking (Pending Approval)
+            Submit Booking
           </Button>
         </div>
       </Card>

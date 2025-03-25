@@ -11,6 +11,9 @@ import RoomSchedule from "./pages/RoomSchedule";
 import Login from "./pages/Login";
 import DaySchedule from "./pages/DaySchedule";
 
+// 新增 RoomIssue 页面
+import RoomIssue from "./pages/RoomIssue";
+
 // 新增的管理员页面
 import AdminUsers from "./pages/AdminUsers";
 import AdminHistory from "./pages/AdminHistory";
@@ -44,6 +47,8 @@ function App() {
           <Route path="/*" element={<ProtectedLayout />}>
             <Route index element={<Home />} />
             <Route path="booking/:roomId" element={<Booking />} />
+            {/* 新增 RoomIssue 路由 */}
+            <Route path="roomissue/:roomId" element={<RoomIssue />} />
             <Route path="my-bookings" element={<MyBookings />} />
             <Route path="room/:roomId" element={<RoomSchedule />} />
 
