@@ -25,13 +25,12 @@ USE `diicsu_room_booking_system_v4_1`;
 -- --------------------------------------------------------
 
 --
--- 表的结构 `bookings`
+-- table struct `bookings`
 --
 
--- 删除现有的 bookings 表
 DROP TABLE IF EXISTS `bookings`;
 
--- 创建新的完整的 bookings 表
+-- create booking table
 CREATE TABLE `bookings` (
   `booking_id` int NOT NULL AUTO_INCREMENT,
   `user_id` int NOT NULL,
@@ -48,79 +47,19 @@ CREATE TABLE `bookings` (
 
 CREATE TABLE weeks (
     `id` INT AUTO_INCREMENT PRIMARY KEY,
-    `week_number` INT NOT NULL, -- 教学周数 (1-22)
-    `start_date` DATE NOT NULL, -- 每周的开始日期
-    `end_date` DATE NOT NULL,   -- 每周的结束日期
-    `description` VARCHAR(100)  -- 可选描述，如"第一教学周"
+    `week_number` INT NOT NULL,
+    `start_date` DATE NOT NULL,
+    `end_date` DATE NOT NULL, 
+    `description` VARCHAR(100) 
 );
 --
--- 转存表中的数据 `bookings`
+-- store data `bookings`
 --
 INSERT INTO `bookings` (`booking_id`, `user_id`, `room_id`, `start_time`, `end_time`, `status`, `conflict_detected`, `week_number`, `day_of_week`) VALUES
 (1, 1, 9, '09:00:00', '11:00:00', 'confirmed', 0, 3, 3),
 (2, 2, 8, '02:00:00', '04:00:00', 'pending', 0, 3, 4),
 (31, 2, 10, '02:00:00', '04:00:00', 'cancelled', 0, 3, 5);
--- INSERT INTO `bookings` (`booking_id`, `user_id`, `room_id`, `start_time`, `end_time`, `status`, `conflict_detected`, `week_number`) VALUES
--- (1, 1, 9, '2025-03-05 09:00:00', '2025-03-05 11:00:00', 'confirmed', 0, 0),
--- (2, 2, 8, '2025-03-06 02:00:00', '2025-03-06 04:00:00', 'pending', 0, 0),
--- -- (31, 2, 10, '2025-03-07 02:00:00', '2025-03-07 04:00:00', 'cancelled', 0, 0);
--- INSERT INTO bookings (user_id, room_id, date, start_time, end_time, day_of_week, week, purpose, status, created_at)
--- VALUES (
---     1, 
---     101, 
---     '2024-03-05', 
---     '14:00:00', 
---     '16:00:00', 
---     '周二',
---     (SELECT week_number FROM weeks WHERE '2024-03-05' BETWEEN start_date AND end_date),
---     '团队会议', 
---     'approved', 
---     NOW()
--- );
 
--- 初始化第一周 (2024年2月17日开始)
--- INSERT INTO weeks (week_number, start_date, end_date, description)
--- VALUES (1, '2025-02-17', '2024-02-23', '第1教学周');
-
--- 后续几周可以通过存储过程或应用代码批量生成
--- 以下是示例SQL，生成22周的数据
--- DELIMITER //
--- CREATE PROCEDURE generate_weeks()
--- BEGIN
---     DECLARE i INT DEFAULT 2;
---     DECLARE start_dt DATE DEFAULT '2025-02-24'; -- 第2周开始日期
-    
---     WHILE i <= 22 DO
---         INSERT INTO weeks (week_number, start_date, end_date, description)
---         VALUES (i, start_dt, DATE_ADD(start_dt, INTERVAL 6 DAY), CONCAT('第', i, '教学周'));
-        
---         SET start_dt = DATE_ADD(start_dt, INTERVAL 7 DAY);
---         SET i = i + 1;
---     END WHILE;
--- END //
--- DELIMITER ;
-
-
--- DELIMITER //
--- CREATE FUNCTION get_current_week() RETURNS INT
--- BEGIN
---     DECLARE current_week INT;
-    
---     SELECT week_number INTO current_week 
---     FROM weeks 
---     WHERE CURDATE() BETWEEN start_date AND end_date;
-    
---     IF current_week IS NULL THEN
---         RETURN 0; -- 不在教学周期内
---     ELSE
---         RETURN current_week;
---     END IF;
--- END //
--- DELIMITER ;
-
---
--- 触发器 `bookings`
---
 DROP TRIGGER IF EXISTS `check_booking_conflict`;
 DELIMITER $$
 CREATE TRIGGER `check_booking_conflict` BEFORE INSERT ON `bookings` FOR EACH ROW BEGIN
@@ -134,7 +73,7 @@ CREATE TRIGGER `check_booking_conflict` BEFORE INSERT ON `bookings` FOR EACH ROW
         AND CONCAT(DATE_ADD('2025-02-24', INTERVAL (w.week_number - 1) WEEK), ' ', st.end_time) > NEW.start_time
     ) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = '该时间段已有课程安排，无法预订';
+        SET MESSAGE_TEXT = 'There are already courses scheduled for this time period and it cannot be booked';
     END IF;
 END
 $$
@@ -143,7 +82,7 @@ DELIMITER ;
 -- --------------------------------------------------------
 
 --
--- 表的结构 `logs`
+-- table struct `logs`
 --
 
 DROP TABLE IF EXISTS `logs`;
@@ -155,7 +94,7 @@ CREATE TABLE `logs` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `logs`
+-- store data  `logs`
 --
 
 INSERT INTO `logs` (`log_id`, `book_type`, `booking_at`, `booking_data`) VALUES
@@ -164,7 +103,7 @@ INSERT INTO `logs` (`log_id`, `book_type`, `booking_at`, `booking_data`) VALUES
 -- --------------------------------------------------------
 
 --
--- 表的结构 `notifications`
+-- table struct `notifications`
 --
 
 DROP TABLE IF EXISTS `notifications`;
@@ -177,7 +116,7 @@ CREATE TABLE `notifications` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `notifications`
+-- store data  `notifications`
 --
 
 INSERT INTO `notifications` (`notification_id`, `booking_id`, `notification_type`, `message`, `status`) VALUES
@@ -189,7 +128,7 @@ INSERT INTO `notifications` (`notification_id`, `booking_id`, `notification_type
 -- --------------------------------------------------------
 
 --
--- 表的结构 `permissions`
+-- table struct `permissions`
 --
 
 DROP TABLE IF EXISTS `permissions`;
@@ -199,7 +138,7 @@ CREATE TABLE `permissions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `permissions`
+-- store data  `permissions`
 --
 
 INSERT INTO `permissions` (`permission_id`, `permission_name`) VALUES
@@ -215,7 +154,7 @@ INSERT INTO `permissions` (`permission_id`, `permission_name`) VALUES
 -- --------------------------------------------------------
 
 --
--- 表的结构 `roles`
+-- table struct `roles`
 --
 
 DROP TABLE IF EXISTS `roles`;
@@ -225,7 +164,7 @@ CREATE TABLE `roles` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `roles`
+-- store data `roles`
 --
 
 INSERT INTO `roles` (`role_id`, `role_name`) VALUES
@@ -238,7 +177,7 @@ INSERT INTO `roles` (`role_id`, `role_name`) VALUES
 -- --------------------------------------------------------
 
 --
--- 表的结构 `role_permissions`
+-- table struct `role_permissions`
 --
 
 DROP TABLE IF EXISTS `role_permissions`;
@@ -248,7 +187,7 @@ CREATE TABLE `role_permissions` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `role_permissions`
+-- store data  `role_permissions`
 --
 
 INSERT INTO `role_permissions` (`role_id`, `permission_id`) VALUES
@@ -271,7 +210,7 @@ INSERT INTO `role_permissions` (`role_id`, `permission_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- 表的结构 `rooms`
+-- table struct `rooms`
 --
 
 DROP TABLE IF EXISTS `rooms`;
@@ -285,7 +224,7 @@ CREATE TABLE `rooms` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `rooms`
+-- store data  `rooms`
 --
 
 INSERT INTO `rooms` (`room_id`, `room_name`, `capacity`, `location`, `available`, `restricted`) VALUES
@@ -312,7 +251,7 @@ INSERT INTO `rooms` (`room_id`, `room_name`, `capacity`, `location`, `available`
 -- --------------------------------------------------------
 
 --
--- 表的结构 `room_issue`
+-- table struct `room_issue`
 --
 
 DROP TABLE IF EXISTS `room_issue`;
@@ -324,7 +263,7 @@ CREATE TABLE `room_issue` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `room_issue`
+-- store data  `room_issue`
 --
 
 INSERT INTO `room_issue` (`issue_id`, `room_id`, `issue_name`, `description`) VALUES
@@ -338,7 +277,7 @@ INSERT INTO `room_issue` (`issue_id`, `room_id`, `issue_name`, `description`) VA
 -- --------------------------------------------------------
 
 --
--- 表的结构 `room_permission`
+-- table struct `room_permission`
 --
 
 DROP TABLE IF EXISTS `room_permission`;
@@ -350,7 +289,7 @@ CREATE TABLE `room_permission` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `room_permission`
+-- store data  `room_permission`
 --
 
 INSERT INTO `room_permission` (`id`, `room_id`, `role_id`, `user_id`) VALUES
@@ -370,8 +309,7 @@ INSERT INTO `room_permission` (`id`, `room_id`, `role_id`, `user_id`) VALUES
 -- --------------------------------------------------------
 
 --
--- 替换视图以便查看 `room_schedule`
--- （参见下面的实际视图）
+-- view `room_schedule`
 --
 DROP VIEW IF EXISTS `room_schedule`;
 CREATE TABLE `room_schedule` (
@@ -389,7 +327,7 @@ CREATE TABLE `room_schedule` (
 -- --------------------------------------------------------
 
 --
--- 表的结构 `schedule`
+-- table struct `schedule`
 --
 
 DROP TABLE IF EXISTS `schedule`;
@@ -408,7 +346,7 @@ CREATE TABLE `schedule` (
 
 
 --
--- 表的结构 `users`
+-- table struct `users`
 --
 
 DROP TABLE IF EXISTS `users`;
@@ -425,7 +363,7 @@ CREATE TABLE `users` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `users`
+-- store data `users`
 --
 
 INSERT INTO `users` (`user_id`, `school_number`, `username`, `password_hash`, `first_name`, `last_name`, `email`, `phone_number`, `role_id`) VALUES
@@ -439,7 +377,7 @@ INSERT INTO `users` (`user_id`, `school_number`, `username`, `password_hash`, `f
 -- --------------------------------------------------------
 
 --
--- 视图结构 `room_schedule`
+-- view struct `room_schedule`
 --
 DROP TABLE IF EXISTS `room_schedule`;
 
@@ -447,11 +385,11 @@ DROP VIEW IF EXISTS `room_schedule`;
 CREATE ALGORITHM=UNDEFINED DEFINER=`root`@`localhost` SQL SECURITY DEFINER VIEW `room_schedule`  AS SELECT `schedule`.`room_id` AS `room_id`, `schedule`.`week_number` AS `week_number`, `schedule`.`weekday` AS `weekday`, `schedule`.`start_time` AS `start_time`, `schedule`.`end_time` AS `end_time`, `schedule`.`course_name` AS `event_name`, `schedule`.`instructor` AS `instructor`, `schedule`.`group_id` AS `group_id`, 'course' AS `event_type` FROM `schedule`union select `bookings`.`room_id` AS `room_id`,`bookings`.`week_number` AS `week_number`,(weekday(`bookings`.`start_time`) + 1) AS `weekday`,cast(`bookings`.`start_time` as time) AS `start_time`,cast(`bookings`.`end_time` as time) AS `end_time`,concat('Booking by User ',`bookings`.`user_id`) AS `event_name`,NULL AS `instructor`,NULL AS `group_id`,'booking' AS `event_type` from `bookings`  ;
 
 --
--- 转储表的索引
+-- store table index
 --
 
 --
--- 表的索引 `bookings`
+-- table index `bookings`
 --
 ALTER TABLE `bookings`
   -- ADD PRIMARY KEY (`booking_id`),
@@ -459,53 +397,53 @@ ALTER TABLE `bookings`
   ADD KEY `room_id` (`room_id`);
 
 --
--- 表的索引 `logs`
+-- table index `logs`
 --
 ALTER TABLE `logs`
   ADD PRIMARY KEY (`log_id`);
 
 --
--- 表的索引 `notifications`
+-- table index `notifications`
 --
 ALTER TABLE `notifications`
   ADD PRIMARY KEY (`notification_id`),
   ADD KEY `booking_id` (`booking_id`);
 
 --
--- 表的索引 `permissions`
+-- table index `permissions`
 --
 ALTER TABLE `permissions`
   ADD PRIMARY KEY (`permission_id`);
 
 --
--- 表的索引 `roles`
+-- table index `roles`
 --
 ALTER TABLE `roles`
   ADD PRIMARY KEY (`role_id`);
 
 --
--- 表的索引 `role_permissions`
+-- table index `role_permissions`
 --
 ALTER TABLE `role_permissions`
   ADD PRIMARY KEY (`role_id`,`permission_id`),
   ADD KEY `permission_id` (`permission_id`);
 
 --
--- 表的索引 `rooms`
+-- table index `rooms`
 --
 ALTER TABLE `rooms`
   ADD PRIMARY KEY (`room_id`),
   ADD UNIQUE KEY `room_name` (`room_name`);
 
 --
--- 表的索引 `room_issue`
+-- table index `room_issue`
 --
 ALTER TABLE `room_issue`
   ADD PRIMARY KEY (`issue_id`),
   ADD KEY `room_id` (`room_id`);
 
 --
--- 表的索引 `room_permission`
+-- table index `room_permission`
 --
 ALTER TABLE `room_permission`
   ADD PRIMARY KEY (`id`),
@@ -514,14 +452,14 @@ ALTER TABLE `room_permission`
   ADD KEY `user_id` (`user_id`);
 
 --
--- 表的索引 `schedule`
+-- table index `schedule`
 --
 ALTER TABLE `schedule`
   ADD PRIMARY KEY (`schedule_id`),
   ADD KEY `room_id` (`room_id`);
 
 --
--- 表的索引 `users`
+-- table index `users`
 --
 ALTER TABLE `users`
   ADD PRIMARY KEY (`user_id`),
@@ -530,101 +468,101 @@ ALTER TABLE `users`
   ADD KEY `role_id` (`role_id`);
 
 --
--- 在导出的表使用AUTO_INCREMENT
+-- use AUTO_INCREMENT
 --
 
 --
--- 使用表AUTO_INCREMENT `bookings`
+-- use table AUTO_INCREMENT `bookings`
 --
 ALTER TABLE `bookings`
   MODIFY `booking_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=38;
 
 --
--- 使用表AUTO_INCREMENT `logs`
+-- use table AUTO_INCREMENT `logs`
 --
 ALTER TABLE `logs`
   MODIFY `log_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=2;
 
 --
--- 使用表AUTO_INCREMENT `notifications`
+-- use table AUTO_INCREMENT `notifications`
 --
 ALTER TABLE `notifications`
   MODIFY `notification_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=68;
 
 --
--- 使用表AUTO_INCREMENT `permissions`
+-- use table AUTO_INCREMENT `permissions`
 --
 ALTER TABLE `permissions`
   MODIFY `permission_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
--- 使用表AUTO_INCREMENT `roles`
+-- use table AUTO_INCREMENT `roles`
 --
 ALTER TABLE `roles`
   MODIFY `role_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- 使用表AUTO_INCREMENT `rooms`
+-- use table AUTO_INCREMENT `rooms`
 --
 ALTER TABLE `rooms`
   MODIFY `room_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=27;
 
 --
--- 使用表AUTO_INCREMENT `room_issue`
+-- use table AUTO_INCREMENT `room_issue`
 --
 ALTER TABLE `room_issue`
   MODIFY `issue_id` bigint NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
 
 --
--- 使用表AUTO_INCREMENT `room_permission`
+-- use table AUTO_INCREMENT `room_permission`
 --
 ALTER TABLE `room_permission`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=14;
 
 --
--- 使用表AUTO_INCREMENT `schedule`
+-- use table AUTO_INCREMENT `schedule`
 --
 ALTER TABLE `schedule`
   MODIFY `schedule_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15355;
 
 --
--- 使用表AUTO_INCREMENT `users`
+-- use table AUTO_INCREMENT `users`
 --
 ALTER TABLE `users`
   MODIFY `user_id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=12;
 
 --
--- 限制导出的表
+-- retrict table
 --
 
 --
--- 限制表 `bookings`
+-- retrict table `bookings`
 --
 ALTER TABLE `bookings`
   ADD CONSTRAINT `bookings_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`),
   ADD CONSTRAINT `bookings_ibfk_2` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
 
 --
--- 限制表 `notifications`
+-- retrict table `notifications`
 --
 ALTER TABLE `notifications`
   ADD CONSTRAINT `notifications_ibfk_1` FOREIGN KEY (`booking_id`) REFERENCES `bookings` (`booking_id`);
 
 --
--- 限制表 `role_permissions`
+-- retrict table `role_permissions`
 --
 ALTER TABLE `role_permissions`
   ADD CONSTRAINT `role_permissions_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`),
   ADD CONSTRAINT `role_permissions_ibfk_2` FOREIGN KEY (`permission_id`) REFERENCES `permissions` (`permission_id`);
 
 --
--- 限制表 `room_issue`
+-- retrict table `room_issue`
 --
 ALTER TABLE `room_issue`
   ADD CONSTRAINT `room_issue_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
 
 --
--- 限制表 `room_permission`
+-- retrict table `room_permission`
 --
 ALTER TABLE `room_permission`
   ADD CONSTRAINT `room_permission_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`) ON DELETE CASCADE,
@@ -632,13 +570,13 @@ ALTER TABLE `room_permission`
   ADD CONSTRAINT `room_permission_ibfk_3` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL;
 
 --
--- 限制表 `schedule`
+-- retrict table `schedule`
 --
 ALTER TABLE `schedule`
   ADD CONSTRAINT `schedule_ibfk_1` FOREIGN KEY (`room_id`) REFERENCES `rooms` (`room_id`);
 
 --
--- 限制表 `users`
+-- retrict table `users`
 --
 ALTER TABLE `users`
   ADD CONSTRAINT `users_ibfk_1` FOREIGN KEY (`role_id`) REFERENCES `roles` (`role_id`);
@@ -649,11 +587,11 @@ DROP PROCEDURE IF EXISTS generate_weeks;
 CREATE PROCEDURE generate_weeks()
 BEGIN
     DECLARE i INT DEFAULT 2;
-    DECLARE start_dt DATE DEFAULT '2025-02-24'; -- 第2周开始日期
+    DECLARE start_dt DATE DEFAULT '2025-02-24';
     
     WHILE i <= 22 DO
         INSERT INTO weeks (week_number, start_date, end_date, description)
-        VALUES (i, start_dt, DATE_ADD(start_dt, INTERVAL 6 DAY), CONCAT('第', i, '教学周'));
+        VALUES (i, start_dt, DATE_ADD(start_dt, INTERVAL 6 DAY), CONCAT('The ', i, ' teaching week'));
         
         SET start_dt = DATE_ADD(start_dt, INTERVAL 7 DAY);
         SET i = i + 1;
@@ -662,18 +600,18 @@ END //
 DELIMITER ;
 
 INSERT INTO weeks (week_number, start_date, end_date, description)
-VALUES (1, '2025-02-17', '2024-02-23', '第1教学周');
+VALUES (1, '2025-02-17', '2024-02-23', 'The 1 teaching week');
 CALL generate_weeks();
 
--- 删除现有触发器
+
 DROP TRIGGER IF EXISTS `check_booking_conflict`;
 
--- 创建新的触发器
+-- Create a new trigger
 DELIMITER $$
 CREATE TRIGGER `check_booking_conflict` BEFORE INSERT ON `bookings` 
 FOR EACH ROW 
 BEGIN
-    -- 检查是否与现有课程时间冲突
+    -- Check if there is any conflict with existing courses
     IF EXISTS (
         SELECT 1 FROM schedule 
         WHERE room_id = NEW.room_id
@@ -703,7 +641,7 @@ BEGIN
         )
     ) THEN
         SIGNAL SQLSTATE '45000'
-        SET MESSAGE_TEXT = '该时间段已被预订，请选择其他时间';
+        SET MESSAGE_TEXT = 'This time slot is already booked, please select another time';
     END IF;
 END$$
 DELIMITER ;

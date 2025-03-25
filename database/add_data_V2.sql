@@ -1,12 +1,3 @@
--- phpMyAdmin SQL Dump
--- version 5.2.1
--- https://www.phpmyadmin.net/
---
--- 主机： 127.0.0.1
--- 生成日期： 2025-03-21 07:23:14
--- 服务器版本： 9.0.1
--- PHP 版本： 8.2.12
-
 USE `diicsu_room_booking_system_v4_1`;
 
 
@@ -16,13 +7,13 @@ USE `diicsu_room_booking_system_v4_1`;
 /*!40101 SET NAMES utf8mb4 */;
 
 --
--- 数据库： `diicsu_room_booking_system_v4_1`
+-- database `diicsu_room_booking_system_v4_1`
 --
 
 -- --------------------------------------------------------
 
 --
--- 表的结构 `schedule`
+-- table struct `schedule`
 --
 
 DROP TABLE IF EXISTS `schedule`;
@@ -41,7 +32,7 @@ CREATE TABLE `schedule` (
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 --
--- 转存表中的数据 `schedule`
+-- store data `schedule`
 --
 
 INSERT INTO `schedule` (`schedule_id`, `room_id`, `week_number`, `weekday`, `period`, `start_time`, `end_time`, `course_name`, `instructor`, `group_id`) VALUES
