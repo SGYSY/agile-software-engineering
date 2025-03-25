@@ -36,19 +36,15 @@ public class UserService {
 
     public User saveUser(User user) {
         if (user.getId() == null) {  
-            // 创建用户时，如果密码不是哈希格式，则进行加密
             if (user.getPasswordHash() != null && !user.getPasswordHash().startsWith("$2a$")) {
                 user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
             }
-        } else {  
-            // 更新用户时，避免密码被覆盖成明文
+        } else {
             Optional<User> existingUser = userRepository.findById(user.getId());
             if (existingUser.isPresent()) {
-                // 如果请求体中的密码为空，则保持原密码
                 if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
                     user.setPasswordHash(existingUser.get().getPasswordHash());
                 } else if (!user.getPasswordHash().startsWith("$2a$")) {
-                    // 只有当密码不是哈希格式时，才进行加密
                     user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
                 }
             }
@@ -68,11 +64,6 @@ public class UserService {
         return userRepository.existsByEmail(email);
     }
 
-    /**
-     * 通过邮箱查询用户
-     * @param email 用户邮箱
-     * @return 用户Optional
-     */
     public Optional<User> getUserByEmail(String email) {
         return userRepository.findByEmail(email);
     }

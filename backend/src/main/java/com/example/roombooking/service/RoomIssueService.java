@@ -32,7 +32,6 @@ public class RoomIssueService {
     }
     
     public RoomIssue reportIssue(RoomIssue issue) {
-        // 确保关联的房间存在
         Room room = roomRepository.findById(issue.getRoom().getId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
         issue.setRoom(room);

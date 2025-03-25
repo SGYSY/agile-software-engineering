@@ -18,47 +18,37 @@ public class EmailService {
     
     @Value("${spring.mail.username}")
     private String fromEmail;
-    
-    /**
-     * 发送简单邮件
-     * @param to 收件人
-     * @param subject 主题
-     * @param text 内容
-     */
+
     public void sendEmail(String to, String subject, String text) {
         if (mailSender == null) {
-            logger.warn("邮件服务未配置，无法发送邮件到: {}", to);
+            logger.warn("The mail service is not configured and cannot send emails to: {}", to);
             return;
         }
         
         try {
-            logger.info("准备发送邮件，发件人: {}, 收件人: {}", fromEmail, to);
+            logger.info("Ready to send message from: {}, recipient: {}", fromEmail, to);
             
             SimpleMailMessage message = new SimpleMailMessage();
-            // 确保发件人地址与授权用户完全一致 - 不添加任何额外格式
             message.setFrom(fromEmail);
             message.setTo(to);
             message.setSubject(subject);
             message.setText(text);
             
             mailSender.send(message);
-            logger.info("邮件已成功发送至: {}", to);
+            logger.info("The email was successfully sent to: {}", to);
         } catch (Exception e) {
-            logger.error("发送邮件失败: {}", e.getMessage(), e);  // 添加完整堆栈跟踪
+            logger.error("Failed to send mail: {}", e.getMessage(), e);
         }
     }
     
-    /**
-     * 发送验证码邮件
-     * @param email 收件人邮箱
-     * @param code 验证码
-     */
+
     public void sendVerificationCode(String email, String code) {
-        String subject = "Room Booking System - 登录验证码";
-        String text = "尊敬的用户：\n\n您的登录验证码是: " + code 
-                + "。\n该验证码10分钟内有效，请勿泄露给他人。\n\n"
-                + "如果这不是您的操作，请忽略此邮件。\n\n"
-                + "Room Booking System 团队";
+        String subject = "Room Booking System - login verification code";
+        String text = "Dear user:\n\nYour login verification code is: " + code
+                + ".\nThe verification code is valid for 10 minutes. Do not disclose it to others\n" +
+                "\n.\n\n"
+                + "If this is not your action, please ignore this message.\n\n"
+                + "Room Booking System Team";
         sendEmail(email, subject, text);
     }
 }

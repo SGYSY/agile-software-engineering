@@ -40,14 +40,13 @@ public class BookingService {
     private NotificationService notificationService;
 
     @Autowired
-    private WeekService weekService;  // 假设有一个服务来处理周次信息
+    private WeekService weekService;
 
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
 
 
-    // 在 BookingService 类中添加一个 ScheduleService 依赖
     @Autowired
     private ScheduleService scheduleService;
 
@@ -80,13 +79,10 @@ public class BookingService {
                 .orElse(List.of());
     }
 
-    // 修改 hasConflict 方法以同时检查预订冲突和课程表冲突
     public boolean hasConflict(Long roomId, Integer weekNumber, Integer dayOfWeek, LocalTime startTime, LocalTime endTime) {
-        // 1. 检查与其他预订的冲突
         List<Booking> existingBookings = bookingRepository.findConflictingBookings(
             roomId, weekNumber, dayOfWeek, startTime, endTime);
-        
-        // 2. 检查与课程表的冲突
+
         boolean scheduleConflict = scheduleService.hasScheduleConflict(
             roomId, weekNumber, dayOfWeek, startTime, endTime);
         
@@ -95,19 +91,16 @@ public class BookingService {
 
     public Booking createBooking(Booking booking) {
         try {
-            // 1. 首先加载完整的用户信息，包括角色
             User user = userRepository.findById(booking.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
             booking.setUser(user);
-            
-            // 2. 加载完整的房间信息
+
             Room room = roomRepository.findById(booking.getRoom().getId())
                 .orElseThrow(() -> new RuntimeException("Room not found"));
             booking.setRoom(room);
             
-            System.out.println("创建预订: " + booking); 
-            
-            // 3. 检测时间冲突
+            System.out.println("Create booking: " + booking);
+
             boolean hasConflict = hasConflict(
                 room.getId(), 
                 booking.getWeekNumber(), 
@@ -116,11 +109,10 @@ public class BookingService {
                 booking.getEndTime()
             );
             
-            System.out.println("冲突检测结果: " + hasConflict);
+            System.out.println("Conflict detection result: " + hasConflict);
             
             booking.setConflictDetected(hasConflict);
-            
-            // 4. 设置预订状态
+
             if (user.getRole() != null && 
                 "Student".equals(user.getRole().getName()) && 
                 !hasConflict) {
@@ -129,11 +121,9 @@ public class BookingService {
                 booking.setStatus(Booking.BookingStatus.confirmed);
             }
             
-            System.out.println("设置预订状态: " + booking.getStatus());
+            System.out.println("Set reservation status: " + booking.getStatus());
 
-            // 5. 使用JDBC直接插入而不是JPA
             // String sql = "INSERT INTO bookings (conflict_detected, day_of_week, end_time, room_id, start_time, status, user_id, week_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
-            // 修改 SQL 插入语句，确保字段名称正确且有反引号
             String sql = "INSERT INTO `bookings` " +
             "(`conflict_detected`, `day_of_week`, `end_time`, " +
             "`room_id`, `start_time`, `status`, `user_id`, `week_number`) " +
@@ -152,40 +142,35 @@ public class BookingService {
                 ps.setInt(8, booking.getWeekNumber());
                 return ps;
             }, keyHolder);
-            
-            // 获取生成的ID
+
             Long generatedId = keyHolder.getKey().longValue();
             booking.setId(generatedId);
             
-            System.out.println("保存预订成功，ID: " + generatedId);
-            
-            // 6. 创建通知
+            System.out.println("Reservation saved successfully, ID: " + generatedId);
+
             try {
                 notificationService.createBookingNotification(booking);
             } catch (Exception e) {
-                System.err.println("创建通知时出错: " + e.getMessage());
+                System.err.println("An error occurred while creating the notification: " + e.getMessage());
             }
 
-            // 如果是自动确认的预订（非学生用户或无冲突），直接发送确认邮件
             if (booking.getStatus() == Booking.BookingStatus.confirmed) {
                 notificationService.sendBookingConfirmationEmail(booking);
             }
             
             return booking;
         } catch (Exception e) {
-            System.err.println("创建预订时发生错误: " + e.getMessage());
+            System.err.println("An error occurred while creating the reservation: " + e.getMessage());
             e.printStackTrace();
             throw e;
         }
     }
 
     public Booking updateBooking(Booking booking) {
-        // 检查是否存在此预订
         if (!bookingRepository.existsById(booking.getId())) {
             return null;
         }
-        
-        // 如果修改了时间，需要重新检查冲突
+
         boolean hasConflict = hasConflict(
             booking.getRoom().getId(), 
             booking.getWeekNumber(), 
@@ -215,11 +200,9 @@ public class BookingService {
             Booking bookingToApprove = booking.get();
             bookingToApprove.setStatus(Booking.BookingStatus.confirmed);
             bookingRepository.save(bookingToApprove);
-            
-            // 创建确认通知
+
             notificationService.createApprovalNotification(bookingToApprove);
 
-            // 直接发送确认邮件
             notificationService.sendBookingConfirmationEmail(bookingToApprove);
             
             return true;
@@ -228,24 +211,19 @@ public class BookingService {
     }
 
     public void deleteBooking(Long id) {
-        // 1. 先获取预订信息
         Optional<Booking> booking = bookingRepository.findById(id);
         if (booking.isPresent()) {
-            // 2. 删除相关的通知
             notificationService.deleteNotificationsByBookingId(id);
             
-            
-            // 3. 最后删除预订记录
+
             bookingRepository.deleteById(id);
         }
     }
-    
-    // 获取特定周的预订
+
     public List<Booking> getBookingsByWeek(Integer weekNumber) {
         return bookingRepository.findByWeekNumber(weekNumber);
     }
-    
-    // 获取特定房间在特定周和日期的预订
+
     public List<Booking> getBookingsByRoomAndDate(Long roomId, Integer weekNumber, Integer dayOfWeek) {
         return bookingRepository.findByRoomIdAndWeekAndDay(roomId, weekNumber, dayOfWeek);
     }

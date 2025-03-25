@@ -94,9 +94,8 @@ public class BookingController {
             Booking createdBooking = bookingService.createBooking(booking);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
         } catch (Exception e) {
-            // 返回详细错误信息
             Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("error", "创建预订失败");
+            errorResponse.put("error", "create booking failed");
             errorResponse.put("message", e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(errorResponse);
         }
@@ -159,59 +158,51 @@ public class BookingController {
         @RequestParam(required = false) Integer timeSlotEnd) {
         
         try {
-            System.out.println("搜索预订请求 - userId: " + userId + ", roomId: " + roomId + 
+            System.out.println("Search Booking Requests - userId: " + userId + ", roomId: " + roomId +
                 ", weekNumber: " + weekNumber + ", dayOfWeek: " + dayOfWeek + 
                 ", startTimeAfter: " + startTimeAfter + ", endTimeBefore: " + endTimeBefore + 
                 ", status: " + status + ", timeSlot: " + timeSlotStart + "-" + timeSlotEnd);
-            
-            // 初始获取所有预订
+
             List<Booking> resultBookings = bookingService.getAllBookings();
             int originalCount = resultBookings.size();
-            
-            // 根据用户ID筛选
+
             if (userId != null) {
                 resultBookings = resultBookings.stream()
                     .filter(booking -> booking.getUser() != null && userId.equals(booking.getUser().getId()))
                     .toList();
-                System.out.println("按用户筛选后，还剩 " + resultBookings.size() + " 个预订");
+                System.out.println("After filtering by user " + resultBookings.size() + " left");
             }
-            
-            // 根据房间ID筛选
+
             if (roomId != null) {
                 resultBookings = resultBookings.stream()
                     .filter(booking -> booking.getRoom() != null && roomId.equals(booking.getRoom().getId()))
                     .toList();
-                System.out.println("按房间筛选后，还剩 " + resultBookings.size() + " 个预订");
+                System.out.println("After filtering by room " + resultBookings.size() + " left");
             }
-            
-            // 根据周数筛选
+
             if (weekNumber != null) {
                 resultBookings = resultBookings.stream()
                     .filter(booking -> weekNumber.equals(booking.getWeekNumber()))
                     .toList();
-                System.out.println("按周数筛选后，还剩 " + resultBookings.size() + " 个预订");
+                System.out.println("After filtering by week " + resultBookings.size() + " left");
             }
-            
-            // 根据星期几筛选
+
             if (dayOfWeek != null) {
                 if (dayOfWeek < 1 || dayOfWeek > 7) {
-                    return ResponseEntity.badRequest().body("星期几必须在1-7之间");
+                    return ResponseEntity.badRequest().body("The day of the week must be between 1 and 7");
                 }
                 
                 resultBookings = resultBookings.stream()
                     .filter(booking -> dayOfWeek.equals(booking.getDayOfWeek()))
                     .toList();
-                System.out.println("按星期几筛选后，还剩 " + resultBookings.size() + " 个预订");
+                System.out.println("After filtering by weekday " + resultBookings.size() + " left");
             }
-            
-            // 处理时间段筛选
+
             if (timeSlotStart != null && timeSlotEnd != null) {
-                // 验证时间段参数
                 if (timeSlotStart < 1 || timeSlotEnd > 12 || timeSlotStart > timeSlotEnd) {
-                    return ResponseEntity.badRequest().body("时间段必须在1-12之间，且起始时间不能大于结束时间");
+                    return ResponseEntity.badRequest().body("The time range must be between 1 and 12, and the start time cannot be greater than the end time.");
                 }
-                
-                // 转换时间段为实际时间
+
                 LocalTime startTime = convertTimeSlotToLocalTime(timeSlotStart);
                 LocalTime endTime;
                 if (timeSlotEnd < 12) {
@@ -225,22 +216,20 @@ public class BookingController {
                 
                 resultBookings = resultBookings.stream()
                     .filter(booking -> {
-                        // 检查预订时间是否与搜索时间段重叠
                         LocalTime bookingStart = booking.getStartTime();
                         LocalTime bookingEnd = booking.getEndTime();
                         return (bookingStart.isBefore(finalEndTime) && bookingEnd.isAfter(finalStartTime)) ||
                             bookingStart.equals(finalStartTime) || bookingEnd.equals(finalEndTime);
                     })
                     .toList();
-                System.out.println("按时间段筛选后，还剩 " + resultBookings.size() + " 个预订");
+                System.out.println("After filtering by time table " + resultBookings.size() + " left");
             } else {
-                // 如果提供了精确的开始或结束时间
                 if (startTimeAfter != null) {
                     resultBookings = resultBookings.stream()
                         .filter(booking -> booking.getStartTime().isAfter(startTimeAfter) || 
                                         booking.getStartTime().equals(startTimeAfter))
                         .toList();
-                    System.out.println("按开始时间筛选后，还剩 " + resultBookings.size() + " 个预订");
+                    System.out.println("After filtering by start time " + resultBookings.size() + " left");
                 }
                 
                 if (endTimeBefore != null) {
@@ -248,34 +237,32 @@ public class BookingController {
                         .filter(booking -> booking.getEndTime().isBefore(endTimeBefore) || 
                                         booking.getEndTime().equals(endTimeBefore))
                         .toList();
-                    System.out.println("按结束时间筛选后，还剩 " + resultBookings.size() + " 个预订");
+                    System.out.println("After filtering by end time " + resultBookings.size() + " left");
                 }
             }
-            
-            // 根据状态筛选
+
             if (status != null && !status.isEmpty()) {
                 try {
                     Booking.BookingStatus bookingStatus = Booking.BookingStatus.valueOf(status.toLowerCase());
                     resultBookings = resultBookings.stream()
                         .filter(booking -> bookingStatus.equals(booking.getStatus()))
                         .toList();
-                    System.out.println("按状态筛选后，还剩 " + resultBookings.size() + " 个预订");
+                    System.out.println("After filtering by state " + resultBookings.size() + " left");
                 } catch (IllegalArgumentException e) {
-                    return ResponseEntity.badRequest().body("无效的预订状态: " + status + 
-                        "。有效值为: pending, confirmed, cancelled");
+                    return ResponseEntity.badRequest().body("Invalid state: " + status +
+                        ". Available value are: pending, confirmed, cancelled");
                 }
             }
             
-            System.out.println("总计从 " + originalCount + " 个预订过滤到 " + resultBookings.size() + " 个预订");
+            System.out.println("Total " + originalCount + " booking filter " + resultBookings.size() + " left");
             return ResponseEntity.ok(resultBookings);
             
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body("搜索失败: " + e.getMessage());
+            return ResponseEntity.badRequest().body("Search failed: " + e.getMessage());
         }
     }
 
-    // 从RoomController复制的时间段转换方法
     private LocalTime convertTimeSlotToLocalTime(Integer timeSlot) {
         switch (timeSlot) {
             case 1: return LocalTime.of(8, 0);
@@ -290,7 +277,7 @@ public class BookingController {
             case 10: return LocalTime.of(19, 55);
             case 11: return LocalTime.of(20, 50);
             case 12: return LocalTime.of(21, 45);
-            default: throw new IllegalArgumentException("无效的时间段编号: " + timeSlot);
+            default: throw new IllegalArgumentException("Invalid time slot number: " + timeSlot);
         }
     }
     

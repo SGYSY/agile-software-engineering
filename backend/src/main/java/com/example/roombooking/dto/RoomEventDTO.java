@@ -5,7 +5,7 @@ import java.time.LocalTime;
 public class RoomEventDTO {
     
     private Long id;
-    private String eventType; // "course" 或 "booking"
+    private String eventType;
     private Long roomId;
     private String roomName;
     private Integer weekNumber;
@@ -15,13 +15,11 @@ public class RoomEventDTO {
     private String title;
     private String instructor;
     private String groupId;
-    private String status; // 预订状态，课程为null
-    
-    // 构造函数、getter和setter
+    private String status;
+
     public RoomEventDTO() {
     }
-    
-    // 从课程创建事件
+
     public static RoomEventDTO fromSchedule(com.example.roombooking.entity.Schedule schedule) {
         RoomEventDTO dto = new RoomEventDTO();
         dto.id = schedule.getId();

@@ -28,7 +28,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
        nativeQuery = true)
     List<Room> findAvailableRooms(String start, String end);
 
-    // 修改后的查询，根据周数、星期和时间段查找可用房间
     @Query(value = "SELECT DISTINCT r.* " +
         "FROM rooms r " +
         "LEFT JOIN bookings b ON r.room_id = b.room_id " +
@@ -46,9 +45,6 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         @Param("startTime") Time startTime,
         @Param("endTime") Time endTime);
 
-    /**
-     * 查找在指定时间段内可用的房间ID列表
-     */
     @Query(value = "SELECT r.room_id " +
     "FROM rooms r " +
     "WHERE r.room_id IN :roomIds " + 

@@ -16,127 +16,88 @@ public class WeekService {
 
     @Autowired
     private JdbcTemplate jdbcTemplate;
-    
+
     @Autowired
     private WeekRepository weekRepository;
-    
-    /**
-     * 获取所有教学周
-     */
+
+    // Retrieve all week records from the database
     public List<Week> getAllWeeks() {
         return weekRepository.findAll();
     }
-    
-    /**
-     * 根据ID获取教学周
-     */
+
+    // Find a week by its unique ID
     public Optional<Week> getWeekById(Long id) {
         return weekRepository.findById(id);
     }
-    
-    /**
-     * 根据周数获取教学周
-     */
+
+    // Find a week by its week number
     public Optional<Week> getWeekByNumber(Integer weekNumber) {
         return weekRepository.findByWeekNumber(weekNumber);
     }
-    
-    /**
-     * 获取当前教学周
-     * @return 当前的教学周数，如果不在任何教学周期内返回0
-     */
+
+    // Get the current teaching week number based on today's date
     public Integer getCurrentWeekNumber() {
-        // 尝试使用原有方法
         Optional<Week> currentWeek = weekRepository.findCurrentWeek();
         System.out.println("currentWeek: " + currentWeek);
         if (currentWeek.isPresent()) {
             return currentWeek.get().getWeekNumber();
         }
-        
-        // 如果失败，则使用当前日期查询
+
         LocalDate today = LocalDate.now();
         return getWeekNumberByDate(today);
     }
-    
-    /**
-     * 获取当前教学周详细信息
-     */
+
+    // Retrieve the current week object based on today's date
     public Optional<Week> getCurrentWeek() {
         return weekRepository.findCurrentWeek();
     }
-    
-    /**
-     * 根据日期获取教学周
-     * @param date 特定日期
-     * @return 对应的教学周数，如果不在任何教学周期内返回0
-     */
+
+    // Get the week number that includes the given date
     public Integer getWeekNumberByDate(LocalDate date) {
         Optional<Week> week = weekRepository.findByDate(date);
         return week.map(Week::getWeekNumber).orElse(0);
     }
-    
-    /**
-     * 根据日期获取教学周详细信息
-     */
+
+    // Find the week that contains the given date
     public Optional<Week> getWeekByDate(LocalDate date) {
         return weekRepository.findByDate(date);
     }
-    
-    /**
-     * 获取教学周的开始日期
-     * @param weekNumber 教学周数
-     * @return 开始日期
-     */
+
+    // Get the start date of the given week number
     public LocalDate getWeekStartDate(Integer weekNumber) {
         Optional<Week> week = weekRepository.findByWeekNumber(weekNumber);
         return week.map(Week::getStartDate).orElse(null);
     }
-    
-    /**
-     * 获取教学周的结束日期
-     * @param weekNumber 教学周数
-     * @return 结束日期
-     */
+
+    // Get the end date of the given week number
     public LocalDate getWeekEndDate(Integer weekNumber) {
         Optional<Week> week = weekRepository.findByWeekNumber(weekNumber);
         return week.map(Week::getEndDate).orElse(null);
     }
-    
-    /**
-     * 创建或更新教学周
-     */
+
+    // Save or update a Week object in the database
     public Week saveWeek(Week week) {
         return weekRepository.save(week);
     }
-    
-    /**
-     * 删除教学周
-     */
+
+    // Delete a week record by ID
     public void deleteWeek(Long id) {
         weekRepository.deleteById(id);
     }
-    
-    /**
-     * 检查日期是否在教学周期内
-     */
+
+    // Check if the given date falls within a teaching week
     public boolean isDateInTeachingWeek(LocalDate date) {
         Optional<Week> week = weekRepository.findByDate(date);
         return week.isPresent();
     }
-    
-    /**
-     * 检查当前是否在教学周期内
-     */
+
+    // Check if today's date falls within a teaching week
     public boolean isCurrentDateInTeachingWeek() {
         Optional<Week> week = weekRepository.findCurrentWeek();
         return week.isPresent();
     }
-    
-    /**
-     * 获取特定周的日期范围
-     * @param weekNumber 周数
-     * @return 日期范围描述
-     */
+
+    // Get a formatted string representing the date range of the given week number
     public String getWeekDateRange(Integer weekNumber) {
         Optional<Week> week = weekRepository.findByWeekNumber(weekNumber);
         if (week.isPresent()) {
@@ -145,47 +106,33 @@ public class WeekService {
         }
         return "Unknown week";
     }
-    
-    /**
-     * 批量生成教学周数据
-     * @param startDate 第一周开始日期
-     * @param numWeeks 周数
-     */
+
+    // Automatically generate a set of teaching weeks starting from a given date
     public void generateWeeks(LocalDate startDate, int numWeeks) {
         LocalDate currentStart = startDate;
-        
+
         for (int i = 1; i <= numWeeks; i++) {
             Week week = new Week();
             week.setWeekNumber(i);
             week.setStartDate(currentStart);
-            week.setEndDate(currentStart.plusDays(6)); // 设置结束日期为本周最后一天
-            week.setDescription("第" + i + "教学周");
-            
+            week.setEndDate(currentStart.plusDays(6));
+            week.setDescription("For" + i + " Week");
+
             weekRepository.save(week);
-            
-            // 下一周的开始日期
+
             currentStart = currentStart.plusDays(7);
         }
     }
-    
-    /**
-     * 获取所有教学周信息 (原有JdbcTemplate实现保留，兼容可能的遗留代码)
-     * @return 包含所有教学周信息的列表
-     */
+
+    // Legacy method using raw SQL to fetch week data
     public List<Map<String, Object>> getAllWeeksLegacy() {
         String sql = "SELECT * FROM weeks ORDER BY week_number";
         return jdbcTemplate.queryForList(sql);
     }
 
-    /**
-     * 根据日期获取教学周数
-     * @param date 日期
-     * @return 周数，如果不在教学周内返回null
-     */
+    // Get the week number for a specific date
     public Integer getWeekNumberForDate(LocalDate date) {
         Optional<Week> week = weekRepository.findByDate(date);
         return week.map(Week::getWeekNumber).orElse(null);
     }
-
-    
 }

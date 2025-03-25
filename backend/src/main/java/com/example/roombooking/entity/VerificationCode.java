@@ -25,8 +25,7 @@ public class VerificationCode {
     
     @Column(nullable = false)
     private boolean used;
-    
-    // 验证码是否有效
+
     @Transient
     public boolean isValid() {
         return !used && LocalDateTime.now().isBefore(expiryTime);

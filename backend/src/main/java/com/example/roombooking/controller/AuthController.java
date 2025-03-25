@@ -10,76 +10,78 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+/**
+ * Controller for handling authentication-related API endpoints.
+ */
 @RestController
 @RequestMapping("/api/auth")
-@CrossOrigin(origins = "*")
+@CrossOrigin(origins = "*") // Allow requests from any origin (CORS)
 public class AuthController {
 
     @Autowired
     private AuthService authService;
-    
+
     /**
-     * 用户名密码登录
-     * @param request 登录请求
-     * @return 登录成功返回token等信息，失败返回错误信息
+     * Login using email and password.
+     * @param request Contains email and password.
+     * @return AuthResponse if successful, otherwise error message.
      */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody AuthRequest request) {
         AuthResponse response = authService.authenticate(request);
-        
+
         if (response == null) {
-            return ResponseEntity.badRequest().body("用户名或密码错误");
+            return ResponseEntity.badRequest().body("Account not found or password incorrect");
         }
-        
+
         return ResponseEntity.ok(response);
     }
-    
+
     /**
-     * 请求发送验证码
-     * @param request 请求体，包含邮箱
-     * @return 发送结果
+     * Send a verification code to the given email.
+     * @param request Contains the email address.
+     * @return Success or failure message.
      */
     @PostMapping("/send-code")
     public ResponseEntity<?> sendVerificationCode(@RequestBody EmailVerificationRequest request) {
         boolean sent = authService.requestVerificationCode(request.getEmail());
-        
+
         if (!sent) {
-            return ResponseEntity.badRequest().body("发送验证码失败，请检查邮箱是否正确或稍后再试");
+            return ResponseEntity.badRequest().body("Sending verification code failed");
         }
-        
-        return ResponseEntity.ok("验证码已发送到您的邮箱，有效期10分钟");
+
+        return ResponseEntity.ok("The verification code has been sent to your email. It is valid for 10 minutes.");
     }
-    
+
     /**
-     * 通过验证码登录
-     * @param request 包含邮箱和验证码的请求
-     * @return 登录成功返回token等信息，失败返回错误信息
+     * Verify the submitted email and verification code.
+     * @param request Contains email and code.
+     * @return AuthResponse if successful, otherwise error message.
      */
     @PostMapping("/verify-code")
     public ResponseEntity<?> verifyCode(@RequestBody VerifyCodeRequest request) {
         AuthResponse response = authService.verifyCodeAndLogin(request.getEmail(), request.getCode());
-        
+
         if (response == null) {
-            return ResponseEntity.badRequest().body("验证码无效或已过期");
+            return ResponseEntity.badRequest().body("The verification code is invalid or has expired.");
         }
-        
+
         return ResponseEntity.ok(response);
     }
 
-
     /**
-     * 三重验证登录 - 邮箱+密码+验证码
-     * @param request 包含邮箱、密码和验证码的请求
-     * @return 登录成功返回token等信息，失败返回错误信息
+     * Login using a combination of email, password, and verification code.
+     * @param request Contains email, password, and code.
+     * @return AuthResponse if successful, otherwise error message.
      */
     @PostMapping("/full-login")
     public ResponseEntity<?> fullLogin(@RequestBody FullAuthRequest request) {
         AuthResponse response = authService.fullAuthenticate(request);
-        
+
         if (response == null) {
-            return ResponseEntity.badRequest().body("登录失败，请检查邮箱、密码和验证码是否正确");
+            return ResponseEntity.badRequest().body("Login failed");
         }
-        
+
         return ResponseEntity.ok(response);
     }
 }

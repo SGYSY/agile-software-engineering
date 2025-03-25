@@ -53,7 +53,7 @@ public class GlobalExceptionHandler {
             java.util.ConcurrentModificationException ex, WebRequest request) {
         Map<String, Object> body = new HashMap<>();
         body.put("timestamp", LocalDateTime.now());
-        body.put("message", "检测到 JSON 序列化中的循环引用。请联系开发人员修复此问题。");
+        body.put("message", "A circular reference was detected during JSON serialization. Please contact the developer to fix this issue.");
         body.put("exceptionDetails", ex.getMessage());
         body.put("path", request.getDescription(false));
         

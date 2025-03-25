@@ -90,33 +90,18 @@ public class NotificationController {
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * 获取指定用户的所有通知
-     * @param userId 用户ID
-     * @return 通知列表
-     */
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Notification>> getNotificationsByUser(@PathVariable Long userId) {
         List<Notification> notifications = notificationService.getNotificationsByUserId(userId);
         return ResponseEntity.ok(notifications);
     }
-    
-    /**
-     * 获取指定用户的未送达通知
-     * @param userId 用户ID
-     * @return 未送达的通知列表
-     */
+
     // @GetMapping("/user/{userId}/pending")
     // public ResponseEntity<List<Notification>> getUserPendingNotifications(@PathVariable Long userId) {
     //     List<Notification> notifications = notificationService.getNotificationsByUserIdAndSent(userId, false);
     //     return ResponseEntity.ok(notifications);
     // }
-    
-    /**
-     * 获取指定用户的已送达通知
-     * @param userId 用户ID
-     * @return 已送达的通知列表
-    //  */
+
     // @GetMapping("/user/{userId}/sent")
     // public ResponseEntity<List<Notification>> getUserSentNotifications(@PathVariable Long userId) {
     //     List<Notification> notifications = notificationService.getNotificationsByUserIdAndSent(userId, true);

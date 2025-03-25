@@ -35,121 +35,87 @@ public class AuthService {
 
     @Autowired
     private VerificationCodeRepository verificationCodeRepository;
-    
-    /**
-     * 用户名密码登录
-     * @param request 包含用户名和密码的请求
-     * @return 认证成功返回AuthResponse，失败返回null
-     */
+
     public AuthResponse authenticate(AuthRequest request) {
         Optional<User> userOptional = userService.getUserByUsername(request.getUsername());
         
         if (userOptional.isEmpty()) {
-            logger.info("登录失败：用户名不存在 - {}", request.getUsername());
-            return null; // 用户不存在
+            logger.info("Login failed: The user name does not exist - {}", request.getUsername());
+            return null;
         }
         
         User user = userOptional.get();
-        
-        // 验证密码
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            logger.info("登录失败：密码错误 - {}", request.getUsername());
-            return null; // 密码错误
+            logger.info("Login failure: The password is incorrect - {}", request.getUsername());
+            return null;
         }
         
-        logger.info("用户 {} 登录成功", user.getUsername());
+        logger.info("User {} logged in successfully", user.getUsername());
         return generateAuthResponse(user);
     }
-    
-    /**
-     * 请求发送验证码
-     * @param email 邮箱地址
-     * @return 如果发送成功返回true，否则返回false
-     */
+
     public boolean requestVerificationCode(String email) {
-        logger.info("用户请求发送验证码到邮箱: {}", email);
+        logger.info("The user requests to send the verification code to the email address: {}", email);
         return verificationCodeService.sendVerificationCode(email);
     }
-    
-    /**
-     * 验证码登录
-     * @param email 邮箱
-     * @param code 验证码
-     * @return 验证成功返回AuthResponse，失败返回null
-     */
+
     public AuthResponse verifyCodeAndLogin(String email, String code) {
         Optional<User> userOptional = verificationCodeService.verifyCode(email, code);
         
         if (userOptional.isEmpty()) {
-            logger.info("验证码登录失败: 邮箱={}", email);
-            return null; // 验证码无效或已过期
+            logger.info("Verification code Login failure: Email={}", email);
+            return null;
         }
         
         User user = userOptional.get();
-        logger.info("用户 {} 通过验证码登录成功", user.getUsername());
+        logger.info("User {} successfully logs in using the verification code", user.getUsername());
         return generateAuthResponse(user);
     }
-    
-    /**
-     * 生成认证响应
-     * @param user 用户
-     * @return 认证响应
-     */
+
     private AuthResponse generateAuthResponse(User user) {
-        // 生成JWT令牌
         String token = jwtUtil.generateToken(user);
-        
-        // 获取角色名（如果存在）
+
         String roleName = (user.getRole() != null) ? user.getRole().getName() : "user";
         
         return new AuthResponse(token, user.getId(), user.getUsername(), roleName);
     }
 
 
-    /**
-     * 三重验证登录 - 邮箱+密码+验证码
-     * @param request 包含邮箱、密码和验证码的请求
-     * @return 认证成功返回AuthResponse，失败返回null
-     */
     public AuthResponse fullAuthenticate(FullAuthRequest request) {
-        // 1. 首先验证用户邮箱和密码
         Optional<User> userOptional = userService.getUserByEmail(request.getEmail());
         
         if (userOptional.isEmpty()) {
-            logger.info("登录失败：邮箱不存在 - {}", request.getEmail());
-            return null; // 用户不存在
+            logger.info("Login failed: The mailbox does not exist - {}", request.getEmail());
+            return null;
         }
         
         User user = userOptional.get();
-        
-        // 验证密码
+
         if (!passwordEncoder.matches(request.getPassword(), user.getPasswordHash())) {
-            logger.info("登录失败：密码错误 - {}", request.getEmail());
-            return null; // 密码错误
+            logger.info("Login failure: The password is incorrect - {}", request.getEmail());
+            return null;
         }
-        
-        // 2. 验证验证码
+
         Optional<VerificationCode> verificationCodeOpt = 
             verificationCodeRepository.findByEmailAndCodeAndUsedFalse(request.getEmail(), request.getCode());
         
         if (verificationCodeOpt.isEmpty()) {
-            logger.info("登录失败：验证码无效 - {}", request.getEmail());
-            return null; // 验证码无效
+            logger.info("Login failed: The verification code is invalid - {}", request.getEmail());
+            return null;
         }
         
         VerificationCode verificationCode = verificationCodeOpt.get();
-        
-        // 检查验证码是否过期
+
         if (LocalDateTime.now().isAfter(verificationCode.getExpiryTime())) {
-            logger.info("登录失败：验证码已过期 - {}", request.getEmail());
-            return null; // 验证码已过期
+            logger.info("Login failure: The verification code has expired - {}", request.getEmail());
+            return null;
         }
-        
-        // 验证通过，标记验证码为已使用
+
         verificationCode.setUsed(true);
         verificationCodeRepository.save(verificationCode);
         
-        logger.info("用户 {} 通过三重验证登录成功", user.getUsername());
+        logger.info("User {} successfully logs in through triple authentication", user.getUsername());
         return generateAuthResponse(user);
     }
 

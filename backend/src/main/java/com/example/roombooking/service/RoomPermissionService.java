@@ -49,8 +49,7 @@ public class RoomPermissionService {
     
     public List<Room> getAccessibleRoomsForUser(Long userId) {
         List<Object[]> results = roomPermissionRepository.findAccessibleRoomsForUser(userId);
-        
-        // 将结果转换为Room对象列表
+
         return results.stream()
             .map(result -> {
                 Long roomId = ((Number)result[0]).longValue();
