@@ -11,8 +11,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 
 @Service
 public class RoomService {
@@ -81,11 +83,86 @@ public class RoomService {
         if (roomIds == null || roomIds.isEmpty()) {
             return new ArrayList<>();
         }
-
+        
+        // filter out unavailable and restricted rooms
+        List<Long> availableRoomIds = roomRepository.findAvailableAndNotRestrictedRoomIds(roomIds);
+        
+        if (availableRoomIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+        
+        // convert to sql usable type
         Time sqlStartTime = Time.valueOf(startTime);
         Time sqlEndTime = Time.valueOf(endTime);
 
         return roomRepository.findAvailableRoomIdsByTimeSlot(
-            weekNumber, dayOfWeek, sqlStartTime, sqlEndTime, roomIds);
+            weekNumber, dayOfWeek, sqlStartTime, sqlEndTime, availableRoomIds);
+    }
+
+    /**
+     * set room restriction
+     * @param roomId room id
+     * @param restricted restricted
+     * @param restrictionReason restriction reason
+     * @return room
+     */
+    public Optional<Room> setRoomRestriction(Long roomId, boolean restricted, String restrictionReason) {
+        Optional<Room> roomOpt = roomRepository.findById(roomId);
+        if (roomOpt.isEmpty()) {
+            return Optional.empty();
+        }
+        
+        Room room = roomOpt.get();
+        room.setRestricted(restricted);
+        
+        // room.setRestrictionReason(restrictionReason);
+        
+        return Optional.of(roomRepository.save(room));
+    }
+    
+    /**
+     * get all restricted rooms
+     */
+    public List<Room> getAllBookableRooms() {
+        return roomRepository.findBookableRooms();
+    }
+
+    /**
+     * check if a room is bookable
+     * @param roomId 
+     * @return 
+     */
+    public Map<String, Object> checkRoomBookable(Long roomId) {
+        Optional<Room> roomOpt = roomRepository.findById(roomId);
+        Map<String, Object> result = new HashMap<>();
+        
+        if (roomOpt.isEmpty()) {
+            result.put("exists", false);
+            result.put("message", "room not found");
+            return result;
+        }
+        
+        Room room = roomOpt.get();
+        result.put("exists", true);
+        result.put("roomId", room.getId());
+        result.put("roomName", room.getName());
+        
+        // check if room is available
+        if (!room.getAvailable()) {
+            result.put("bookable", false);
+            result.put("message", "room is under maintenance, not bookable");
+            return result;
+        }
+        
+        // check if room is restricted
+        if (room.getRestricted()) {
+            result.put("bookable", false);
+            result.put("message", "room is used for special purposes, not bookable");
+            return result;
+        }
+        
+        result.put("bookable", true);
+        result.put("message", "room is bookable");
+        return result;
     }
 }

@@ -165,6 +165,7 @@ public class BookingService {
             throw e;
         }
     }
+    
 
     public Booking updateBooking(Booking booking) {
         if (!bookingRepository.existsById(booking.getId())) {

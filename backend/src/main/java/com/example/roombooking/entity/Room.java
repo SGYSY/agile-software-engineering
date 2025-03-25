@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Set;
 
+
 @Entity
 @Table(name = "rooms")
 @Data
@@ -41,6 +42,7 @@ public class Room {
     // @JsonManagedReference("room-schedule")
     @JsonIgnore
     private Set<Schedule> schedules;
+
 
     // Getters and Setters
     public Long getId() {
@@ -122,6 +124,7 @@ public class Room {
     public void setSchedules(Set<Schedule> schedules) {
         this.schedules = schedules;
     }
+
     
     // equals, hashCode and toString methods
     @Override

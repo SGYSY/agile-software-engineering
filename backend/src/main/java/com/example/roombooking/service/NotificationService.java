@@ -44,8 +44,8 @@ public class NotificationService {
         emailNotification.setNotificationType(Notification.NotificationType.email);
         emailNotification.setStatus(Notification.NotificationStatus.pending);
         emailNotification.setMessage("Your room reservation status is " + booking.getStatus() + "。" +
-                "Room detail: " + booking.getRoom().getName() + "，" +
-                weekAndDayInfo + "，" + timeInfo);
+                "Room detail: " + booking.getRoom().getName() + "," +
+                weekAndDayInfo + "," + timeInfo);
         
         notificationRepository.save(emailNotification);
         
@@ -54,7 +54,7 @@ public class NotificationService {
         smsNotification.setBooking(booking);
         smsNotification.setNotificationType(Notification.NotificationType.sms);
         smsNotification.setStatus(Notification.NotificationStatus.pending);
-        smsNotification.setMessage("Your room reservation status is " + booking.getStatus() + "。" +
+        smsNotification.setMessage("Your room reservation status is " + booking.getStatus() + ". " +
                 "room: " + booking.getRoom().getName() + ", " + weekAndDayInfo);
         
         notificationRepository.save(smsNotification);
@@ -134,10 +134,10 @@ public class NotificationService {
         
         String subject = "Booking confirmation notice - Room reservation system";
         String message = "Dear " + booking.getUser().getUsername() + ":\n\n" +
-                "Your room reservation is confirmed！\n\n" +
+                "Your room reservation is confirmed!\n\n" +
                 "Booking detail:\n" +
                 "- Room:" + roomName + "\n" +
-                "- TIme:" + weekAndDayInfo + "，" + timeInfo + "\n" +
+                "- TIme:" + weekAndDayInfo + "," + timeInfo + "\n" +
                 "- State: confirmed\n\n" +
                 "If you have any questions, please contact the administrator.\n\n" +
                 "with the best wishes,\nRoom reservation system";

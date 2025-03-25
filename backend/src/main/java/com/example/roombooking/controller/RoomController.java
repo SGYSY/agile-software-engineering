@@ -13,6 +13,7 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 @RestController
@@ -153,6 +154,15 @@ public class RoomController {
         }
     }
 
+    /**
+     * check if a room is bookable
+     */
+    @GetMapping("/{roomId}/bookable")
+    public ResponseEntity<?> checkRoomBookable(@PathVariable Long roomId) {
+        Map<String, Object> result = roomService.checkRoomBookable(roomId);
+        return ResponseEntity.ok(result);
+    }
+
     @GetMapping("/search")
     public ResponseEntity<?> searchRooms(
         @RequestParam(required = false) Integer weekNumber,
@@ -264,5 +274,39 @@ public class RoomController {
             case 12: return LocalTime.of(21, 45);
             default: throw new IllegalArgumentException("Invalid time slot number: " + timeSlot);
         }
+    }
+
+    /**
+     * get all bookable rooms
+     */
+    @GetMapping("/bookable")
+    public ResponseEntity<List<Room>> getBookableRooms() {
+        return ResponseEntity.ok(roomService.getAllBookableRooms());
+    }
+    
+    /**
+     * Set room restricted status (only available to administrators)
+     */
+    @PatchMapping("/{roomId}/restriction")
+    public ResponseEntity<?> setRoomRestriction(
+            @PathVariable Long roomId,
+            @RequestBody Map<String, Object> request) {
+        
+        boolean restricted = Boolean.parseBoolean(request.get("restricted").toString());
+        String reason = (String) request.get("reason");
+        
+        Optional<Room> updatedRoom = roomService.setRoomRestriction(roomId, restricted, reason);
+        
+        if (updatedRoom.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        String message = restricted ? "Room has been restricted for special use" : 
+                                    "Room restriction has been removed";
+        
+        return ResponseEntity.ok().body(Map.of(
+            "message", message,
+            "room", updatedRoom.get()
+        ));
     }
 }

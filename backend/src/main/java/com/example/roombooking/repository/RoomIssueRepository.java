@@ -18,4 +18,7 @@ public interface RoomIssueRepository extends JpaRepository<RoomIssue, Long> {
     
     @Query(value = "SELECT COUNT(*) FROM room_issue WHERE room_id = :roomId", nativeQuery = true)
     int countIssuesByRoomId(@Param("roomId") Long roomId);
+
+    @Query(value = "SELECT * FROM room_issue WHERE room_id = :roomId", nativeQuery = true)
+    List<RoomIssue> findByRoomId(@Param("roomId") Long roomId);
 }

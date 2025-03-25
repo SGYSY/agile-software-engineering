@@ -47,12 +47,12 @@ public class JwtUtil {
     }
     
     private Key getSigningKey() {
-        // 使用Keys工具类生成安全密钥
-        // 方法1: 直接从字符串生成足够长的密钥
+        // Generate security keys using the Keys tool class
+        // Generate a sufficiently long key directly from the string
         byte[] keyBytes = jwtConfig.getSecret().getBytes(StandardCharsets.UTF_8);
         return Keys.hmacShaKeyFor(keyBytes);
         
-        // 方法2: 使用Keys自动生成安全密钥（更推荐）
+        // Use Keys to automatically generate security keys
         // return Keys.secretKeyFor(SignatureAlgorithm.HS256);
     }
     

@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 @RestController
@@ -65,5 +66,41 @@ public class RoomIssueController {
         
         roomIssueService.deleteIssue(id);
         return ResponseEntity.noContent().build();
+    }
+
+    // Mark room as maintenance
+    @PatchMapping("/room/{roomId}/maintenance")
+    public ResponseEntity<?> markRoomUnderMaintenance(
+            @PathVariable Long roomId,
+            @RequestBody Map<String, String> requestBody) {
+        
+        String issueName = requestBody.get("issueName");
+        String description = requestBody.get("description");
+        
+        boolean success = roomIssueService.markRoomUnderMaintenance(roomId, issueName, description);
+        
+        if (success) {
+            return ResponseEntity.ok().body(Map.of(
+                "message", "Room marked as under maintenance",
+                "roomId", roomId
+            ));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+    
+    // Mark room as available
+    @PatchMapping("/room/{roomId}/available")
+    public ResponseEntity<?> markRoomAvailable(@PathVariable Long roomId) {
+        boolean success = roomIssueService.markRoomAvailable(roomId);
+        
+        if (success) {
+            return ResponseEntity.ok().body(Map.of(
+                "message", "Room marked as available",
+                "roomId", roomId
+            ));
+        } else {
+            return ResponseEntity.notFound().build();
+        }
     }
 }

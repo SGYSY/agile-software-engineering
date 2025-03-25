@@ -6,7 +6,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.scheduling.annotation.EnableScheduling;
 
 @SpringBootApplication
-@EnableScheduling  // 启用定时任务
+@EnableScheduling  // Enable scheduled tasks
 @ComponentScan({"com.example.roombooking"})  
 public class RoomBookingApplication {
 

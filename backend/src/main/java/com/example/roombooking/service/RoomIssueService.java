@@ -55,4 +55,42 @@ public class RoomIssueService {
     public int getIssueCountByRoom(Long roomId) {
         return roomIssueRepository.countIssuesByRoomId(roomId);
     }
+
+    public boolean markRoomUnderMaintenance(Long roomId, String issueName, String description) {
+        Optional<Room> roomOpt = roomRepository.findById(roomId);
+        if (roomOpt.isEmpty()) {
+            return false;
+        }
+        
+        Room room = roomOpt.get();
+        
+        // Create a maintenance issue record
+        RoomIssue issue = new RoomIssue();
+        issue.setRoom(room);
+        issue.setIssueName(issueName != null ? issueName : "Under Maintenance");
+        issue.setDescription(description);
+        roomIssueRepository.save(issue);
+        
+        // Just mark the room as unavailable (maintenance status)
+        room.setAvailable(false);
+        roomRepository.save(room);
+        
+        return true;
+    }
+    
+    // Mark room as available
+    public boolean markRoomAvailable(Long roomId) {
+        Optional<Room> roomOpt = roomRepository.findById(roomId);
+        if (roomOpt.isEmpty()) {
+            return false;
+        }
+        
+        Room room = roomOpt.get();
+        
+        // Mark room as available
+        room.setAvailable(true);
+        roomRepository.save(room);
+        
+        return true;
+    }
 }

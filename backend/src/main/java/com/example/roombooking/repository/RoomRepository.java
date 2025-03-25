@@ -37,6 +37,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
         "AND b.end_time > :startTime " +
         "AND b.start_time < :endTime " +
         "WHERE r.available = true " +
+        "AND r.restricted = false " +
         "AND b.booking_id IS NULL", 
         nativeQuery = true)
     List<Room> findAvailableRoomsByWeekAndDay(
@@ -79,4 +80,17 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Param("startTime") Time startTime,
     @Param("endTime") Time endTime,
     @Param("roomIds") List<Long> roomIds);
+
+    // Get available rooms (available and unrestricted) using native SQL query
+    @Query(value = "SELECT * FROM rooms WHERE available = 1 AND restricted = 0", nativeQuery = true)
+    List<Room> findBookableRooms();
+    
+    // Get restricted rooms using native SQL query
+    @Query(value = "SELECT * FROM rooms WHERE restricted = 1", nativeQuery = true)
+    List<Room> findRestrictedRooms();
+
+    // Find available and unrestricted room IDs
+    @Query(value = "SELECT room_id FROM rooms WHERE room_id IN :roomIds AND available = 1 AND restricted = 0", 
+           nativeQuery = true)
+    List<Long> findAvailableAndNotRestrictedRoomIds(@Param("roomIds") List<Long> roomIds);
 }
