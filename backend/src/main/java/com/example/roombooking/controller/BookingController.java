@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.io.UnsupportedEncodingException;
 import java.time.LocalTime;
 import java.util.HashMap;
 import java.util.List;
@@ -125,7 +126,7 @@ public class BookingController {
     }
 
     @PatchMapping("/{id}/approve")
-    public ResponseEntity<Void> approveBooking(@PathVariable Long id) {
+    public ResponseEntity<Void> approveBooking(@PathVariable Long id) throws UnsupportedEncodingException {
         boolean approved = bookingService.approveBooking(id);
         
         if (!approved) {
