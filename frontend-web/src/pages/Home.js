@@ -9,7 +9,9 @@ const getRoomImage = (roomId) => {
   if (idNum >= 8 && idNum <= 26) {
     return `/${idNum - 7}.jpg`;
   }
-  return "/default-room.jpg";
+  // 随机从 1 到 10 的图片中选一张
+  const randomImageNumber = Math.floor(Math.random() * 19) + 1;
+  return `/${randomImageNumber}.jpg`;
 };
 
 const Home = () => {
