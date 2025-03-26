@@ -37,7 +37,6 @@ public class UserController {
 
     @PostMapping
     public ResponseEntity<User> createUser(@RequestBody User user) {
-        // 检查用户名和邮箱是否已存在
         if (userService.existsByUsername(user.getUsername())) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
@@ -57,8 +56,7 @@ public class UserController {
         }
 
         User existingUser = existingUserOpt.get();
-        
-        // 只更新不为空的字段，避免覆盖旧值
+
         if (user.getUsername() != null) existingUser.setUsername(user.getUsername());
         if (user.getFirstName() != null) existingUser.setFirstName(user.getFirstName());
         if (user.getLastName() != null) existingUser.setLastName(user.getLastName());
@@ -66,7 +64,7 @@ public class UserController {
         if (user.getPhoneNumber() != null) existingUser.setPhoneNumber(user.getPhoneNumber());
         if (user.getRole() != null) existingUser.setRole(user.getRole());
         if (user.getPasswordHash() != null && !user.getPasswordHash().isBlank()) {
-            existingUser.setPasswordHash(user.getPasswordHash()); // 交给 `saveUser()` 处理
+            existingUser.setPasswordHash(user.getPasswordHash());
         }
 
         User updatedUser = userService.saveUser(existingUser);
@@ -81,5 +79,109 @@ public class UserController {
         
         userService.deleteUser(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(
+        @RequestParam(required = false) String username,
+        @RequestParam(required = false) String email,
+        @RequestParam(required = false) String firstName,
+        @RequestParam(required = false) String lastName,
+        @RequestParam(required = false) String schoolNumber,
+        @RequestParam(required = false) String phoneNumber,
+        @RequestParam(required = false) Long roleId) {
+        
+        try {
+            System.out.println("Search user requirement - username: " + username + ", email: " + email +
+                ", firstName: " + firstName + ", lastName: " + lastName + 
+                ", schoolNumber: " + schoolNumber + ", phoneNumber: " + phoneNumber +
+                ", roleId: " + roleId);
+
+            List<User> resultUsers = userService.getAllUsers();
+            int originalCount = resultUsers.size();
+
+            if (username != null && !username.trim().isEmpty()) {
+                final String searchUsername = username.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getUsername() != null && 
+                            user.getUsername().toLowerCase().contains(searchUsername))
+                    .toList();
+                System.out.println("After filtering by user name " + resultUsers.size() + " left");
+            }
+
+            if (email != null && !email.trim().isEmpty()) {
+                final String searchEmail = email.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getEmail() != null && 
+                            user.getEmail().toLowerCase().contains(searchEmail))
+                    .toList();
+                System.out.println("After filtering by email " + resultUsers.size() + " left");
+            }
+
+            if (firstName != null && !firstName.trim().isEmpty()) {
+                final String searchFirstName = firstName.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getFirstName() != null && 
+                            user.getFirstName().toLowerCase().contains(searchFirstName))
+                    .toList();
+                System.out.println("After filtering by first name " + resultUsers.size() + " left");
+            }
+
+            if (lastName != null && !lastName.trim().isEmpty()) {
+                final String searchLastName = lastName.toLowerCase().trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getLastName() != null && 
+                            user.getLastName().toLowerCase().contains(searchLastName))
+                    .toList();
+                System.out.println("After filtering by last name " + resultUsers.size() + " left");
+            }
+
+            if (schoolNumber != null && !schoolNumber.trim().isEmpty()) {
+                final String searchSchoolNumber = schoolNumber.trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getSchoolNumber() != null && 
+                            user.getSchoolNumber().contains(searchSchoolNumber))
+                    .toList();
+                System.out.println("After filtering by school number " + resultUsers.size() + " left");
+            }
+
+            if (phoneNumber != null && !phoneNumber.trim().isEmpty()) {
+                final String searchPhoneNumber = phoneNumber.trim();
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getPhoneNumber() != null && 
+                            user.getPhoneNumber().contains(searchPhoneNumber))
+                    .toList();
+                System.out.println("After filtering by phone number " + resultUsers.size() + " left");
+            }
+
+            if (roleId != null) {
+                resultUsers = resultUsers.stream()
+                    .filter(user -> user.getRole() != null && 
+                            roleId.equals(user.getRole().getId()))
+                    .toList();
+                System.out.println("After filtering by user id " + resultUsers.size() + " left");
+            }
+
+            System.out.println("Total " + originalCount + " user(s) after filtering " + resultUsers.size() + " left");
+
+            List<User> sanitizedUsers = resultUsers.stream().map(user -> {
+                User sanitized = new User();
+                sanitized.setId(user.getId());
+                sanitized.setUsername(user.getUsername());
+                sanitized.setEmail(user.getEmail());
+                sanitized.setFirstName(user.getFirstName());
+                sanitized.setLastName(user.getLastName());
+                sanitized.setPhoneNumber(user.getPhoneNumber());
+                sanitized.setSchoolNumber(user.getSchoolNumber());
+                sanitized.setRole(user.getRole());
+                return sanitized;
+            }).toList();
+            
+            return ResponseEntity.ok(sanitizedUsers);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Search failed: " + e.getMessage());
+        }
     }
 }

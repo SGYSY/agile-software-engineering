@@ -89,4 +89,22 @@ public class NotificationController {
         notificationService.deleteNotification(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/user/{userId}")
+    public ResponseEntity<List<Notification>> getNotificationsByUser(@PathVariable Long userId) {
+        List<Notification> notifications = notificationService.getNotificationsByUserId(userId);
+        return ResponseEntity.ok(notifications);
+    }
+
+    // @GetMapping("/user/{userId}/pending")
+    // public ResponseEntity<List<Notification>> getUserPendingNotifications(@PathVariable Long userId) {
+    //     List<Notification> notifications = notificationService.getNotificationsByUserIdAndSent(userId, false);
+    //     return ResponseEntity.ok(notifications);
+    // }
+
+    // @GetMapping("/user/{userId}/sent")
+    // public ResponseEntity<List<Notification>> getUserSentNotifications(@PathVariable Long userId) {
+    //     List<Notification> notifications = notificationService.getNotificationsByUserIdAndSent(userId, true);
+    //     return ResponseEntity.ok(notifications);
+    // }
 }

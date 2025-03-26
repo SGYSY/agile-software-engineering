@@ -36,6 +36,17 @@ const MainLayout = () => {
   }, []);
   
 
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+  
+    fetch(`${API_BASE}/notifications/user/${userId}`)
+      .then((res) => res.json())
+      .then((data) => setNotifications(data || []))
+      .catch((err) => console.error("Failed to fetch notifications:", err));
+  }, []);
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("displayName");

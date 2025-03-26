@@ -7,11 +7,22 @@ import com.example.roombooking.repository.BookingRepository;
 import com.example.roombooking.repository.RoomRepository;
 import com.example.roombooking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
-import java.time.LocalDateTime;
+import java.sql.PreparedStatement;
+import java.sql.Time;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Optional;
+
+import java.sql.PreparedStatement;
+import java.sql.Statement;
+import java.sql.Time;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 
 @Service
 public class BookingService {
@@ -28,6 +39,16 @@ public class BookingService {
     @Autowired
     private NotificationService notificationService;
 
+    @Autowired
+    private WeekService weekService;
+
+
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
+
+
+    @Autowired
+    private ScheduleService scheduleService;
 
     public List<Booking> getAllBookings() {
         return bookingRepository.findAll();
@@ -53,59 +74,111 @@ public class BookingService {
 
     public List<Booking> getUserFutureBookings(Long userId) {
         Optional<User> user = userRepository.findById(userId);
-        return user.map(value -> bookingRepository.findByUserAndStartTimeAfter(value, LocalDateTime.now()))
+        Integer currentWeekNumber = weekService.getCurrentWeekNumber();
+        return user.map(value -> bookingRepository.findByUserAndWeekNumberGreaterThanEqual(value, currentWeekNumber))
                 .orElse(List.of());
     }
 
-    public boolean hasConflict(Long roomId, LocalDateTime start, LocalDateTime end) {
-        // List<Booking> conflictingBookings = bookingRepository.findConflictingBookings(roomId, start, end);
-        // return !conflictingBookings.isEmpty();
-        List<Booking> existingBookings = bookingRepository.findByRoomIdAndStatusNotAndTimeOverlap(
-            roomId, Booking.BookingStatus.cancelled, start, end);
-        return !existingBookings.isEmpty();
+    public boolean hasConflict(Long roomId, Integer weekNumber, Integer dayOfWeek, LocalTime startTime, LocalTime endTime) {
+        List<Booking> existingBookings = bookingRepository.findConflictingBookings(
+            roomId, weekNumber, dayOfWeek, startTime, endTime);
+
+        boolean scheduleConflict = scheduleService.hasScheduleConflict(
+            roomId, weekNumber, dayOfWeek, startTime, endTime);
+        
+        return !existingBookings.isEmpty() || scheduleConflict;
     }
 
     public Booking createBooking(Booking booking) {
-        // 1. 首先加载完整的用户信息，包括角色
-        User user = userRepository.findById(booking.getUser().getId())
-            .orElseThrow(() -> new RuntimeException("User not found"));
-        booking.setUser(user);
-        
-        // 2. 加载完整的房间信息
-        Room room = roomRepository.findById(booking.getRoom().getId())
-            .orElseThrow(() -> new RuntimeException("Room not found"));
-        booking.setRoom(room);
-        
-        // 3. 检测时间冲突
-        boolean hasConflict = hasConflict(room.getId(), booking.getStartTime(), booking.getEndTime());
-        booking.setConflictDetected(hasConflict);
-        
-        // 4. 设置预订状态：仅管理员且无冲突的预订自动确认，其他情况均为待批准
-        if (user.getRole() != null && 
-            "Administrator".equals(user.getRole().getName()) && 
-            !hasConflict) {
-            booking.setStatus(Booking.BookingStatus.confirmed);
-        } else {
-            booking.setStatus(Booking.BookingStatus.pending);
+        try {
+            User user = userRepository.findById(booking.getUser().getId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+            booking.setUser(user);
+
+            Room room = roomRepository.findById(booking.getRoom().getId())
+                .orElseThrow(() -> new RuntimeException("Room not found"));
+            booking.setRoom(room);
+            
+            System.out.println("Create booking: " + booking);
+
+            boolean hasConflict = hasConflict(
+                room.getId(), 
+                booking.getWeekNumber(), 
+                booking.getDayOfWeek(),
+                booking.getStartTime(), 
+                booking.getEndTime()
+            );
+            
+            System.out.println("Conflict detection result: " + hasConflict);
+            
+            booking.setConflictDetected(hasConflict);
+
+            if (user.getRole() != null && 
+                "Student".equals(user.getRole().getName()) && 
+                !hasConflict) {
+                booking.setStatus(Booking.BookingStatus.pending);
+            } else {
+                booking.setStatus(Booking.BookingStatus.confirmed);
+            }
+            
+            System.out.println("Set reservation status: " + booking.getStatus());
+
+            // String sql = "INSERT INTO bookings (conflict_detected, day_of_week, end_time, room_id, start_time, status, user_id, week_number) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String sql = "INSERT INTO `bookings` " +
+            "(`conflict_detected`, `day_of_week`, `end_time`, " +
+            "`room_id`, `start_time`, `status`, `user_id`, `week_number`) " +
+            "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            KeyHolder keyHolder = new GeneratedKeyHolder();
+            jdbcTemplate.update(connection -> {
+                PreparedStatement ps = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+                ps.setBoolean(1, booking.isConflictDetected());
+                ps.setInt(2, booking.getDayOfWeek());
+                ps.setTime(3, Time.valueOf(booking.getEndTime()));
+                ps.setLong(4, booking.getRoom().getId());
+                ps.setTime(5, Time.valueOf(booking.getStartTime()));
+                ps.setString(6, booking.getStatus().toString());
+                ps.setLong(7, booking.getUser().getId());
+                ps.setInt(8, booking.getWeekNumber());
+                return ps;
+            }, keyHolder);
+
+            Long generatedId = keyHolder.getKey().longValue();
+            booking.setId(generatedId);
+            
+            System.out.println("Reservation saved successfully, ID: " + generatedId);
+
+            try {
+                notificationService.createBookingNotification(booking);
+            } catch (Exception e) {
+                System.err.println("An error occurred while creating the notification: " + e.getMessage());
+            }
+
+            if (booking.getStatus() == Booking.BookingStatus.confirmed) {
+                notificationService.sendBookingConfirmationEmail(booking);
+            }
+            
+            return booking;
+        } catch (Exception e) {
+            System.err.println("An error occurred while creating the reservation: " + e.getMessage());
+            e.printStackTrace();
+            throw e;
         }
-        
-        // 5. 保存预订
-        Booking savedBooking = bookingRepository.save(booking);
-        
-        // 6. 创建通知
-        notificationService.createBookingNotification(savedBooking);
-        
-        return savedBooking;
     }
+    
 
     public Booking updateBooking(Booking booking) {
-        // 检查是否存在此预订
         if (!bookingRepository.existsById(booking.getId())) {
             return null;
         }
-        
-        // 如果修改了时间，需要重新检查冲突
-        boolean hasConflict = hasConflict(booking.getRoom().getId(), booking.getStartTime(), booking.getEndTime());
+
+        boolean hasConflict = hasConflict(
+            booking.getRoom().getId(), 
+            booking.getWeekNumber(), 
+            booking.getDayOfWeek(),
+            booking.getStartTime(), 
+            booking.getEndTime()
+        );
         booking.setConflictDetected(hasConflict);
         
         return bookingRepository.save(booking);
@@ -128,9 +201,10 @@ public class BookingService {
             Booking bookingToApprove = booking.get();
             bookingToApprove.setStatus(Booking.BookingStatus.confirmed);
             bookingRepository.save(bookingToApprove);
-            
-            // 创建确认通知
+
             notificationService.createApprovalNotification(bookingToApprove);
+
+            notificationService.sendBookingConfirmationEmail(bookingToApprove);
             
             return true;
         }
@@ -138,6 +212,21 @@ public class BookingService {
     }
 
     public void deleteBooking(Long id) {
-        bookingRepository.deleteById(id);
+        Optional<Booking> booking = bookingRepository.findById(id);
+        if (booking.isPresent()) {
+            notificationService.deleteNotificationsByBookingId(id);
+            
+
+            bookingRepository.deleteById(id);
+        }
     }
+
+    public List<Booking> getBookingsByWeek(Integer weekNumber) {
+        return bookingRepository.findByWeekNumber(weekNumber);
+    }
+
+    public List<Booking> getBookingsByRoomAndDate(Long roomId, Integer weekNumber, Integer dayOfWeek) {
+        return bookingRepository.findByRoomIdAndWeekAndDay(roomId, weekNumber, dayOfWeek);
+    }
+
 }
