@@ -26,13 +26,27 @@ const MainLayout = () => {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    // 获取 pending 通知
-    fetch(`${API_BASE}/notifications/pending`)
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+  
+    fetch(`${API_BASE}/notifications/user/${userId}`)
       .then((res) => res.json())
       .then((data) => setNotifications(data || []))
       .catch((err) => console.error("Failed to fetch notifications:", err));
   }, []);
+  
 
+  const [notifications, setNotifications] = useState([]);
+
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+  
+    fetch(`${API_BASE}/notifications/user/${userId}`)
+      .then((res) => res.json())
+      .then((data) => setNotifications(data || []))
+      .catch((err) => console.error("Failed to fetch notifications:", err));
+  }, []);
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("displayName");

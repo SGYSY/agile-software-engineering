@@ -10,49 +10,111 @@ import {
   Tag,
   Typography,
   Popconfirm,
-  Space
+  Space,
+  Modal,
+  Select,
+  Switch,
 } from "antd";
-import { DeleteOutlined, PlusOutlined, HomeOutlined } from "@ant-design/icons";
+import {
+  DeleteOutlined,
+  PlusOutlined,
+  HomeOutlined,
+  SearchOutlined,
+} from "@ant-design/icons";
 
 const { Title } = Typography;
 
 const AdminRooms = () => {
+  const API_BASE = "http://47.113.186.66:8080/api";
+
   const [rooms, setRooms] = useState([]);
+  const [modalVisible, setModalVisible] = useState(false);
+  const [editingRoom, setEditingRoom] = useState(null);
+  const [form] = Form.useForm();
+  const [searchForm] = Form.useForm();
 
   useEffect(() => {
-    const storedRooms = JSON.parse(localStorage.getItem("rooms")) || [];
-    setRooms(storedRooms);
+    fetchRooms();
   }, []);
 
-  const refreshRooms = () => {
-    const storedRooms = JSON.parse(localStorage.getItem("rooms")) || [];
-    setRooms(storedRooms);
+  const fetchRooms = async () => {
+    try {
+      const response = await fetch(`${API_BASE}/rooms`);
+      const data = await response.json();
+      setRooms(data);
+    } catch (error) {
+      message.error("Failed to fetch rooms from the server.");
+    }
   };
 
-  const handleDelete = (roomId) => {
-    const updatedRooms = rooms.filter((room) => room.id !== roomId);
-    localStorage.setItem("rooms", JSON.stringify(updatedRooms));
-    message.success("Room deleted successfully");
-    refreshRooms();
+  const handleSearch = async (values) => {
+    try {
+      const queryParams = {};
+      for (const key in values) {
+        if (values[key] !== undefined && values[key] !== null && values[key] !== "") {
+          queryParams[key] = values[key];
+        }
+      }
+      const query = new URLSearchParams(queryParams).toString();
+      const response = await fetch(`${API_BASE}/rooms/search?${query}`);
+      const data = await response.json();
+      setRooms(Array.isArray(data) ? data : []);
+    } catch (error) {
+      message.error("Failed to search rooms.");
+    }
   };
 
-  const onFinish = (values) => {
-    const newRoom = {
-      id: values.id,
+  const handleDelete = async (roomId) => {
+    try {
+      const response = await fetch(`${API_BASE}/rooms/${roomId}`, {
+        method: "DELETE",
+      });
+      if (response.ok) {
+        message.success("Room deleted successfully.");
+        fetchRooms();
+      } else {
+        message.error("Failed to delete room.");
+      }
+    } catch (error) {
+      message.error("Error occurred while deleting room.");
+    }
+  };
+
+  const handleSubmit = async (values) => {
+    const payload = {
       name: values.name,
       capacity: values.capacity,
-      equipment: values.equipment
-        ? values.equipment.split(",").map((item) => item.trim())
-        : [],
-      bookingLimit: values.bookingLimit,
-      allowedRoles: values.allowedRoles
-        ? values.allowedRoles.split(",").map((item) => item.trim())
-        : []
+      location: values.location,
+      available: values.available,
+      restricted: values.restricted,
     };
-    const updatedRooms = [...rooms, newRoom];
-    localStorage.setItem("rooms", JSON.stringify(updatedRooms));
-    message.success("Room created successfully");
-    refreshRooms();
+
+    const url = editingRoom
+      ? `${API_BASE}/rooms/${editingRoom.id}`
+      : `${API_BASE}/rooms`;
+    const method = editingRoom ? "PUT" : "POST";
+
+    try {
+      const response = await fetch(url, {
+        method: method,
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(payload),
+      });
+
+      if (response.ok) {
+        message.success(
+          editingRoom ? "Room updated successfully" : "Room created successfully"
+        );
+        setModalVisible(false);
+        fetchRooms();
+      } else {
+        message.error("Failed to save room.");
+      }
+    } catch (error) {
+      message.error("Error occurred while saving room.");
+    }
   };
 
   const columns = [
@@ -62,33 +124,62 @@ const AdminRooms = () => {
       title: "Capacity",
       dataIndex: "capacity",
       key: "capacity",
-      render: (cap) => <Tag color="blue">{cap} seats</Tag>
+      render: (cap) => <Tag color="blue">{cap} seats</Tag>,
     },
     {
-      title: "Equipment",
-      dataIndex: "equipment",
-      key: "equipment",
-      render: (equip) => equip.map((e, i) => <Tag key={i}>{e}</Tag>)
+      title: "Location",
+      dataIndex: "location",
+      key: "location",
+      render: (loc) => loc || <em style={{ color: "#999" }}>Not provided</em>,
     },
-    { title: "Booking Limit", dataIndex: "bookingLimit", key: "bookingLimit" },
     {
-      title: "Allowed Roles",
-      dataIndex: "allowedRoles",
-      key: "allowedRoles",
-      render: (roles) => roles.map((r, i) => <Tag color="purple" key={i}>{r}</Tag>)
+      title: "Available",
+      dataIndex: "available",
+      key: "available",
+      render: (val) => (val ? <Tag color="green">Yes</Tag> : <Tag color="red">No</Tag>),
+    },
+    {
+      title: "Restricted",
+      dataIndex: "restricted",
+      key: "restricted",
+      render: (val) => (val ? <Tag color="orange">Restricted</Tag> : <Tag color="cyan">Open</Tag>),
     },
     {
       title: "Actions",
       render: (_, record) => (
-        <Popconfirm
-          title="Are you sure to delete this room?"
-          onConfirm={() => handleDelete(record.id)}
-        >
-          <Button danger icon={<DeleteOutlined />}>Delete</Button>
-        </Popconfirm>
-      )
-    }
+        <Space>
+          <Button type="link" onClick={() => handleEdit(record)}>
+            Edit
+          </Button>
+          <Popconfirm
+            title="Are you sure to delete this room?"
+            onConfirm={() => handleDelete(record.id)}
+          >
+            <Button danger icon={<DeleteOutlined />}>Delete</Button>
+          </Popconfirm>
+        </Space>
+      ),
+    },
   ];
+
+  const handleEdit = (record) => {
+    setEditingRoom(record);
+    form.setFieldsValue({
+      id: record.id,
+      name: record.name,
+      capacity: record.capacity,
+      location: record.location,
+      available: record.available,
+      restricted: record.restricted,
+    });
+    setModalVisible(true);
+  };
+
+  const handleAddNew = () => {
+    setEditingRoom(null);
+    form.resetFields();
+    setModalVisible(true);
+  };
 
   return (
     <div style={{ padding: 40, background: "#f0f2f5", minHeight: "100vh" }}>
@@ -96,30 +187,63 @@ const AdminRooms = () => {
         <HomeOutlined style={{ marginRight: 8 }} /> Room Management
       </Title>
 
-      <Card
-        style={{ borderRadius: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.05)" }}
-        title="Existing Rooms"
-      >
-        <Table
-          columns={columns}
-          dataSource={rooms}
-          rowKey="id"
-          pagination={{ pageSize: 6 }}
-        />
+      <Card title="Search Rooms" style={{ marginBottom: 24 }}>
+        <Form form={searchForm} layout="inline" onFinish={handleSearch}>
+          <Form.Item name="roomName" label="Room Name">
+            <Input placeholder="Search by room name" />
+          </Form.Item>
+          <Form.Item name="minCapacity" label="Min Capacity">
+            <InputNumber placeholder="Min capacity" />
+          </Form.Item>
+          <Form.Item name="weekNumber" label="Week Number">
+            <InputNumber placeholder="Week number" />
+          </Form.Item>
+          <Form.Item name="dayOfWeek" label="Day of Week">
+            <Select placeholder="Day of week">
+              <Select.Option value={1}>Monday</Select.Option>
+              <Select.Option value={2}>Tuesday</Select.Option>
+              <Select.Option value={3}>Wednesday</Select.Option>
+              <Select.Option value={4}>Thursday</Select.Option>
+              <Select.Option value={5}>Friday</Select.Option>
+              <Select.Option value={6}>Saturday</Select.Option>
+              <Select.Option value={7}>Sunday</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="timeSlotStart" label="Time Slot Start">
+            <InputNumber placeholder="Start time" />
+          </Form.Item>
+          <Form.Item name="timeSlotEnd" label="Time Slot End">
+            <InputNumber placeholder="End time" />
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              Search
+            </Button>
+          </Form.Item>
+        </Form>
       </Card>
 
       <Card
-        style={{ marginTop: 24, borderRadius: 12, boxShadow: "0 2px 10px rgba(0,0,0,0.04)" }}
-        type="inner"
-        title="Add New Room"
+        title="Existing Rooms"
+        extra={
+          <Button type="primary" icon={<PlusOutlined />} onClick={handleAddNew}>
+            Add New Room
+          </Button>
+        }
       >
-        <Form layout="vertical" onFinish={onFinish}>
-          <Form.Item
-            name="id"
-            label="Room ID"
-            rules={[{ required: true, message: "Please enter room ID" }]}
-          >
-            <Input placeholder="Enter room ID" />
+        <Table columns={columns} dataSource={rooms} rowKey="id" pagination={{ pageSize: 6 }} />
+      </Card>
+
+      <Modal
+        title={editingRoom ? "Edit Room" : "Add New Room"}
+        visible={modalVisible}
+        onCancel={() => setModalVisible(false)}
+        onOk={() => form.submit()}
+        okText="Save"
+      >
+        <Form layout="vertical" form={form} onFinish={handleSubmit}>
+          <Form.Item name="id" label="Room ID">
+            <Input placeholder="Auto-generated or existing" disabled={!!editingRoom} />
           </Form.Item>
           <Form.Item
             name="name"
@@ -135,30 +259,21 @@ const AdminRooms = () => {
           >
             <InputNumber placeholder="Enter capacity" style={{ width: "100%" }} />
           </Form.Item>
-          <Form.Item name="equipment" label="Equipment (comma separated)">
-            <Input placeholder="e.g. projector, board" />
-          </Form.Item>
           <Form.Item
-            name="bookingLimit"
-            label="Booking Limit"
-            rules={[{ required: true, message: "Please enter booking limit" }]}
+            name="location"
+            label="Location"
+            rules={[{ required: true, message: "Please enter location" }]}
           >
-            <InputNumber placeholder="Enter limit" style={{ width: "100%" }} />
+            <Input placeholder="Enter location" />
           </Form.Item>
-          <Form.Item
-            name="allowedRoles"
-            label="Allowed Roles (comma separated)"
-            rules={[{ required: true, message: "Please enter allowed roles" }]}
-          >
-            <Input placeholder="e.g. admin, teacher, student" />
+          <Form.Item name="available" label="Available" valuePropName="checked">
+            <Switch />
           </Form.Item>
-          <Form.Item>
-            <Button type="primary" htmlType="submit" icon={<PlusOutlined />}>
-              Create Room
-            </Button>
+          <Form.Item name="restricted" label="Restricted" valuePropName="checked">
+            <Switch />
           </Form.Item>
         </Form>
-      </Card>
+      </Modal>
     </div>
   );
 };
