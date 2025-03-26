@@ -132,7 +132,7 @@ public class NotificationService {
             return;
         }
         
-        String weekAndDayInfo = "For " + booking.getWeekNumber() + " Week, Week day is" + booking.getDayOfWeek();
+        String weekAndDayInfo = "For Week " + booking.getWeekNumber() + ", " + mapNumberToWeekday(booking.getDayOfWeek());
         String timeInfo = booking.getStartTime() + " to " + booking.getEndTime();
         String roomName = booking.getRoom() != null ? booking.getRoom().getName() : "Unknown room";
         String startTime = booking.getStartTime().toString();
@@ -145,8 +145,8 @@ public class NotificationService {
 
         LocalDate targetDate = semesterStart.plusWeeks(weekNumber - 1).plusDays(dayOfWeek - 1);
 
-        String startDateTime = targetDate.toString() + "T" + startTime + ":00";
-        String endDateTime = targetDate.toString() + "T" + endTime + ":00";
+        String startDateTime = targetDate + "T" + startTime + ":00";
+        String endDateTime = targetDate + "T" + endTime + ":00";
 
         String subject = "Booking confirmation - Room reservation system";
         String body = "Dear " + booking.getUser().getUsername() + ":\n\n" +
@@ -161,21 +161,32 @@ public class NotificationService {
         String message = "Dear " + booking.getUser().getUsername() + ":\n\n" +
                 "Your room reservation is confirmed!\n\n" +
                 "Booking detail:\n" +
-                "- Room:" + roomName + "\n" +
-                "- TIme:" + weekAndDayInfo + "," + timeInfo + "\n" +
+                "- Room: " + roomName + "\n" +
+                "- Time: " + weekAndDayInfo + "," + timeInfo + "\n" +
                 "- State: confirmed\n\n" +
                 "If you have any questions, please contact the administrator.\n\n" +
                 "To make it easier for you, we’ve generated a link that will allow you to quickly add this reservation to your Outlook calendar." +
                 " Simply click the link below, and the details will be pre-filled:\n" +
-                "https://outlook.live.com/calendar/0/deeplink/compose?" +
+                "https://outlook.office.com/calendar/0/deeplink/compose?" +
                 "subject=" + URLEncoder.encode(subject, "UTF-8") +
                 "&startdt=" + URLEncoder.encode(startDateTime, "UTF-8") +
                 "&enddt=" + URLEncoder.encode(endDateTime, "UTF-8") +
-                "&body=" + URLEncoder.encode(body, "UTF-8") +
                 "&location=" + URLEncoder.encode(roomName, "UTF-8") +
                 "\n\nWith the best wishes,\nRoom reservation system";
-
         emailService.sendEmail(booking.getUser().getEmail(), subject, message);
+    }
+
+    public static String mapNumberToWeekday(int day) {
+        switch (day) {
+            case 1: return "Monday";
+            case 2: return "Tuesday";
+            case 3: return "Wednesday";
+            case 4: return "Thursday";
+            case 5: return "Friday";
+            case 6: return "Saturday";
+            case 7: return "Sunday";
+            default: return "Invalid day";
+        }
     }
 
     public void processPendingNotifications() {
