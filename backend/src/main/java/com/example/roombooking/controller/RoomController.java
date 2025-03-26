@@ -29,6 +29,11 @@ public class RoomController {
         return ResponseEntity.ok(roomService.getAllRooms());
     }
 
+    @GetMapping("/restricted/{id}")
+    public ResponseEntity<List<Room>> getPermittedRooms(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.getPermittedRooms(id));
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<Room> getRoomById(@PathVariable Long id) {
         Optional<Room> room = roomService.getRoomById(id);
@@ -90,6 +95,17 @@ public class RoomController {
         }
         
         room.setId(id);
+        Room updatedRoom = roomService.saveRoom(room);
+        return ResponseEntity.ok(updatedRoom);
+    }
+
+    @PutMapping("/{id}/{typeId}")
+    public ResponseEntity<Room> updateRoomType(@PathVariable Long id, @PathVariable Long typeId) {
+        if (roomService.getRoomById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Room room = roomService.getRoomById(id).get();
+        room.setRestricted(typeId);
         Room updatedRoom = roomService.saveRoom(room);
         return ResponseEntity.ok(updatedRoom);
     }
@@ -292,7 +308,7 @@ public class RoomController {
             @PathVariable Long roomId,
             @RequestBody Map<String, Object> request) {
         
-        boolean restricted = Boolean.parseBoolean(request.get("restricted").toString());
+        Long restricted = Long.parseLong(request.get("restricted").toString());
         String reason = (String) request.get("reason");
         
         Optional<Room> updatedRoom = roomService.setRoomRestriction(roomId, restricted, reason);
@@ -301,7 +317,7 @@ public class RoomController {
             return ResponseEntity.notFound().build();
         }
         
-        String message = restricted ? "Room has been restricted for special use" : 
+        String message = restricted > 0 ? "Room has been restricted for staff" :
                                     "Room restriction has been removed";
         
         return ResponseEntity.ok().body(Map.of(

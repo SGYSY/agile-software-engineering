@@ -36,7 +36,6 @@ const MainLayout = () => {
   }, []);
   
 
-  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
