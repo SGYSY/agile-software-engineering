@@ -34,9 +34,6 @@ const MainLayout = () => {
       .then((data) => setNotifications(data || []))
       .catch((err) => console.error("Failed to fetch notifications:", err));
   }, []);
-  
-
-  const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
     const userId = localStorage.getItem("userId");
