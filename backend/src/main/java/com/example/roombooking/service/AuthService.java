@@ -37,7 +37,7 @@ public class AuthService {
     private VerificationCodeRepository verificationCodeRepository;
 
     public AuthResponse authenticate(AuthRequest request) {
-        Optional<User> userOptional = userService.getUserByUsername(request.getUsername());
+        Optional<User> userOptional = userService.getUserByEmail(request.getUsername());
         
         if (userOptional.isEmpty()) {
             logger.info("Login failed: The user name does not exist - {}", request.getUsername());
@@ -50,7 +50,6 @@ public class AuthService {
             logger.info("Login failure: The password is incorrect - {}", request.getUsername());
             return null;
         }
-        
         logger.info("User {} logged in successfully", user.getUsername());
         return generateAuthResponse(user);
     }
