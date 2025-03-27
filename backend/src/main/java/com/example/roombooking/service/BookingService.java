@@ -12,6 +12,7 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.sql.PreparedStatement;
 import java.sql.Time;
 import java.time.LocalTime;
@@ -89,7 +90,7 @@ public class BookingService {
         return !existingBookings.isEmpty() || scheduleConflict;
     }
 
-    public Booking createBooking(Booking booking) {
+    public Booking createBooking(Booking booking) throws UnsupportedEncodingException {
         try {
             User user = userRepository.findById(booking.getUser().getId())
                 .orElseThrow(() -> new RuntimeException("User not found"));
@@ -195,7 +196,7 @@ public class BookingService {
         return false;
     }
 
-    public boolean approveBooking(Long id) {
+    public boolean approveBooking(Long id) throws UnsupportedEncodingException {
         Optional<Booking> booking = bookingRepository.findById(id);
         if (booking.isPresent()) {
             Booking bookingToApprove = booking.get();
