@@ -45,6 +45,7 @@ public class RoomService {
         List<Long> ll = roomRepository.findAllRoomIds();
         User u = userRepository.findById(userId).get();
         List<Room> allRoom = roomRepository.findRoomsByRestrictedType(0);
+
         if(u.getRole().getId() == 2){
             allRoom.addAll(roomRepository.findRoomsByRestrictedType(1));
         }
@@ -196,5 +197,22 @@ public class RoomService {
         result.put("bookable", true);
         result.put("message", "room is bookable");
         return result;
+    }
+
+    /**
+     * get room issue count map
+     * @return 
+     */
+    public Map<Long, Integer> getRoomIssueCountMap() {
+        List<Object[]> results = roomRepository.countRoomIssues();
+        Map<Long, Integer> countMap = new HashMap<>();
+        
+        for (Object[] result : results) {
+            Long roomId = ((Number) result[0]).longValue();
+            Integer count = ((Number) result[1]).intValue();
+            countMap.put(roomId, count);
+        }
+        
+        return countMap;
     }
 }

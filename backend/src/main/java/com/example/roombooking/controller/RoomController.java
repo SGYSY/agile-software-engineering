@@ -186,7 +186,8 @@ public class RoomController {
         @RequestParam(required = false) Integer timeSlotStart,
         @RequestParam(required = false) Integer timeSlotEnd,
         @RequestParam(required = false) String roomName,
-        @RequestParam(required = false) Integer minCapacity) {
+        @RequestParam(required = false) Integer minCapacity,
+        @RequestParam(required = false) Boolean hasIssues) {
         
         try {
             System.out.println("Search room requirement - weekNumber: " + weekNumber + ", dayOfWeek: " + dayOfWeek +
@@ -209,6 +210,18 @@ public class RoomController {
                     .filter(room -> room.getCapacity() >= minCapacity)
                     .toList();
                 System.out.println("After filtering by capacity " + resultRooms.size() + " left");
+            }
+
+            if (hasIssues != null) {
+                Map<Long, Integer> roomIssueCountMap = roomService.getRoomIssueCountMap();
+                
+                resultRooms = resultRooms.stream()
+                    .filter(room -> {
+                        Integer issueCount = roomIssueCountMap.getOrDefault(room.getId(), 0);
+                        return hasIssues ? issueCount > 0 : issueCount == 0;
+                    })
+                    .toList();
+                System.out.println("After filtering by issues " + resultRooms.size() + " left");
             }
 
             if (weekNumber != null && dayOfWeek != null && timeSlotStart != null && timeSlotEnd != null) {

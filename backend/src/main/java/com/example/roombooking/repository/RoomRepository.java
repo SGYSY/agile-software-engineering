@@ -99,4 +99,7 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query(value = "SELECT room_id FROM rooms WHERE room_id IN :roomIds AND available = 1 AND restricted = 0", 
            nativeQuery = true)
     List<Long> findAvailableAndNotRestrictedRoomIds(@Param("roomIds") List<Long> roomIds);
+
+    @Query(value = "SELECT room_id, COUNT(*) FROM room_issue GROUP BY room_id", nativeQuery = true)
+    List<Object[]> countRoomIssues();
 }
