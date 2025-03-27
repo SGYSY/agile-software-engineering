@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
-import { Card, Statistic, Row, Col, Button, Select } from "antd";
+import { Card, Statistic, Row, Col, Button } from "antd";
 import ReactECharts from "echarts-for-react";
 import * as FileSaver from "file-saver";
 import * as XLSX from "xlsx";
+import { DashboardOutlined } from "@ant-design/icons"; // Importing the Dashboard Icon
 
 const API_BASE = "http://47.113.186.66:8080/api";
 const COLOR_LIST = ['#4161d9', '#5a7dd9', '#7a98d9', '#9bb3d9', '#bbcdeb'];
@@ -155,16 +156,48 @@ const AdminDashboard = () => {
   };
 
   return (
-    <Card title="Admin Dashboard" style={{ backgroundColor: "#f0f2f5", borderRadius: "10px", padding: "20px" }}>
-      <Button type="primary" onClick={exportToExcel} style={{ position: 'absolute', top: 20, right: 20 }}>
+    <Card
+      title={<><DashboardOutlined style={{ marginRight: 8 }} /> Admin Dashboard</>} 
+      style={{
+        backgroundColor: "#f0f2f5",
+        borderRadius: "10px",
+        padding: "20px",
+        fontFamily: "Segoe UI, sans-serif", // Set the font family here
+      }}
+    >
+      <Button
+        type="primary"
+        onClick={exportToExcel}
+        style={{ position: 'absolute', top: 20, right: 20 }}
+      >
         Export Report
       </Button>
 
       <Row gutter={16}>
-        <Col span={6}><Statistic title="Total Bookings" value={totalBookings} /></Col>
-        <Col span={6}><Statistic title="Approved" value={approvedBookings} valueStyle={{ color: "#3f8600" }} /></Col>
-        <Col span={6}><Statistic title="Pending" value={pendingBookings} valueStyle={{ color: "#faad14" }} /></Col>
-        <Col span={6}><Statistic title="Rejected" value={rejectedBookings} valueStyle={{ color: "#cf1322" }} /></Col>
+        <Col span={6}>
+          <Statistic title="Total Bookings" value={totalBookings} />
+        </Col>
+        <Col span={6}>
+          <Statistic
+            title="Approved"
+            value={approvedBookings}
+            valueStyle={{ color: "#3f8600" }}
+          />
+        </Col>
+        <Col span={6}>
+          <Statistic
+            title="Pending"
+            value={pendingBookings}
+            valueStyle={{ color: "#faad14" }}
+          />
+        </Col>
+        <Col span={6}>
+          <Statistic
+            title="Rejected"
+            value={rejectedBookings}
+            valueStyle={{ color: "#cf1322" }}
+          />
+        </Col>
       </Row>
 
       <Row style={{ marginTop: 24 }}>

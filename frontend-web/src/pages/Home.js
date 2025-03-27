@@ -134,7 +134,7 @@ const Home = () => {
             top: 80,
             right: 30,
             width: 380,
-            maxHeight: "75vh",
+            maxHeight: "45vh",
             background: "#ffffff",
             borderRadius: 12,
             boxShadow: "0 6px 20px rgba(0, 0, 0, 0.15)",
