@@ -77,13 +77,19 @@ const MainLayout = () => {
   }
 
   const notificationContent = (
-    <div style={{ maxWidth: 300 }}>
+    <div
+      style={{
+        maxWidth: 300,
+        maxHeight: 200, // 最大高度限制
+        overflowY: "auto", // 启用垂直滚动
+      }}
+    >
       {notifications.length === 0 ? (
         <p style={{ margin: 0 }}>No new notifications.</p>
       ) : (
         <List
           size="small"
-          dataSource={notifications}
+          dataSource={notifications.slice(0, 3)} // 限制显示最多 3 条通知
           renderItem={(item) => (
             <List.Item style={{ whiteSpace: "normal" }}>
               {item.message}
@@ -93,6 +99,7 @@ const MainLayout = () => {
       )}
     </div>
   );
+  
 
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#F7F8FA" }}>
