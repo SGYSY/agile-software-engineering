@@ -159,6 +159,7 @@ public class BookingController {
     @GetMapping("/search")
     public ResponseEntity<?> searchBookings(
         @RequestParam(required = false) Long userId,
+        @RequestParam(required = false) String roomName,
         @RequestParam(required = false) Long roomId,
         @RequestParam(required = false) Integer weekNumber,
         @RequestParam(required = false) Integer dayOfWeek,
@@ -182,6 +183,14 @@ public class BookingController {
                     .filter(booking -> booking.getUser() != null && userId.equals(booking.getUser().getId()))
                     .toList();
                 System.out.println("After filtering by user " + resultBookings.size() + " left");
+            }
+
+            if (roomName != null && !roomName.isEmpty()) {
+                resultBookings = resultBookings.stream()
+                        .filter(booking -> booking.getRoom() != null && booking.getRoom().getName() != null &&
+                                booking.getRoom().getName().toLowerCase().startsWith(roomName.toLowerCase()))
+                        .toList();
+                System.out.println("After filtering by room name " + resultBookings.size() + " left");
             }
 
             if (roomId != null) {
