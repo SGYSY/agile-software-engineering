@@ -24,8 +24,10 @@ const Home = () => {
   const fetchRooms = async () => {
     try {
       const userToken = localStorage.getItem("userToken");
-      if (!userToken) return;
-      const response = await fetch(`${API_BASE}/rooms`, {
+      const userId = localStorage.getItem("userId");
+      console.log(userId);
+      if (!userToken || !userId) return;
+      const response = await fetch(`${API_BASE}/rooms/restricted/${userId}`, {
         headers: { Authorization: `Bearer ${userToken}` }
       });
       const data = await response.json();
@@ -50,6 +52,16 @@ const Home = () => {
     } finally {
       setLoadingBookings(false);
     }
+  };
+
+  const dayOfWeekMap = {
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday',
+    7: 'Sunday'
   };
 
   const filterBookingsByStatus = (status) => {
@@ -173,7 +185,8 @@ const Home = () => {
                   }}
                 >
                   <h4 style={{ marginBottom: 4 }}>{item.room.name}</h4>
-                  <p style={{ marginBottom: 4 }}><strong>Time:</strong> {new Date(item.startTime).toLocaleString()} - {new Date(item.endTime).toLocaleString()}</p>
+                  <p style={{ marginBottom: 4 }}><strong>Date:</strong> {"Week "+item.weekNumber} , {dayOfWeekMap[item.dayOfWeek]}</p>
+                  <p style={{ marginBottom: 4 }}><strong>Time:</strong> {item.startTime} - {item.endTime}</p>
                   <p style={{ marginBottom: 0 }}>
                     <strong>Status: </strong>
                     <Badge

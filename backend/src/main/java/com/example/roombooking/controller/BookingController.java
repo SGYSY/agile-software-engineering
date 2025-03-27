@@ -10,7 +10,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
 import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -91,6 +93,14 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<?> createBooking(@RequestBody Booking booking) {
+        String semesterStartDate = "2025-02-17";
+        LocalDate semesterStart = LocalDate.parse(semesterStartDate, DateTimeFormatter.ISO_DATE);
+
+        LocalDate targetDate = semesterStart.plusWeeks(booking.getWeekNumber() - 1).plusDays(booking.getDayOfWeek() - 1);
+
+        if (LocalDate.now().isAfter(targetDate)) {
+            return ResponseEntity.badRequest().body("Cannot book for past dates");
+        }
         try {
             Booking createdBooking = bookingService.createBooking(booking);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
