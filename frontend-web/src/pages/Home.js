@@ -21,11 +21,11 @@ const Home = () => {
   const [selectedTab, setSelectedTab] = useState("all");
   const navigate = useNavigate();
 
+  // 修改：使用 restricted 接口获取当前用户能预定的房间
   const fetchRooms = async () => {
     try {
       const userToken = localStorage.getItem("userToken");
       const userId = localStorage.getItem("userId");
-      console.log(userId);
       if (!userToken || !userId) return;
       const response = await fetch(`${API_BASE}/rooms/restricted/${userId}`, {
         headers: { Authorization: `Bearer ${userToken}` }
@@ -52,16 +52,6 @@ const Home = () => {
     } finally {
       setLoadingBookings(false);
     }
-  };
-
-  const dayOfWeekMap = {
-    1: 'Monday',
-    2: 'Tuesday',
-    3: 'Wednesday',
-    4: 'Thursday',
-    5: 'Friday',
-    6: 'Saturday',
-    7: 'Sunday'
   };
 
   const filterBookingsByStatus = (status) => {
@@ -108,11 +98,15 @@ const Home = () => {
                   borderRadius: 12,
                   boxShadow: "0 6px 24px rgba(0,0,0,0.08)",
                   transition: "transform 0.3s ease",
-                  textAlign: "center"
+                  textAlign: "center",
+                  position: "relative"
                 }}
                 onMouseEnter={(e) => (e.currentTarget.style.transform = "scale(1.03)")}
                 onMouseLeave={(e) => (e.currentTarget.style.transform = "scale(1)")}
               >
+                {!room.available && (
+                  <Badge.Ribbon text="Under Maintenance" color="red" style={{ zIndex: 1 }} />
+                )}
                 <h3 style={{ fontSize: 20, fontWeight: 600, marginBottom: 8 }}>{room.name}</h3>
                 <p style={{ margin: 0, color: "#777" }}>Capacity: {room.capacity} people</p>
                 <p style={{ margin: "4px 0 12px", color: "#999" }}>{room.location}</p>
@@ -125,7 +119,13 @@ const Home = () => {
                     Room Issue
                   </Button>
                   <Button
-                    onClick={() => navigate(`/room/${room.id}`)}
+                    onClick={() => {
+                      if (!room.available) {
+                        message.warning("This room is under maintenance and cannot be scheduled.");
+                      } else {
+                        navigate(`/room/${room.id}`);
+                      }
+                    }}
                     style={{ borderRadius: 6, borderColor: "#4161d9", color: "#4161d9" }}
                   >
                     View Schedule
@@ -146,7 +146,7 @@ const Home = () => {
             top: 80,
             right: 30,
             width: 380,
-            maxHeight: "75vh",
+            maxHeight: "45vh",
             background: "#ffffff",
             borderRadius: 12,
             boxShadow: "0 6px 20px rgba(0, 0, 0, 0.15)",
@@ -185,8 +185,9 @@ const Home = () => {
                   }}
                 >
                   <h4 style={{ marginBottom: 4 }}>{item.room.name}</h4>
-                  <p style={{ marginBottom: 4 }}><strong>Date:</strong> {"Week "+item.weekNumber} , {dayOfWeekMap[item.dayOfWeek]}</p>
-                  <p style={{ marginBottom: 4 }}><strong>Time:</strong> {item.startTime} - {item.endTime}</p>
+                  <p style={{ marginBottom: 4 }}>
+                    <strong>Time:</strong> {new Date(item.startTime).toLocaleString()} - {new Date(item.endTime).toLocaleString()}
+                  </p>
                   <p style={{ marginBottom: 0 }}>
                     <strong>Status: </strong>
                     <Badge

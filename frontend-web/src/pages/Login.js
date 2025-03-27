@@ -28,7 +28,7 @@ const Login = () => {
         role = "admin";
       else if(response.data.role === "Student")
         role = "student";
-      else if(response.data.role === "Teacher")
+      else if(response.data.role === "Faculty")
         role = "teacher";
       localStorage.setItem("userToken", response.data.token);
       localStorage.setItem("userRole", role);

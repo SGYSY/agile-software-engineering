@@ -1,0 +1,47 @@
+<!--index.wxml-->
+<navigation-bar title="DIICSU Room Booking" back="{{false}}" color="#e2e4e6" background="#2b4b6b"></navigation-bar>
+<!-- 悬浮窗 -->
+<view class="floating-button" style="{{isFloatingVisible ? 'display: block;' : 'display: none;'}}" bindtap="backToTop">
+    BackToTop
+</view>
+<view class="main">
+  <!-- 搜索框 -->
+  <view class="searchBox">
+  <input  class="maintheme" type="text" name="search"></input>
+  <button class="maintheme" type="submit">
+    <view>confirm</view>
+  </button>
+  </view>
+
+  <!-- 教室列表 -->
+  <view class="scrollContent">
+    <!-- 教室列表 -->
+    <block wx:for="{{rooms}}" wx:key="index">
+      <view class="roomItem" data-index="{{index}}" bindtap="openDrawer">
+        <view class="roomName">{{item.name}}</view>
+        <view class="roomCapacity">{{item.capacity}}</view>
+        <view class="roomDevice">{{item.device}}</view>
+
+      </view>
+    </block>
+
+    <!-- details -->
+    <view class="mask" style="{{isDrawerVisible? 'display: block;' : 'display: none;'}}">
+    </view>
+
+    <view class="drawer" style="{{isDrawerVisible? 'display: block;' : 'display: none;'}}" >
+      <view class="bookingPresenter" >
+        <view class="schedule"></view>
+        <view class="Description">
+        {{currentRoom.name}}
+        </view>
+      </view>
+      
+      <view class="bookingSelection">
+        <button bindtap="closeDrawer" class="maintheme" > Cancel </button>
+        <button bindtap="bookRoom" class="maintheme" > Book </button>
+      </view>
+    </view>
+    
+  </view>
+</view>
