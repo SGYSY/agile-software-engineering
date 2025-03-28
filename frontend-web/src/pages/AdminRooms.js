@@ -76,7 +76,7 @@ const AdminRooms = () => {
     }
   };
 
-  // 恢复为原先的 inline 搜索 UI
+  // 搜索：原先的 inline 搜索，增加了所有搜索项
   const handleSearch = async (values) => {
     try {
       const queryParams = {};
@@ -332,8 +332,8 @@ const AdminRooms = () => {
         <HomeOutlined style={{ marginRight: 8 }} /> Room Management
       </Title>
 
-      {/* 恢复为 inline 搜索 UI */}
-      <Card title="Search Rooms" style={{ marginBottom: 24 }}>
+      {/* 搜索区域 */}
+      <Card title="Search Rooms" style={{ marginBottom: 24, padding: 16 }}>
         <Form form={searchForm} layout="inline" onFinish={handleSearch}>
           <Form.Item name="roomName" label="Room Name">
             <Input placeholder="Search by room name" />
@@ -345,7 +345,7 @@ const AdminRooms = () => {
             <InputNumber placeholder="Week number" />
           </Form.Item>
           <Form.Item name="dayOfWeek" label="Day of Week">
-            <Select placeholder="Day of week">
+            <Select placeholder="Day of week" style={{ width: 120 }}>
               <Select.Option value={1}>Monday</Select.Option>
               <Select.Option value={2}>Tuesday</Select.Option>
               <Select.Option value={3}>Wednesday</Select.Option>
@@ -360,6 +360,13 @@ const AdminRooms = () => {
           </Form.Item>
           <Form.Item name="timeSlotEnd" label="Time Slot End">
             <InputNumber placeholder="End time" />
+          </Form.Item>
+          <Form.Item name="hasIssues" label="Has Issues">
+            <Select placeholder="All" style={{ width: 120 }}>
+              <Select.Option value="">All</Select.Option>
+              <Select.Option value="true">Yes</Select.Option>
+              <Select.Option value="false">No</Select.Option>
+            </Select>
           </Form.Item>
           <Form.Item>
             <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
@@ -404,7 +411,6 @@ const AdminRooms = () => {
           <Form.Item name="available" label="Available" valuePropName="checked">
             <Switch />
           </Form.Item>
-          {/* 将原 restricted Switch 改为下拉框 */}
           <Form.Item name="restricted" label="Reservation Scope">
             <Select placeholder="Select reservation scope">
               <Select.Option value={0}>All Users</Select.Option>
