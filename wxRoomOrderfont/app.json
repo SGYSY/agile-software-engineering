@@ -1,41 +1,53 @@
 {
   "pages": [
-    "pages/user/user",
     "pages/index/index",
-    "pages/orderrule/orderrule",
+    "pages/user/user",
     "pages/roomdetail/roomdetail",
     "pages/myorders/myorders",
     "pages/orderdetails/orderdetails",
-    "pages/innerverify/innerverify",
-    "pages/edituserinfo/edituserinfo"
+    "pages/edituserinfo/edituserinfo",
+    "pages/emaillogin/emaillogin",
+    "pages/createUser/createUser"
   ],
+  "component": true,
+  "usingComponents": {
+    "t-icon": "tdesign-miniprogram/icon/icon"
+  },
   "window": {
     "backgroundTextStyle": "dark",
     "enablePullDownRefresh": false,
     "backgroundColor": "#666666",
-    "font-weight":500,
-    "navigationBarBackgroundColor": "#fff",
+    "font-weight": 500,
+    "navigationBarBackgroundColor": "#4169E1",
     "navigationBarTitleText": "RoomOrder",
-    "navigationBarTextStyle": "black"
+    "navigationBarTextStyle": "white"
   },
-  "tabBar":{
-    "color": "#666666",
-    "selectedColor": "#472634",
-    "borderStyle":"black",
-    "list":[{
-      "pagePath": "pages/index/index",
-      "text":"首页",
-      "iconPath": "/Icon/home.png",
-      "selectedIconPath": "/Icon/home2.png"
-    },{
-      "pagePath": "pages/user/user",
-      "text":"我的",
-      "iconPath": "/Icon/user.png",
-      "selectedIconPath": "/Icon/user_selected.png"
-    }
-  ]
+  "tabBar": {
+    "backgroundColor": "#4169E1",
+    "color": "#f8f8f8",
+    "selectedColor": "#f8f8f8",
+    "borderStyle": "black",
+    "list": [
+      {
+        "pagePath": "pages/index/index",
+        "text": "Reserve",
+        "iconPath": "/Icon/home.png",
+        "selectedIconPath": "/Icon/home_s.png"
+      },
+      {
+        "pagePath": "pages/myorders/myorders",
+        "text": "My Order",
+        "iconPath": "/Icon/myorder.png",
+        "selectedIconPath": "/Icon/myorder_s.png"
+      },
+      {
+        "pagePath": "pages/user/user",
+        "text": "Profile",
+        "iconPath": "/Icon/user.png",
+        "selectedIconPath": "/Icon/user_selected.png"
+      }
+    ]
   },
-  "style": "v2",
   "sitemapLocation": "sitemap.json",
   "lazyCodeLoading": "requiredComponents"
 }

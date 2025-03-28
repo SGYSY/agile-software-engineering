@@ -1,0 +1,15 @@
+<t-popup visible="{{visible}}" bind:visible-change="onVisibleChange" placement="center">
+      <view class="block">
+        <view class="drawer-title">room issue</view>
+        <view class="drawer-divider"></view>
+        <view class="drawer-tag">name of issue</view>
+        <input class="drawer-text" type="text" placeholder="Please enter the content..." value="{{issueName}}" bindinput="onIssueNameChange"/>
+        <view class="drawer-tag">description of issue</view>
+        <textarea class="drawer-textarea" type="text" placeholder="Please enter the content..." value="{{description}}" bindinput="onDescriptionChange"></textarea>
+ 
+        <view class="drawer-btn-line">
+          <button class="drawer-btn-left" bind:tap="onClose">cancel</button>
+          <button class="drawer-btn-right" bind:tap="submitIssue">confirm</button>
+        </view>
+      </view>
+</t-popup>

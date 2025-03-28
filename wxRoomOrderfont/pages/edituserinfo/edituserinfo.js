@@ -1,125 +1,169 @@
-/**
- * @Author: YJR-1100
- * @Date: 2022-03-26 20:12:07
- * @LastEditors: YJR-1100
- * @LastEditTime: 2022-03-26 23:32:25
- * @FilePath: \wx_RoomOrder\wxRoomOrderfont\pages\edituserinfo\edituserinfo.js
- * @Description: 
- * @
- * @Copyright (c) 2022 by yjr-1100/CSU, All Rights Reserved. 
- */
 // pages/edituserinfo/edituserinfo.js
 Page({
 
   /**
-   * 页面的初始数据
+   * intail data of the page
    */
   data: {
     editedisabled:false,
-    userinfo:{}
+    loginUser:{},
+    // store the modified version of user data
+    modifiedUser:{},
+    
   },
 
   /**
-   * 生命周期函数--监听页面加载
+   * Lifecycle function - listens for page loads
    */
   onLoad: function (options) {
-    console.log(options)
-    var user = wx.getStorageSync('userinfo')
-    console.log(user)
-    if(options.isbasaceinfo==1){
-      this.setData({
-        editedisabled:true,
-        [`userinfo.schoolid`]:user.schoolid,
-        [`userinfo.uname`]:user.uname,
-        [`userinfo.profassionclass`]:user.profassionclass,
-        [`userinfo.uphonenum`]:user.uphonenum
-      })
-    }
-  },
-  checkphone(e){
-    // 正则检查手机号是否合法
-    // var reg = getRegExp("^(\+?0?86\-?)?1[3456789]\d{9}$")
-    if(!/^(\+?0?86\-?)?1[3456789]\d{9}$/.test(e.detail.value)){
-      wx.showToast({
-        title: '手机号格式错误',
-        icon: 'error',//
-        mask:true,
-        duration: 1000
-      })
-    }else{
-      this.setData({
-        [`userinfo.${e.currentTarget.id}`]:`${e.detail.value}`
-      })
-    }
-  },
-  setuserinfo(e){
-    this.setData({
-      [`userinfo.${e.currentTarget.id}`]:`${e.detail.value}`
-    })
-  },
-  commitinfo(){
-    const eventChannel = this.getOpenerEventChannel()
-    var that = this
-    wx.showModal({
-      title: '提示',
-      content: '一年只可修改一次个人信息，请确认无误后提交',
-      success (res) {
-        that.setData({
-          editedisabled:true
-        })
-        if (res.confirm) {
-          eventChannel.emit('acceptDataFromOpenedPage', {isbasaceinfo: '1',userinfo:that.data.userinfo});
-        }
-      }
-    })
+    this.fectchUser();
   },
 
   /**
-   * 生命周期函数--监听页面初次渲染完成
+   * Lifecycle function - Listen for the initial rendering of the page
    */
   onReady: function () {
 
   },
 
   /**
-   * 生命周期函数--监听页面显示
+   * Lifecycle function - listen to the page display
    */
   onShow: function () {
-
+    this.fectchUser();
   },
 
   /**
-   * 生命周期函数--监听页面隐藏
+   * Lifecycle function -- listen to the page hidden
    */
   onHide: function () {
 
   },
 
   /**
-   * 生命周期函数--监听页面卸载
+   * Lifecycle function -- Listen for page unloading
    */
   onUnload: function () {
 
   },
 
   /**
-   * 页面相关事件处理函数--监听用户下拉动作
+   * Page-related event handler -- listens to the user's drop-down actions
    */
   onPullDownRefresh: function () {
 
   },
 
   /**
-   * 页面上拉触底事件的处理函数
+   * Handler for the page pull-bottom event
    */
   onReachBottom: function () {
 
   },
 
   /**
-   * 用户点击右上角分享
+   * The user clicks Share in the upper right corner
    */
   onShareAppMessage: function () {
 
-  }
+  },
+  // get the user information from MiniPorgram "Storage"
+  fectchUser(){
+    const that = this;
+    // get data from "Storage"
+    wx.getStorage({
+      key: 'loginuser',
+      success: function (res) {
+        console.log('fetched user imformation:', res.data);
+        that.setData({loginUser:res.data,modifiedUser:res.data});
+      },
+      fail: function (err) {
+        console.error('failed to fetch data', err);
+      }
+    });
+  },
+  // check and store the new phone number of user
+  checkphone(e){
+    // Check whether the mobile phone number is legitimate
+    if(!/^(\+?0?86\-?)?1[3456789]\d{9}$/.test(e.detail.value)){
+      wx.showToast({
+        title: 'Wrong Phone Number',
+        icon: 'error',//
+        mask:true,
+        duration: 1000
+      })
+    }else{
+      // if the munber is legal, store it
+      this.setData({
+        'modifiedUser.phoneNumber':e.detail.value,
+      });
+      console.log(this.data.modifiedUser.phoneNumber);
+    }
+  },
+  // store the new first name of user
+  setuserName(e){
+    this.setData({
+      'modifiedUser.firstName':e.detail.value,
+    });
+    console.log(this.data.modifiedUser.firstName);
+  },
+  // store the new last name of user
+  setlastname(e){
+    this.setData({
+      'modifiedUser.lastName':e.detail.value,
+    });
+    console.log(this.data.modifiedUser.lastName);
+  },
+  // send the data for modification to server and request for modify
+  commitinfo(){
+    wx.request({
+      url: `http://47.113.186.66:8080/api/users/${this.data.modifiedUser.id}`,
+      method: "PUT",
+      header: {
+        'content-type': 'application/json' // 默认值
+      },
+      data:{
+        "firstName": this.data.modifiedUser.firstName,
+        "lastName": this.data.modifiedUser.lastName,
+        "phoneNumber": this.data.modifiedUser.phoneNumber,
+      },
+      //if program get the response body
+      success: (res) => {
+        // if there is an "id" item in th response body, the request success
+        if('id' in res.data){
+          wx.showToast({
+            title: 'edit done',
+            icon: 'success'
+          });
+          this.storeLoginUser(res.data);
+        } else {
+          wx.showToast({
+            title: 'edit fail',
+            icon: 'none'
+          });
+        }
+      },
+      // if program does not receive a response body, the request fail
+      fail: (err) => {
+        wx.showToast({
+          title: 'edit fail',
+          icon: 'none'
+        });
+      }
+    });
+  },
+  // store the new user object into "Storage"
+  storeLoginUser(newdata){
+    wx.setStorage({
+      key: 'loginuser',
+      data: newdata,
+      success: function (res) {
+      },
+      fail: function (err) {
+      }
+    });
+    wx.navigateBack({
+      delta: 1 //Returns to the previous page
+    });
+  },
 })

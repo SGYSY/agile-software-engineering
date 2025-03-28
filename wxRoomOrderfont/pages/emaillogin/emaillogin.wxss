@@ -1,0 +1,113 @@
+/* login.wxss */
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #ebeaea;
+  }
+
+  /* login.wxss */
+.icon-row {
+    display: flex;
+    justify-content: space-between; 
+    margin-bottom: 20px; 
+  }
+  
+  .icon {
+    width: 40px;  
+    height: 40px;  
+  }
+  
+  
+  .login-box {
+    width: 80%;
+    max-width: 400px;
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;  /* Round corners for the container */
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .title {
+    font-size: 24px;
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .input-group {
+    margin-bottom: 15px;
+  }
+  
+  input {
+    width: 90%;
+    padding: 12px;
+    border: 1px solid #ddd;
+    border-radius: 12px;  /* Round corners for input fields */
+    font-size: 14px;
+  }
+  
+  button {
+    width: 200rpx;
+    margin: 0 10rpx;
+    padding: 12px;
+    background-color: #4169E1;
+    border: none;
+    color: white;
+    font-size: 16px;
+    border-radius: 8px;  /* Round corners for the button */
+    cursor: pointer;
+  }
+  
+  button:active {
+    background-color: #ffffff;
+  }
+  
+  .forgot-password {
+    text-align: right;
+    margin-top: 10px;
+  }
+  
+  .forgot-password a {
+    color: #007BFF;
+  }
+  
+  .forgot-password a:hover {
+    text-decoration: underline;
+  }
+
+  .buttons{
+    height: 10vh;
+    width: 100%;
+    margin: 10rpx;
+    display: flex;
+    justify-content: center;
+  }
+  .buttons button{
+    height: 6vh;
+    width: 50%;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  #code{
+    display: flex;
+    flex-direction: row;
+    justify-content: baseline;    
+  }
+  #code > input {
+    width: 60%;
+  }
+  #code > button {
+    height: 6vh;
+    width: 27%;
+    font-size: 14px;
+    font-weight: 700;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+  
