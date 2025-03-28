@@ -1,5 +1,6 @@
 package com.example.roombooking.service;
 
+import com.example.roombooking.entity.Role;
 import com.example.roombooking.entity.User;
 import com.example.roombooking.repository.RoleRepository;
 import com.example.roombooking.repository.UserRepository;
@@ -22,8 +23,16 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public Optional<Role> getRoleById(Long id) {
+        return roleRepository.findById(id);
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public List<User> getAllTeachers() {
+        return userRepository.findByRoleId(2L);
     }
 
     public Optional<User> getUserById(Long id) {
@@ -35,10 +44,19 @@ public class UserService {
     }
 
     public User saveUser(User user) {
-        // if it is new user and password is not hashed, hash it
-        if (user.getId() == null && user.getPasswordHash() != null 
-                && !user.getPasswordHash().startsWith("$2a$")) {
-            user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+        if (user.getId() == null) {  
+            if (user.getPasswordHash() != null && !user.getPasswordHash().startsWith("$2a$")) {
+                user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+            }
+        } else {
+            Optional<User> existingUser = userRepository.findById(user.getId());
+            if (existingUser.isPresent()) {
+                if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
+                    user.setPasswordHash(existingUser.get().getPasswordHash());
+                } else if (!user.getPasswordHash().startsWith("$2a$")) {
+                    user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
+                }
+            }
         }
         return userRepository.save(user);
     }
@@ -54,4 +72,9 @@ public class UserService {
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
     }
+
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
+    }
+
 }

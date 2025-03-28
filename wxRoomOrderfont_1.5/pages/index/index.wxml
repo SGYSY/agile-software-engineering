@@ -1,0 +1,115 @@
+<view class="swiperview" hover-class="none" hover-stop-propagation="false">
+  <swiper indicator-dots="true" indicator-color="rgba(220, 206, 198,0.9)"
+      indicator-active-color="rgba(245, 71, 100,0.9)" autoplay="true"
+      interval="5000" duration="1000" circular="true" easing-function="easeInOutCubic"
+      next-margin="60rpx" previous-margin="60rpx">
+    <swiper-item wx:for="{{swiperimage}}" wx:key="index">
+      <image class="swiperimage" src="{{item}}" mode="scaleToFill"></image>
+    </swiper-item>
+  </swiper>
+</view>
+
+<!-- search bar -->
+<view class="searchBar">
+<input type="text" placeholder="Search" bindinput="handleInput" />
+<image src="http://st2sjmp3d.hn-bkt.clouddn.com/Search-256.png" alt="" mode="aspectFit" bind:tap="filtRooms" />
+<picker mode="selector" range="{{roomColumn}}" bindchange="bindPickerChange">
+  <image src="http://st2sjmp3d.hn-bkt.clouddn.com/Row-256.png" alt="" mode="aspectFit" />
+</picker>
+</view>
+
+<!-- ---------------------filter------------------------ -->
+<view class="filter-row">
+  <!-- filter -->
+  <view class="filter-box" bind:tap="onCapPicker">
+    <view class="filter-text">{{capFilterText}}</view>
+    <t-icon class="arrow-style" name="arrow-down" size="40rpx" color="gray"/>
+  </view>
+  
+  <view class="filter-box" bind:tap="onLocPicker">
+    <view class="filter-text">{{locFilterText}}</view>
+    <t-icon class="arrow-style" name="arrow-down" size="40rpx" color="gray"/>
+  </view>
+  <button class="reset-button" bindtap="resetFilters">Reset</button>
+</view>
+
+
+<t-picker
+  visible="{{capPickerVisible}}"
+  value="{{capPickerValue}}"
+  title="select capacity"
+  cancelBtn="cancell"
+  confirmBtn="confirm"
+  usingCustomNavbar
+  bindchange="onCapPickerChange"
+  bindpick="onCapColumnChange"
+  bindcancel="onCapPickerCancel"
+>
+  <t-picker-item options="{{capPickText}}" format="{{formatter}}">
+    <block wx:for="{{capPickText}}" wx:key="index" wx:for-item="option">
+      <view wx:if="{{option.tag}}" slot="label-suffix--{{index}}" class="label-suffix">
+        <t-tag size="small" theme="primary">{{option.tag}}</t-tag>
+      </view>
+    </block>
+  </t-picker-item>
+</t-picker>
+
+<t-picker
+  visible="{{locPickerVisible}}"
+  value="{{locPickerValue}}"
+  title="Select Location"
+  cancelBtn="Cancel"
+  confirmBtn="Confirm"
+  usingCustomNavbar
+  bindchange="onLocPickerChange"
+  bindpick="onLocColumnChange"
+  bindcancel="onLocPickerCancel"
+>
+  <t-picker-item options="{{locPickText}}" format="{{formatter}}">
+    <block wx:for="{{locPickText}}" wx:key="index" wx:for-item="option">
+      <view wx:if="{{option.tag}}" slot="label-suffix--{{index}}" class="label-suffix">
+        <t-tag size="small" theme="primary">{{option.tag}}</t-tag>
+      </view>
+    </block>
+  </t-picker-item>
+</t-picker>
+
+<!-- ---------------------filter------------------------ -->
+
+<!-- rooms list -->
+<view id="title">Classrooms</view>
+<!-- list of rooms -->
+<view class="classwaper" hover-class="none" hover-stop-propagation="false">
+  <view wx:for="{{filtedrooms}}" wx:key="id" class="classroom" bindtap="gotoroomorder" data-index="{{item}}">
+
+    <!-- image -->
+    <image class="classimage" src="http://st2sjmp3d.hn-bkt.clouddn.com/{{item.id}}.jpg" mode="aspectFill" lazy-load="false"></image>
+    
+    <!-- room information -->
+    <view class="classinfo">
+      <t-icon name="city-11" ></t-icon>
+      <view class="classname"> 
+        {{item.name}} 
+      </view>
+    </view>
+
+    <view class="classinfo">
+      <t-icon name="location"></t-icon>
+      <view class="classadress"> 
+        {{item.location}}
+      </view>
+    </view>
+
+    <view class="classinfo">
+      <t-icon name="usergroup"></t-icon>
+      <view class="classcapacity"> 
+        Capacity: {{item.capacity}}
+      </view>
+    </view>
+
+  </view>
+</view>
+
+
+
+

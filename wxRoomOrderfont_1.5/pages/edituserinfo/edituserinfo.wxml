@@ -1,0 +1,33 @@
+<view class="body" hover-class="none" hover-stop-propagation="false">
+    <view class="" hover-class="none" hover-stop-propagation="false">
+        <!-- input area for firstname -->
+        <view class="title" hover-class="none" hover-stop-propagation="false">
+            FirstName：
+        </view>
+        <view class="inputarea" hover-class="none" hover-stop-propagation="false">
+            <input type="text" maxlength="20" disabled="{{editedisabled}}" id="uname" class="{{editedisabled?'disedit':''}}" bindblur="setuserName" value="{{userinfo.fname}}"/>
+        </view>
+    </view>
+    <view class="" hover-class="none" hover-stop-propagation="false">
+        <!-- input area for lastname -->
+        <view class="title" hover-class="none" hover-stop-propagation="false">
+            LastName：
+        </view>
+        <view class="inputarea" hover-class="none" hover-stop-propagation="false">
+            <input type="text" maxlength="20" disabled="{{editedisabled}}" id="schoolid" class="{{editedisabled?'disedit':''}}" bindblur="setlastname"  value="{{userinfo.lname}}"/>
+        </view>
+    </view>
+    <view class="" hover-class="none" hover-stop-propagation="false">
+        <!-- input area for phone number -->
+        <view class="title" hover-class="none" hover-stop-propagation="false">
+            Phone Number：
+        </view>
+        <view class="inputarea" hover-class="none" hover-stop-propagation="false">
+            <input type="number" maxlength="11" disabled="{{editedisabled}}" id="uphonenum" class="{{editedisabled?'disedit':''}}" bindblur="checkphone" value="{{userinfo.uphonenum}}"/>
+        </view>
+    </view>
+</view>
+
+<!-- buttons to submit the modification -->
+<button bindtap="commitinfo" disabled="{{editedisabled}}">Submit</button>
+<view id="imagemask" hover-class="none" hover-stop-propagation="false"></view>

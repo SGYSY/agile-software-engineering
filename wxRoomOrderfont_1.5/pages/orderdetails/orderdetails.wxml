@@ -1,0 +1,102 @@
+<view class="orderdetails" hover-class="none" hover-stop-propagation="false">
+  <view class="orderdetailscontant" hover-class="none" hover-stop-propagation="false">
+    <view>
+      <view wx:if="{{order.status=='unconfirmed'}}">
+        <t-icon  name="task-error" style="color: red;"></t-icon>
+        <text style="color: red;">rejected</text>
+      </view>
+      <view wx:elif="{{order.status=='confirmed'}}">
+        <t-icon  style="color: green;" name="task-checked"></t-icon>
+        <text style="color: green;">Passed</text>
+      </view>
+      <view wx:else>
+        <t-icon  name="hourglass" style="color: orange;"></t-icon>
+        <text style="color: orange;">pending</text>
+      </view>
+    </view>
+    <view class="roomname">
+      <view>
+        <t-icon name="city-11" ></t-icon>Name:
+      </view>
+      <view>{{order.room.name}}</view>
+    </view>
+    <view class="ordertime">
+      <view>
+        <t-icon name="location"></t-icon>Location:
+      </view>      
+      <view>{{order.room.location}}</view>
+    </view>
+    <view class="usingtime">
+      <view>
+        <t-icon name="calendar-1"></t-icon>Date:
+      </view>
+      <view>Week:{{order.weekNumber}},Day:
+        <block wx:if="{{order.dayOfWeek === 0}}">
+          <text>Sunday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 1}}">
+          <text>Monday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 2}}">
+          <text>Tuesday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 3}}">
+          <text>Wednesday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 4}}">
+          <text>Thursday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 5}}">
+          <text>Friday</text>
+        </block>
+        <block wx:else>
+          <text>Saturday</text>
+        </block>
+      </view>
+    </view>
+    <view class="startTime">
+      <view class="name">
+        <t-icon name="time"></t-icon> Start time:
+      </view>
+      <view>{{order.startTime}}</view>
+    </view>
+    <view class="endTime">
+      <view class="name"> 
+        <t-icon name="time"></t-icon>End time:
+      </view>
+      <view>{{order.endTime}}</view>
+    </view>
+    <view class="username" wx:if="{{!zhankai}}">
+      <view class="name">
+        <t-icon name="user"></t-icon>User name: 
+      </view>
+      <view>{{order.user.firstName}}</view>
+    </view>
+    <view wx:if="{{!zhankai}}">
+      <view class="name">
+        <t-icon name="certificate"></t-icon>User ID
+      </view>
+      <view>{{order.user.id}}</view>
+    </view>
+    <view wx:if="{{!zhankai}}">
+      <view class="name"> 
+        <t-icon name="call-1"></t-icon>User phone:
+      </view>
+      <view>{{order.user.phoneNumber}}</view>
+    </view>
+    <view wx:if="{{!zhankai}}">
+      <view class="imgcontant" wx:if="{{order.userinner !=1}}">
+        <image bindtap="imgYu" data-list="{{order.autograph}}" data-src="{{item}}" class="" wx:for="{{order.autograph}}" wx:for-index="index" wx:for-item="item" wx:key="item" src="{{item}}" alt="" mode="scaleToFill"></image>
+      </view>
+      <view class="tt" wx:else>Insiders don't need photos</view>
+    </view>
+    <span id="btn" bindtap="clickzhankai">
+      
+      <t-icon wx:if="{{zhankai}}" class="expand" name="chevron-down-double-s"></t-icon>
+      <t-icon wx:else class="expand" name="chevron-up-double-s"></t-icon>
+    </span>
+  </view>
+  <view class="action">
+  <button bind:tap="cancelOrder"><text>cancel</text></button>
+  </view>
+</view>

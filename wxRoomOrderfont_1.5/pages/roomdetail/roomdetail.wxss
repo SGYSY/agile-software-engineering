@@ -1,0 +1,224 @@
+.schedule, .roominfo {
+  background-color: #007bff;  /* Blue background */
+  color: white;  /* White text */
+  padding: 5px 10px;  /* Reduce top and bottom spacing, increase left and right spacing */
+  border-radius: 20px;  /* Rounded corners */
+  margin-bottom: 0px;  /* Reduce bottom margin */
+  text-align: left;  /* Left-align text */
+  font-size: 16px;  /* Font size */
+  display: inline-block;  /* Make background width match text length */
+  margin-left: 20px;  /* Maintain space from the left */
+}
+
+.schedule {
+  margin-top: 5px;  /* Reduce top margin */
+}
+
+.roominfo {
+  margin-top: 5px;  /* Reduce top margin */
+}
+
+.body {
+  display: flex;
+  justify-content: center;
+  width: 100vw;
+  height: auto;
+  position: relative;
+  padding-top: 5vw; /* Increase top spacing */
+}
+
+.body .classinfo {
+  width: 90vw;
+  background-color: #fff;
+  position: relative; 
+  border-radius: 10px;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+  padding: 4vw 5vw;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.body .classinfo view {
+  display: flex;
+  align-items: center; /* Vertically center icons and text */
+  justify-content: flex-start; /* Horizontal alignment */
+  padding: 0; /* Remove excess padding */
+  width: 100%;
+}
+
+.body .classinfo view .t-icon {
+  width: 40px; /* Set fixed icon size */
+  height: 40px; /* Keep icon square */
+  border: 2px solid rgb(0, 89, 255); /* Blue border for icons */
+  border-radius: 5px; /* Rounded border */
+  margin-right: 10px; /* Spacing between icon and text */
+  font-size: 20px; /* Icon font size */
+  display: flex;
+  justify-content: center; /* Center icon */
+  align-items: center; /* Center icon */
+}
+
+.body .classinfo view .classname,
+.body .classinfo view .classadress,
+.body .classinfo view .classcapacity {
+  color: #472634;
+  font-size: 5.3vw;
+  font-weight: 500;
+  line-height: 12vw;
+  height: 12vw;
+  border-bottom: #f5f5f5 1rpx solid;
+}
+
+.weekchoose {
+  padding: 20px;
+  margin-top: 20px; /* Increase spacing from above content */
+}
+
+.picker {
+  padding: 10px;
+  border: 1px solid rgb(0, 89, 255);
+  background-color: #0026ff;
+  border-radius: 50px;
+  text-align: center;
+  font-size: 25px;
+}
+
+.picker text {
+  color: rgb(255, 255, 255);
+}
+
+.table {
+  width: 100%;
+  overflow-x: auto;
+  white-space: nowrap;
+  border-radius: 10px;
+  margin-top: 20px;
+}
+
+.tr {
+  display: flex;
+}
+
+.th, .td {
+  margin: 1vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #a7a7a7;
+  width: 100px;
+  height: 50px;
+  text-align: center;
+  min-width: 150px;
+  border-radius: 10px;
+  font-weight: 900;
+  color: rgb(0, 89, 255);
+  font-size: 3vw; /* Adjust font size, reduce font */
+}
+
+.th2 {
+  margin: 1vw;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: 1px solid #a7a7a7;
+  width: 100px;
+  height: 50px;
+  text-align: center;
+  min-width: 150px;
+  border-radius: 10px;
+  font-weight: 900;
+  font-size: 4vw; /* Adjust font size, reduce font */
+  background-color: rgb(255, 255, 255); /* Set background to blue */
+  color: rgb(0, 110, 255); /* Set font color to white */
+}
+
+.th {
+  background-color: rgb(0, 89, 255); /* Set background to blue */
+  color: white; /* Set font color to white */
+  font-size: 4vw; /* Keep header font size */
+}
+
+.td {
+  padding: 2vw;
+  padding-top: 2vw;
+  background-color: #ffffff;
+  font-size: 3.2vw; /* Reduce text font size in td */
+  word-wrap: break-word; /* Auto-wrap text */
+  word-break: break-all; /* Force text to break at word boundaries */
+  white-space: normal; /* Allow text to wrap automatically */
+}
+
+.td.active {
+  background-color: #8b8b8b;
+  color: white;
+}
+
+.tablecontainer {
+  width: 90vw;
+  margin: 5vw;
+}
+
+scroll-view {
+  width: 100%;
+}
+
+.orderbtn {
+  color: #fff;
+  width: auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 12vw;
+  font-size: 5vw;
+  font-weight: 400;
+  background-color: #0026ff;
+  margin: 10vw 5vw;
+  border-radius: 5vw;
+}
+
+.room-issue-box {
+  position: relative;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  background-color: #f8f8f8;
+  width: 90%;
+  height: 15%;
+  margin-left: 5%;
+  border-radius: 20rpx;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  margin: 0% 10%;
+  height: 80%;
+  width: auto;
+  aspect-ratio: 1;
+}
+
+.tag {
+  width: 90%;
+  margin-bottom: 10%;
+  cursor: pointer;
+}
+
+.tip {
+  font-weight: bold;
+  margin-bottom: 10vh;
+  width: 300rpx;
+  height: 52rpx;
+  display: block;
+  box-sizing: border-box;
+  background-color: #ff0000; /* Red background */
+  color: #ffffff; /* White text */
+  text-align: center; /* Center text */
+  line-height: 35rpx; /* Ensure vertical centering of text */
+  border-radius: 5vw;
+  padding: 10rpx;
+}

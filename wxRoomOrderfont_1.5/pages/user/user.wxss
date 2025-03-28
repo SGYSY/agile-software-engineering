@@ -1,0 +1,112 @@
+#backimage {
+  width: calc(750rpx*375/375);
+  height: 50vh;
+}
+#imagemask {
+  width: calc(750rpx*375/375);
+  height: 50vh;
+  background: linear-gradient(to right, rgba(0, 0, 0, 0.6), rgba(121, 121, 121, 0));
+  position: absolute;
+  top: 0;
+}
+#imagemask text {
+  display: block;
+  color: #ffffff;
+  margin-left: calc(750rpx*30/375);
+  font-weight: bolder;
+  font-family: "Arial Narrow";
+  font-size: 70rpx;
+  line-height: 95rpx;
+}
+#imagemask #textlineone {
+  margin-top: 20rpx;
+  font-size: 78rpx;
+}
+
+.container {
+  height: 70vh;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+}
+.container scroll-view{
+  background-color: #ffffff;
+  height: 70vh;
+  width: 100%;
+  position: absolute;
+  bottom: 0;
+  border-top-right-radius: 80rpx;
+  border-top-left-radius: 80rpx;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+.container scroll-view > view{
+  height: 80vh;
+  width: 100%;
+}
+/* not login */
+#usericon {
+  display: flex;
+  justify-content: center;
+  margin-top: 3vh;
+}
+#usericon view {
+  display: flex;
+  justify-content: center;
+  width: 35vw;
+  height: 35vw;
+  border-radius: 5%;
+  border: 2px solid #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  margin: 30rpx;
+}
+.gotoLogin{
+  height: 10vh;
+  width: 40vw;
+  background-color: #4169E1;
+  border-radius: 5vw;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  margin-bottom: 25vh;
+  color: #fff;
+  font-size: 25px;
+}
+/* login */
+.userhome {
+  position: relative;
+  margin: 2vw 8vw 0 8vw;
+}
+.profile{
+  height: 30vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-around;
+}
+.profile > view{
+  margin: 5rpx;
+}
+.userhome #useroption {
+  width: 100%;
+  padding-top: 1rpx;
+  margin: 5vw 0;
+  position: relative;
+}
+.userhome #useroption > view {
+  display: flex;
+  align-items: center;
+  color: #472634;
+  height: 15vw;
+  padding-left: 5vw;
+  font-size: 4.2vw;
+  font-family: "Franklin Gothic Medium";
+  border-bottom: #d6d6d6 2rpx solid;
+}
+
+.profile{
+  margin: 8vh 0 8vh 0;
+}
+
+.expand{
+  position:absolute;
+  right: 10rpx;
+}
