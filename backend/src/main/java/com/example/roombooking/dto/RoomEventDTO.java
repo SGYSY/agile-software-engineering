@@ -37,7 +37,6 @@ public class RoomEventDTO {
         return dto;
     }
     
-    // 从预订创建事件
     public static RoomEventDTO fromBooking(com.example.roombooking.entity.Booking booking) {
         RoomEventDTO dto = new RoomEventDTO();
         dto.id = booking.getId();
