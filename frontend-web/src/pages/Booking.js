@@ -1,14 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate, useLocation } from "react-router-dom";
-import {
-  Card,
-  DatePicker,
-  Select,
-  Button,
-  message,
-  Descriptions,
-  Input,
-} from "antd";
+import { Card, DatePicker, Select, Button, message, Descriptions, Input } from "antd";
 import moment from "moment";
 
 const { Option } = Select;
@@ -27,28 +19,29 @@ const timeSlots = [
   "19:55 - 20:40",
 ];
 
+// 固定排课起始日期：第一周的周一为 2025-02-17
+const scheduleStartDate = moment("2025-02-17", "YYYY-MM-DD");
+
 const Booking = () => {
   const { roomId } = useParams();
   const navigate = useNavigate();
+  const location = useLocation();
 
-  // Get room details from backend
+  // Room details from backend
   const [room, setRoom] = useState(null);
   const userRole = localStorage.getItem("userRole");
-  // Assume user ID is stored in localStorage (replace with your actual logic)
   const userId = parseInt(localStorage.getItem("userId") || "1", 10);
 
   // Get initial date & timeSlot from URL query parameters
-  const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
   const initialDate = searchParams.get("date"); // e.g., "2025-03-20"
   const initialTimeSlot = searchParams.get("timeSlot"); // e.g., "14:00 - 14:45"
 
   const [date, setDate] = useState(initialDate ? moment(initialDate) : null);
   const [timeSlot, setTimeSlot] = useState(initialTimeSlot || null);
-  // 新增 purpose 状态
   const [purpose, setPurpose] = useState("");
 
-  // Fetch room details from backend API
+  // Fetch room details
   useEffect(() => {
     fetch(`http://47.113.186.66:8080/api/rooms/${roomId}`)
       .then((res) => {
@@ -58,16 +51,13 @@ const Booking = () => {
         return res.json();
       })
       .then((data) => setRoom(data))
-      .catch((err) =>
-        message.error("Error fetching room details: " + err.message)
-      );
+      .catch((err) => message.error("Error fetching room details: " + err.message));
   }, [roomId]);
 
   if (!room) {
     return <p style={{ textAlign: "center", marginTop: 50 }}>Room not found</p>;
   }
 
-  // If room defines allowedRoles and current user not allowed, show no permission message.
   if (
     userRole === "student" &&
     room.allowedRoles &&
@@ -88,17 +78,21 @@ const Booking = () => {
       return message.error("Please enter a purpose for the booking!");
     }
 
+    // 将用户选择的日期转换为字符串格式
     const dateStr = date.format("YYYY-MM-DD");
-    // Use ISO week and weekday
-    const weekNumber = date.isoWeek();
-    const dayOfWeek = date.isoWeekday(); // Monday=1,..., Sunday=7
 
-    // Split timeSlot to get start and end times; format to HH:mm:ss
+    // 根据固定的 scheduleStartDate 计算 weekNumber：
+    // 差值的周数 + 1 即为 weekNumber
+    const weekNumber = date.diff(scheduleStartDate, "weeks") + 1;
+    // 直接使用 isoWeekday 得到 dayOfWeek，Monday = 1, ..., Sunday = 7
+    const dayOfWeek = date.isoWeekday();
+
+    // 处理 timeSlot，转换为 HH:mm:ss 格式
     const [startStr, endStr] = timeSlot.split(" - ");
     const formattedStartTime = startStr.length === 5 ? startStr + ":00" : startStr;
     const formattedEndTime = endStr.length === 5 ? endStr + ":00" : endStr;
 
-    // Construct booking request according to the new API format
+    // 构造预定请求体
     const bookingRequest = {
       user: { id: userId },
       room: { id: room.id },
@@ -108,6 +102,8 @@ const Booking = () => {
       endTime: formattedEndTime,
       purpose: purpose,
     };
+
+    console.log("Booking Request:", bookingRequest);
 
     fetch("http://47.113.186.66:8080/api/bookings", {
       method: "POST",
@@ -123,11 +119,11 @@ const Booking = () => {
         return response.json();
       })
       .then((data) => {
-        message.success("Booking submitted successfully!");
-        navigate("/my-bookings");
+        message.success("Booking submitted successfully!"); // 显示成功消息
+        navigate("/"); // 跳转到 Home 页面
       })
       .catch((err) => {
-        message.error("Booking failed: " + err.message);
+        message.error("Booking failed: " + err.message); // 失败时显示错误消息
       });
   };
 

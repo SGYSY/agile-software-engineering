@@ -1,4 +1,3 @@
-
 import React, { useRef } from "react";
 import { Button, message, Card, Badge, Typography, Popconfirm } from "antd";
 import ProTable from "@ant-design/pro-table";
@@ -68,15 +67,12 @@ const Admin = () => {
     actionRef.current?.reload();
   };
 
-  const handleEdit = (record) => {
-    message.info(`Edit booking ${record.id} - implement modal or route.`);
-  };
-
   const columns = [
     {
-      title: "Room ID",
-      dataIndex: "roomId",
-      valueType: "digit",
+      title: "Room Name",
+      dataIndex: "roomName",
+      valueType: "text",
+      // 搜索时显示，用于查询房间名称，后台需支持此字段查询
       hideInTable: true,
     },
     {
@@ -149,19 +145,21 @@ const Admin = () => {
     {
       title: "Start Time",
       dataIndex: "startTime",
-      render: (time) => new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      render: (time) =>
+        new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       hideInSearch: true,
     },
     {
       title: "End Time",
       dataIndex: "endTime",
-      render: (time) => new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
-        hour: "2-digit",
-        minute: "2-digit",
-      }),
+      render: (time) =>
+        new Date(`1970-01-01T${time}`).toLocaleTimeString([], {
+          hour: "2-digit",
+          minute: "2-digit",
+        }),
       hideInSearch: true,
     },
     {
@@ -193,7 +191,6 @@ const Admin = () => {
               <Button onClick={() => handleReject(record)}>Reject</Button>
             </>
           )}
-          <Button onClick={() => handleEdit(record)}>Edit</Button>
           <Popconfirm
             title="Confirm delete?"
             onConfirm={() => handleDelete(record.id)}
@@ -207,7 +204,6 @@ const Admin = () => {
       hideInSearch: true,
     },
   ];
-  
 
   return (
     <div style={{ padding: "40px", background: "#eef1f7", minHeight: "100vh" }}>

@@ -32,6 +32,9 @@ const RoomIssue = () => {
 
   const apiUrl = "http://47.113.186.66:8080/api/room-issues";
 
+  // 获取用户角色
+  const userRole = localStorage.getItem("userRole");
+
   const fetchIssues = async () => {
     setLoading(true);
     try {
@@ -132,17 +135,19 @@ const RoomIssue = () => {
                 marginBottom: 12,
                 background: "#ffffff",
               }}
-              actions={[
-                <Tooltip title="Delete this issue">
-                  <Button
-                    icon={<DeleteOutlined />}
-                    danger
-                    onClick={() => handleDeleteIssue(issue.id)}
-                  >
-                    Delete
-                  </Button>
-                </Tooltip>,
-              ]}
+              actions={
+                userRole === "admin" ? [ // 只有管理员可以看到删除按钮
+                  <Tooltip title="Delete this issue">
+                    <Button
+                      icon={<DeleteOutlined />}
+                      danger
+                      onClick={() => handleDeleteIssue(issue.id)}
+                    >
+                      Delete
+                    </Button>
+                  </Tooltip>,
+                ] : [] // 对于其他角色，不显示删除按钮
+              }
             >
               <List.Item.Meta
                 title={

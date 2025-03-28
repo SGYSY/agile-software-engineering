@@ -27,6 +27,17 @@ const MyBookings = () => {
   // 从 localStorage 获取当前用户ID，并确保它是数字类型
   const userId = parseInt(localStorage.getItem("userId"), 10);
 
+  // 星期几映射
+  const dayOfWeekMap = {
+    1: 'Monday',
+    2: 'Tuesday',
+    3: 'Wednesday',
+    4: 'Thursday',
+    5: 'Friday',
+    6: 'Saturday',
+    7: 'Sunday'
+  };
+
   useEffect(() => {
     if (userId) {
       fetchBookings(userId).then((data) => {
@@ -97,6 +108,9 @@ const MyBookings = () => {
                 >
                   <p style={{ marginBottom: 8 }}>
                     <strong>Location:</strong> {item.room.location}
+                  </p>
+                  <p style={{ marginBottom: 8 }}>
+                    <strong>Date:</strong> {"Week " + item.weekNumber} , {dayOfWeekMap[item.dayOfWeek]}
                   </p>
                   <p style={{ marginBottom: 8 }}>
                     <strong>Time:</strong>{" "}
