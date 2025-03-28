@@ -1,0 +1,54 @@
+<view class="main">
+  <image id="backimage" src="http://st2sjmp3d.hn-bkt.clouddn.com/banner1.jpg" mode="scaleToFill" />
+  <view bindtap="getUserProfile" id="imagemask" hover-class="none" hover-stop-propagation="false">
+      <text id="textlineone" selectable="false" space="false" decode="false">Welcome to</text>
+      <text class="" selectable="false" space="false" decode="false">DIICSU RoomOrder</text>
+  </view>
+  
+  <view class="container">
+    <scroll-view scroll-y>
+      <!-- when login -->
+      <view class="log" wx:if="{{ifLogin}}">
+      <view class="userhome" hover-class="none" hover-stop-propagation="false">
+        <view class="profile">
+          <view id="usericon" hover-class="none" hover-stop-propagation="false">
+            <view class="" hover-class="none" hover-stop-propagation="false">
+                <open-data type="userAvatarUrl"></open-data>
+            </view>
+          </view>
+          <view class="username">
+            {{loginUser.username}}
+          </view>
+          <view class="email">
+            {{loginUser.email}}
+          </view>          
+          <view class="phoneNumber">
+            {{loginUser.phoneNumber}}
+          </view>
+        </view>
+        <view id="useroption" hover-class="none" hover-stop-propagation="false">
+            <view bindtap="editmyinfo">
+                <t-icon name="task"></t-icon>
+                Edit Profile
+                <t-icon class="expand" name="chevron-right-s"></t-icon>
+            </view>
+            <view bindtap="userQuit" class="verifyincome">
+              <t-icon name="logout"></t-icon>
+              Quit
+              <t-icon class="expand" name="chevron-right-s"></t-icon>
+            </view>
+        </view>  
+      </view>
+    </view>
+    <!-- when no user login  -->
+    <view class="notLog" wx:else>
+      <view id="usericon" hover-class="none" hover-stop-propagation="false">
+            <view class="" hover-class="none" hover-stop-propagation="false">
+                <open-data type="userAvatarUrl"></open-data>
+            </view>
+        </view>
+      <button class="gotoLogin" bind:tap="gotoLogin">Login</button>
+    </view>
+    </scroll-view>
+  </view>
+</view>

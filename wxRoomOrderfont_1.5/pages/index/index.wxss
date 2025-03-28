@@ -1,0 +1,195 @@
+.swiperview {
+  margin-top: 2vw;
+}
+
+.swiperview swiper {
+  height: 48vw;
+}
+
+.swiperview swiper swiper-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 48vw!important;
+}
+
+.swiperview swiper swiper-item .swiperimage {
+  border-radius: 5vw;
+  width: 80vw;
+  height: 40vw;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.wx-swiper-dots {
+  position: relative;
+  bottom: 0.5vw !important;
+}
+
+.searchBar {
+  width: 92vw;
+  height: 10vh;
+  margin: 4vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+  border-radius: 2vw;
+  background-color: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.searchBar input {
+  width: 70vw;
+  height: 6vh;
+  background-color: #f6f6f6;
+  border-radius: 2vw;
+  margin: 2vw;
+}
+
+.searchBar image {
+  width: 8vw;
+  height: 3vh;
+}
+
+.searchBar picker {
+  width: 8vw;
+  height: 3vh;
+  margin: 2vw;
+}
+
+/* list of rooms */
+#title {
+  margin: 5vw 8vw 0 8vw;
+  color: #ffffff;
+  font-weight: 600;
+  font-size: 5vw;
+  background-color: #4169E1;
+  padding: 2vw 4vw; 
+  border-radius: 10vw; 
+}
+
+
+.classwaper {
+  margin: 3vw 8vw 5vw 8vw;
+  width: auto;
+}
+
+.classwaper :first-child {
+  margin-top: 0 !important;
+}
+
+.classwaper .classroom {
+  border-radius: 5vw;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  margin-top: 5vw;
+  padding: 4vw 0 3rpx 0;
+}
+
+.classwaper .classroom .classimage {
+  border-radius: 2vw;
+  width: 76vw;
+  height: 40vw;
+  margin: 0 4vw 0 4vw;
+}
+
+.classwaper .classroom .classinfo {
+  display: flex;
+  align-items: center;
+  margin: 2vw 5vw;
+  border: 2px solid #4169E1; 
+  padding: 2vw; 
+  border-radius: 5vw; 
+}
+
+.classwaper .classroom .classinfo t-icon {
+  margin-right: 4vw; 
+}
+
+.classwaper .classroom .classinfo .classname,
+.classwaper .classroom .classinfo .classadress,
+.classwaper .classroom .classinfo .classcapacity {
+  font-size: 4vw;
+  color: #000000;  
+  font-weight: bold; 
+}
+
+.classwaper .classroom .classdescribe {
+  margin: 1vw 5vw 2vw 5vw;
+  font-size: 800;
+  font-family: initial;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+}
+
+.classwaper .classroom .classdescribe text {
+  font-size: 4vw;
+  margin-right: 2vw;
+  margin-left: 1rpx;
+  color: #705ee6;
+}
+
+/*---------------------- filter ---------------------*/
+.mb-16 {
+  margin-bottom: 32rpx;
+}
+
+.label-suffix {
+  --td-tag-small-height: 32rpx;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 12rpx;
+}
+
+.filter-box{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  background-color: #f8f8f8;
+  border-radius: 5vw;
+  box-shadow : 0 4rpx 10rpx 5rpx rgba(0, 0, 0, 0.2);
+  width: 30%;
+  height: 100%;
+  padding-top: 2%;
+  padding-bottom: 2%;
+  padding-right: 2%;
+  margin: auto;
+  
+}
+
+.filter-text{
+  padding: 5%;
+  height: 100%;
+  width: 70%;
+  border-radius: 5vw;
+}
+
+.arrow-style{
+  padding: 5%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.filter-row{
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  height: 10%;
+}
+
+.reset-button {
+  height: 100%;
+  width: 20%;
+  background-color: #4169E1;
+  color: white;
+  box-shadow: 0 4rpx 10rpx 5rpx rgba(0, 0, 0, 0.2);
+  border-radius: 5vw;
+  text-align: center;
+}
+/*---------------------- filter ---------------------*/

@@ -1,0 +1,178 @@
+<view class="roominfo">Room Information</view>
+<view class="body">
+    <view class="classinfo">
+        <!-- roomname -->
+        <view class="classname">
+            <t-icon name="city-11"></t-icon>
+            {{roomDetail.name}}
+        </view>
+        <!-- location -->
+        <view class="classadress">
+            <t-icon name="location"></t-icon>
+            {{roomDetail.location}}
+        </view>
+        <!-- capacity -->
+        <view class="classcapacity">
+            <t-icon name="usergroup"></t-icon>
+            Capacity: {{roomDetail.capacity}}
+        </view>
+    </view>
+</view>
+
+<view class="weekchoose">
+  <picker mode="selector" range="{{weeks}}" bindchange="updateSchedule">
+    <view class="picker">
+      <text>{{selectedWeek ? 'Week '+selectedWeek : 'Choose Week'}}</text>
+    </view>
+  </picker>
+</view>
+
+<view class="schedule">Schedule</view>
+<view class="tablecontainer">
+  <scroll-view class="table" scroll-x="true">
+    <view class="tr">
+        <view class="th">Time</view>
+        <view class="th">Monday{{weekDates[0]}}</view>
+        <view class="th">Tuesday{{weekDates[1]}}</view>
+        <view class="th">Wednesday{{weekDates[2]}}</view>
+        <view class="th">Thursday{{weekDates[3]}}</view>
+        <view class="th">Friday{{weekDates[4]}}</view>
+        <view class="th">Saturday{{weekDates[5]}}</view>
+        <view class="th">Sunday{{weekDates[6]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">08:00-08:45</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '0'?'grey':'white'}};" data-row="0" data-col="0">{{weekschedules[0][0]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '0'?'grey':'white'}};" data-row="1" data-col="0">{{weekschedules[1][0]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '0'?'grey':'white'}};" data-row="2" data-col="0">{{weekschedules[2][0]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '0'?'grey':'white'}};" data-row="3" data-col="0">{{weekschedules[3][0]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '0'?'grey':'white'}};" data-row="4" data-col="0">{{weekschedules[4][0]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '0'?'grey':'white'}};" data-row="5" data-col="0">{{weekschedules[5][0]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '0'?'grey':'white'}};" data-row="6" data-col="0">{{weekschedules[6][0]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">08:55-09:40</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '1'?'grey':'white'}};" data-row="0" data-col="1">{{weekschedules[0][1]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '1'?'grey':'white'}};" data-row="1" data-col="1">{{weekschedules[1][1]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '1'?'grey':'white'}};" data-row="2" data-col="1">{{weekschedules[2][1]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '1'?'grey':'white'}};" data-row="3" data-col="1">{{weekschedules[3][1]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '1'?'grey':'white'}};" data-row="4" data-col="1">{{weekschedules[4][1]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '1'?'grey':'white'}};" data-row="5" data-col="1">{{weekschedules[5][1]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '1'?'grey':'white'}};" data-row="6" data-col="1">{{weekschedules[6][1]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">10:00-10:45</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '2'?'grey':'white'}};" data-row="0" data-col="2">{{weekschedules[0][2]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '2'?'grey':'white'}};" data-row="1" data-col="2">{{weekschedules[1][2]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '2'?'grey':'white'}};" data-row="2" data-col="2">{{weekschedules[2][2]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '2'?'grey':'white'}};" data-row="3" data-col="2">{{weekschedules[3][2]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '2'?'grey':'white'}};" data-row="4" data-col="2">{{weekschedules[4][2]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '2'?'grey':'white'}};" data-row="5" data-col="2">{{weekschedules[5][2]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '2'?'grey':'white'}};" data-row="6" data-col="2">{{weekschedules[6][2]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">10:55-11:40</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '3'?'grey':'white'}};" data-row="0" data-col="3">{{weekschedules[0][3]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '3'?'grey':'white'}};" data-row="1" data-col="3">{{weekschedules[1][3]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '3'?'grey':'white'}};" data-row="2" data-col="3">{{weekschedules[2][3]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '3'?'grey':'white'}};" data-row="3" data-col="3">{{weekschedules[3][3]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '3'?'grey':'white'}};" data-row="4" data-col="3">{{weekschedules[4][3]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '3'?'grey':'white'}};" data-row="5" data-col="3">{{weekschedules[5][3]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '3'?'grey':'white'}};" data-row="6" data-col="3">{{weekschedules[6][3]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">14:00-14:45</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '4'?'grey':'white'}};" data-row="0" data-col="4">{{weekschedules[0][4]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '4'?'grey':'white'}};" data-row="1" data-col="4">{{weekschedules[1][4]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '4'?'grey':'white'}};" data-row="2" data-col="4">{{weekschedules[2][4]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '4'?'grey':'white'}};" data-row="3" data-col="4">{{weekschedules[3][4]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '4'?'grey':'white'}};" data-row="4" data-col="4">{{weekschedules[4][4]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '4'?'grey':'white'}};" data-row="5" data-col="4">{{weekschedules[5][4]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '4'?'grey':'white'}};" data-row="6" data-col="4">{{weekschedules[6][4]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">14:55-15:40</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '5'?'grey':'white'}};" data-row="0" data-col="5">{{weekschedules[0][5]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '5'?'grey':'white'}};" data-row="1" data-col="5">{{weekschedules[1][5]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '5'?'grey':'white'}};" data-row="2" data-col="5">{{weekschedules[2][5]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '5'?'grey':'white'}};" data-row="3" data-col="5">{{weekschedules[3][5]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '5'?'grey':'white'}};" data-row="4" data-col="5">{{weekschedules[4][5]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '5'?'grey':'white'}};" data-row="5" data-col="5">{{weekschedules[5][5]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '5'?'grey':'white'}};" data-row="6" data-col="5">{{weekschedules[6][5]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">16:00-16:45</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '6'?'grey':'white'}};" data-row="0" data-col="6">{{weekschedules[0][6]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '6'?'grey':'white'}};" data-row="1" data-col="6">{{weekschedules[1][6]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '6'?'grey':'white'}};" data-row="2" data-col="6">{{weekschedules[2][6]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '6'?'grey':'white'}};" data-row="3" data-col="6">{{weekschedules[3][6]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '6'?'grey':'white'}};" data-row="4" data-col="6">{{weekschedules[4][6]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '6'?'grey':'white'}};" data-row="5" data-col="6">{{weekschedules[5][6]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '6'?'grey':'white'}};" data-row="6" data-col="6">{{weekschedules[6][6]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">16:55-17:40</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '7'?'grey':'white'}};" data-row="0" data-col="7">{{weekschedules[0][7]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '7'?'grey':'white'}};" data-row="1" data-col="7">{{weekschedules[1][7]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '7'?'grey':'white'}};" data-row="2" data-col="7">{{weekschedules[2][7]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '7'?'grey':'white'}};" data-row="3" data-col="7">{{weekschedules[3][7]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '7'?'grey':'white'}};" data-row="4" data-col="7">{{weekschedules[4][7]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '7'?'grey':'white'}};" data-row="5" data-col="7">{{weekschedules[5][7]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '7'?'grey':'white'}};" data-row="6" data-col="7">{{weekschedules[6][7]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">19:00-19:45</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '8'?'grey':'white'}};" data-row="0" data-col="8">{{weekschedules[0][8]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '8'?'grey':'white'}};" data-row="1" data-col="8">{{weekschedules[1][8]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '8'?'grey':'white'}};" data-row="2" data-col="8">{{weekschedules[2][8]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '8'?'grey':'white'}};" data-row="3" data-col="8">{{weekschedules[3][8]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '8'?'grey':'white'}};" data-row="4" data-col="8">{{weekschedules[4][8]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '8'?'grey':'white'}};" data-row="5" data-col="8">{{weekschedules[5][8]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '8'?'grey':'white'}};" data-row="6" data-col="8">{{weekschedules[6][8]}}</view>
+    </view>
+
+
+    <view class="tr">
+        <view class="th2">19:55-20:40</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '0' && activeCell.col === '9'?'grey':'white'}};" data-row="0" data-col="9">{{weekschedules[0][9]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '1' && activeCell.col === '9'?'grey':'white'}};" data-row="1" data-col="9">{{weekschedules[1][9]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '2' && activeCell.col === '9'?'grey':'white'}};" data-row="2" data-col="9">{{weekschedules[2][9]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '3' && activeCell.col === '9'?'grey':'white'}};" data-row="3" data-col="9">{{weekschedules[3][9]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '4' && activeCell.col === '9'?'grey':'white'}};" data-row="4" data-col="9">{{weekschedules[4][9]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '5' && activeCell.col === '9'?'grey':'white'}};" data-row="5" data-col="9">{{weekschedules[5][9]}}</view>
+        <view class="td" bindtap="onCellClick" style="background-color: {{activeCell.row === '6' && activeCell.col === '9'?'grey':'white'}};" data-row="6" data-col="9">{{weekschedules[6][9]}}</view>
+    </view>
+  </scroll-view>
+</view>
+
+
+
+<button class="orderbtn" bindtap="onReserveClick">Book</button>
+
+<!-------------------------------------------------------------------------------------------------->
+<view class="room-issue-box" style="width: 391rpx; display: flex; box-sizing: border-box; left: 143rpx; top: 18rpx; position: relative">
+    <view class="box" style="width: 160rpx; height: 245rpx; display: flex; box-sizing: border-box">
+      <t-image class="tag" src="http://st2sjmp3d.hn-bkt.clouddn.com/repair.jpg" mode="widthFix" shape= "circle" bind:tap="handlePopup"/>
+      <view class="tip" style="width: 404rpx; display: block; box-sizing: border-box; height: 52rpx">Room Issue Report</view>
+    </view>
+    <room-issue-popup visible="{{visible}}" bind:submitIssue="submitIssue" bind:closePopup="onClose"/>
+</view>
+<!-------------------------------------------------------------------------------------------------->

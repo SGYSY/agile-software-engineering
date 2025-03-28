@@ -1,0 +1,142 @@
+.main {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+} 
+.searchBar{
+  width: 92vw;
+  height: 10vh;
+  margin: 4vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: left;
+  align-items: center;
+  border-radius: 2vw;
+  background-color: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+.searchBar input{
+  width: 70vw;
+  height: 6vh;
+  background-color: #f6f6f6;
+  border-radius: 2vw;
+  margin: 2vw;
+}
+.searchBar  image{
+  width: 8vw;
+  height: 3vh;  
+}
+.filterMask {
+  height: 100vh;
+  width: 100vw;
+  position: fixed;
+  margin: 0;
+  z-index: 2;
+  background-color: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.advancedFilter {
+  width: 80vw;
+  height: 75vh;
+  background-color: #fff;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+  border-radius: 10rpx;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-around;
+  align-items: center;
+}
+
+.advancedFilter .title{
+  margin: 30rpx 0;
+  font-size: 42rpx;
+  font-weight: 700;
+}
+
+.advancedFilter picker .display{
+  height: 8vh;
+  width: 64vw;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.display view{
+  display: flex;
+  flex-direction: row;
+}
+.buttons{
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+}
+.buttons button{
+  width: 30vw;
+  margin: 10rpx;
+  background-color: #4169E1;
+  color: #fff;
+  font-weight: 700;
+}
+
+.orderlists {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100vw;
+  padding-top: 4vw;
+}
+.orderlists .orderitem {
+  width: 90vw;
+  height: 48vh;
+  border-radius: 5vw;
+  background-color: #fff;
+  position: relative;
+  color: #472634;
+  padding: 3vw 3vw;
+  margin-bottom: 5vw;
+  box-shadow: 3px 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.orderlists .orderitem view{
+  margin: 15rpx 0;
+}
+
+.orderlists .orderitem .status {
+  /* position: absolute; */
+  height: 15;
+  top: 1.5vw;
+  right: 5vw;
+  font-size: 18vw;
+}
+
+.status{
+  height: 15vh;
+}
+
+.orderlists .orderitem .icon-weitongguo {
+  color: #ff1e44;
+}
+.orderlists .orderitem .icon-yitongguo {
+  color: #39b944;
+}
+.orderlists .orderitem .icon-daishenhe {
+  color: #f7ce46;
+}
+
+.orderlists .orderitem view {
+  font-size: 4.5vw;
+  height: 12vw;
+  display: flex;
+  align-items: center;
+  flex-direction: row;
+  margin: 10px 0;
+  padding:  2rpx;  
+}
+.classInfo{
+  border: 2px solid #4169E1; 
+  border-radius: 16rpx;
+}
+
+

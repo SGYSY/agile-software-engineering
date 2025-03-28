@@ -1,0 +1,25 @@
+<!-- login.wxml -->
+<view class="container">
+  <view class="login-box">
+    <view class="icon-row">
+      <image src="http://st2sjmp3d.hn-bkt.clouddn.com/DII.jpg" class="icon" />
+    </view>
+
+    <text class="title">Email Login</text>
+    <form  report-submit="true">
+      <view class="input-group">
+        <input type="email" placeholder="Please enter your email" bindinput="onEmailInput" value="{{email}}" />
+      </view>
+      <view class="input-group" id="code">
+        <input type="email" placeholder="Please enter your code" bindinput="onCaptchaInput" value="{{password}}" />
+        <button  class="login-btn" bind:tap="GetCaptcha"><text>GetCode</text></button>
+      </view>
+      <view class="buttons">
+      <button  class="login-btn" bind:tap="Login"><text>Login</text></button>
+      </view>
+    </form>
+    <view class="forgot-password" bind:tap="gotoCreateUser">
+      create an account
+    </view>
+  </view>
+</view>
