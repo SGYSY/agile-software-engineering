@@ -1,6 +1,12 @@
 {
-  "usingComponents": {},
-  "navigationBarTitleText": "教室详情",
+  "component": true,
+  "usingComponents": {
+    "t-icon": "tdesign-miniprogram/icon/icon",
+    "t-button": "tdesign-miniprogram/button/button",
+    "t-image": "tdesign-miniprogram/image/image",
+    "room-issue-popup": "/components/roomIssuePopup/roomIssuePopup"
+  },
+  "navigationBarTitleText": "Classroom details",
   "enablePullDownRefresh": true
-
+  
 }

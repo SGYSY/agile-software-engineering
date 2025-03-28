@@ -1,496 +1,324 @@
-
-
-/**
- * @Author: YJR-1100
- * @Date: 2022-03-25 00:00:14
- * @LastEditors: YJR-1100
- * @LastEditTime: 2022-04-24 20:52:50
- * @FilePath: \wx_RoomOrder\wxRoomOrderfont\pages\roomdetail\roomdetail.js
- * @Description: 
- * @
- * @Copyright (c) 2022 by yjr-1100/CSU, All Rights Reserved. 
- */
 // pages/roomdetail/roomdetail.js
 const app = getApp()
 
 import {request} from "../../request/index.js"  
 import {formatTime,formatDate} from "../../utils/util.js"
 Page({
+    /*---------------------------------------------------room issue-------------------------------------*/
+    visible: false,
+    roomID: "1",
+    issueName: "",
+    description: "",
+/*---------------------------------------------------room issue-------------------------------------*/
 
-  /**
-   * 页面的初始数据
-   */
   data: {
-    maxlength:256,
-    currentlength:0,
-    bodyheight:0,
-    roomusage:"",
-    isinner:0,
-    datearray:[],
-    dateindex:0,
-    //负责人签字的图片 如果不是内部人员需要这个
-    imgs: [],
-    count: 1,
-    chosedtime:"",
-    room:{
-      "detailimage":["../../Images/咨询室.jpg","../../Images/会议室.jpg"],
-      "name":"635",
-      "adress":"Networking Building",
-      "describe":"no description"
-    },
-    canbeuserdtime:[
-    {
-      "bgintime":"8:00",
-      "endtime":"9:00",
-      "status":0
-    }
-    ]
+    weekDates: [], 
+    userId: -1,
+    activeCell: null,
+    selectedTime: '',
+    weeks: Array.from({length: 22}, (_, i) => (i + 1).toString()), 
+    selectedWeek: '',
+    timeSlots: [
+        { startTime: "08:00", endTime: "08:45" },
+        { startTime: "08:55", endTime: "09:40" },
+        { startTime: "10:00", endTime: "10:45" },
+        { startTime: "10:55", endTime: "11:40" },
+        { startTime: "14:00", endTime: "14:45" },
+        { startTime: "14:55", endTime: "15:40" },
+        { startTime: "16:00", endTime: "16:45" },
+        { startTime: "16:55", endTime: "17:40" },
+        { startTime: "19:00", endTime: "19:45" },
+        { startTime: "19:55", endTime: "20:40" }
+      ],
+      weekschedules: Array.from({ length: 7 }, () => Array(10).fill("Free")), 
+    roomDetail: {}, 
+    schedules: [],    
+    timetable: []
   },
-  bindDateChange(e){
-    console.log(e)
-    this.setData({
-      dateindex:e.detail.value
-    })
-    getroomusedtime(this,this.data.room.rid,this.data.datearray[e.detail.value])
+
+  /*---------------------------------------------------room issue-------------------------------------*/
+  handlePopup() {
+    this.setData({ visible: true });
   },
-  //下载申请表
-  See_download(){
-    if(this.data.room.pdfurl){
-      wx.showLoading({
-        title: 'loading',
-        mask:true
-    })
-      wx.downloadFile({
-        url:this.data.room.pdfurl,
-        success (res) {
-          // 只要服务器有响应数据，就会把响应内容写入文件并进入 success 回调，业务需要自行判断是否下载到了想要的内容
-          wx.hideLoading(); 
-          if (res.statusCode === 200) {
-            console.log(res)
-            var filepath = res.tempFilePath
-            wx.openDocument({
-              filePath: filepath,
-              fileType:'pdf',
-              showMenu:true
-            })
-          }else{
-            wx.showToast({
-                title: "download failed",
-                icon: "error",
-                duration: 2000
-              })
-          }
+  submitIssue(event) {
+    const { issueName, description } = event.detail;
+    wx.request({
+      url: "http://47.113.186.66:8080/api/room-issues",
+      method: "POST",
+      header: { "Content-Type": "application/json" },
+      data: {
+        room: { id: parseInt(this.data.roomDetail.id) },
+        issueName,
+        description
+      },
+      success(res) {
+        if (res.statusCode === 201) {
+          wx.showToast({ title: "Submit Success", icon: "success" });
+        } else {
+          wx.showToast({ title: "Submit Fail", icon: "error" });
         }
-      })
-    }else{
+      },
+      fail(err) {
+        wx.showToast({ title: "Request Fail，Please Check Internet", icon: "none" });
+      }
+    });
+
+    this.setData({ visible: false });
+  },
+  onClose() {
+    this.setData({ visible: false });
+  },
+  /*---------------------------------------------------room issue-------------------------------------*/
+
+  onCellClick: function(event) {
+    const row = event.currentTarget.dataset.row; 
+    const col = event.currentTarget.dataset.col; 
+    const cellData = this.data.weekschedules[row][col]; 
+    this.setData({
+      activeCell: { row, col }, 
+      selectedTime:cellData
+    });
+
+  },
+
+onReserveClick: function() {
+    const { activeCell, selectedWeek, timeSlots,selectedTime,weekDates } = this.data;
+    if (!activeCell) {
       wx.showToast({
-        title: "application form not exist",
-        icon: "none",
-        duration: 2000
-      })
+        title: 'Please a time',
+        icon: 'none'
+      });
+      return;
+    }
+    if (!selectedWeek) {
+      wx.showToast({
+        title: 'Please choose a week',
+        icon: 'none'
+      });
+      return;
+    }
+    if (selectedTime!="Free") {
+        wx.showToast({
+          title: 'Time unavailuable',
+          icon: 'none'
+        });
+        return;
+      }
+    const timeSlot = timeSlots[activeCell.col];  
+    const dayOfWeek = activeCell.row; 
+    const startTime = timeSlot.startTime;
+    const endTime = timeSlot.endTime;
+
+    const currentDate = new Date();
+    const currentMonth = currentDate.getMonth();
+    const currentDay = currentDate.getDate();
+    const currentHours = currentDate.getHours();
+    const currentMinutes = currentDate.getMinutes();
+    
+    const selectedDateWithoutBrackets = weekDates[dayOfWeek].replace(/[()]/g, '');
+    const [selectedMonth, selectedDay] = selectedDateWithoutBrackets.split('.').map(Number);
+    
+    const [startHour, startMinute] = startTime.split(':').map(Number);
+    
+    const currentDateTime = new Date(currentDate.getFullYear(), currentMonth, currentDay, currentHours, currentMinutes).getTime();
+    const selectedDateTime = new Date(currentDate.getFullYear(), selectedMonth - 1, selectedDay, startHour, startMinute).getTime();
+    
+    if (currentDateTime > selectedDateTime) {
+      wx.showToast({
+        title: 'Cannot book past times',
+        icon: 'none'
+      });
+      return;
     }
     
-  },
-  //上传图片
-  bindUpload: function (e) {
-      switch (this.data.imgs.length) {
-        case 0:
-          this.data.count = 3
-          break
-        case 1:
-          this.data.count = 2
-          break
-        case 2:
-          this.data.count = 1
-          break
-      }
-      var that = this
-      wx.chooseImage({
-        count: that.data.count, // 默认3
-        sizeType: ["original", "compressed"], // 可以指定是原图还是压缩图，默认二者都有
-        sourceType: ["album", "camera"], // 可以指定来源是相册还是相机，默认二者都有
-        success: function (res) {
-          // 返回选定照片的本地文件路径列表，tempFilePath可以作为img标签的src属性显示图片
-          var tempFilePaths = res.tempFilePaths
-          for (var i = 0; i < tempFilePaths.length; i++) {
-            wx.uploadFile({
-              url: 'http://127.0.0.1:5000/api/v1/user/uploadaccessimage',
-              filePath: tempFilePaths[i],
-              name: "file",
-              header: {
-                "content-type": "multipart/form-data"
-              },
-              success: function (res) {
-                if (res.statusCode == 200) {
-                  wx.showToast({
-                    title: "上传成功",
-                    icon: "none",
-                    duration: 1500
-                  })
-                  console.log(res.data)
-                  that.data.imgs.push(JSON.parse(res.data).responsedata['imgurl'])
-                  that.setData({
-                    imgs: that.data.imgs
-                  })
-                }
-              },
-              fail: function (err) {
-                wx.showToast({
-                  title: "上传失败",
-                  icon: "none",
-                  duration: 2000
-                })
-              },
-              complete: function (result) {
-                console.log(result.errMsg)
-              }
-            })
-          }
-        }
-      })
-    },
-    // 删除图片
-deleteImg: function (e) {
-  var that = this
-  wx.showModal({
-    title: "提示",
-    content: "是否删除",
-    success: function (res) {
-      if (res.confirm) {
-        for (var i = 0; i < that.data.imgs.length; i++) {
-          if (i == e.currentTarget.dataset.index) that.data.imgs.splice(i, 1)
+      wx.request({
+        url: 'http://47.113.186.66:8080/api/bookings',  
+        method: 'POST',
+        header: {"Content-Type": "application/json",},
+        data: {
+            user: {id:this.data.userId},
+            room: {id:this.data.roomDetail.id},
+            weekNumber: selectedWeek,
+            dayOfWeek: dayOfWeek,
+            startTime: startTime,
+            endTime: endTime,
+            purpose: "purpose"//
+        },
+        success: (res) => {
+          if (res.statusCode === 201) {
+            wx.showToast({
+              title: 'Booking success',
+              icon: 'success'
+            });
+          } else {
+            wx.showToast({
+              title: 'Booking fail, Please try later',
+              icon: 'none'
+            });
+          }
+        },
+        fail: (err) => {
+          wx.showToast({
+            title: 'Network error，Please try later',
+            icon: 'none'
+          });
         }
-        that.setData({
-          imgs: that.data.imgs
-        })
-      } else if (res.cancel) {
-        console.log("用户点击取消")
+      });
+  },
+
+
+updateSchedule: function(event) {
+    const selectedIndex = event.detail.value;  
+    let weekNumber = this.data.weeks[selectedIndex];  
+    this.setData({ selectedWeek: weekNumber });  
+  
+    if (weekNumber < 1 || weekNumber > this.data.timetable.length) {
+      console.log("Invalid week number");
+      return;
+    }
+    let weekIndex = weekNumber - 1; 
+  
+    
+    this.setData({
+      weekschedules: Array.from({ length: 7 }, () => Array(10).fill("Free"))
+    });
+  
+    
+    for (let timeIndex = 0; timeIndex < this.data.timetable[weekIndex].length; timeIndex++) {
+      let weekday = this.data.timetable[weekIndex][timeIndex].weekday;  
+      let name = this.data.timetable[weekIndex][timeIndex].name;  
+      let period = this.data.timetable[weekIndex][timeIndex].period;  
+  
+      if (period >= 1 && period <= 10) {
+        
+        this.data.weekschedules[weekday - 1][period - 1] = name;
       }
     }
-  })
-},
-  /**
-   * 生命周期函数--监听页面加载
-   */
-  onLoad: function (options) {
-    var date = new Date()
-    var datearray = []
-    datearray.push(formatDate(date))
-    date = new Date(date.getTime()+1000*60*60*24)
-    datearray.push(formatDate(date))
-    this.setData({
-      datearray
-    })
-    console.log(options)
-    var that = this
-    const eventChannel = this.getOpenerEventChannel()
-    var user = wx.getStorageSync('userinfo')
-      if(user){
-        this.setData({
-          isinner:user.isinsider
-        })
-      }
-    // 监听acceptDataFromOpenerPage事件，获取上一页面通过eventChannel传送到当前页面的数据
-    eventChannel.on('classdata', function(data) {
-      console.log(data)
-      that.setData({
-        [`room.detailimage`]:data.data.imageurl.filter((x) => x !== ''),
-        [`room.name`]:data.data.name,
-        [`room.adress`]:data.data.adress,
-        [`room.describe`]:data.data.describe,
-        [`room.rid`]:data.data.rid,
-        [`room.orgid`]:data.data.orgid,
-        [`room.pdfname`]:data.data.pdfname,
-        [`room.pdfurl`]:data.data.pdfurl,
-        rcanbeusetimes:data.data.rcanbeusetimes.sort()
-      })
-      
-      // console.log(...data.data.imageurl)
-      
-      // 得到该教室对应日期已经预约的时间段，开始默认今天
-      getroomusedtime(that,data.data.rid,formatDate(new Date()))
-      
-    })
+  
+    
+    this.setData({ weekschedules: this.data.weekschedules });
+  
+    
+    const weekDates = this.getWeekDates(weekNumber);  
+    this.setData({ weekDates });  
+    
   },
-  /**
-   * 生命周期函数--监听页面初次渲染完成
-   */
+
+
+  onLoad: function(options) {
+    
+    const eventChannel = this.getOpenerEventChannel();
+    eventChannel.on('classdata', (data) => {
+      
+      this.setData({
+        roomDetail: data.data
+      }, () => {
+        
+        this.getSchedulesByRoom(this.data.roomDetail.id);
+      });
+    });
+    this.setData({ timetable });
+  },
+  
   onReady: function () {
 
   },
-
-    //点击轮播图放大预览
-  handlePrevewImage(e){
-    // 构造要预览的图片数组
-    const urls = this.data.room.detailimage;
-    console.log(urls)
-    const {index} = e.currentTarget.dataset
-    console.log(index);
-    wx.previewImage({
-      current: urls[index],
-      urls: urls
-    });
-  },
-  // 输入字符统计
-  useredfoinput(e){
-    console.log(e)
-    this.setData({
-      currentlength:parseInt(e.detail.value.length),
-      roomusage:`${e.detail.value}`
-    })
-  },
-  chosetime(e){
-    var currentindex = e.currentTarget.dataset.index;
-    // console.log(currentindex)
-    for(var i = 0;i<this.data.canbeuserdtime.length;i++){
-      if(this.data.canbeuserdtime[i].status==2){
-        this.setData({
-          [`canbeuserdtime[${i}].status`]:0
-        })
-
-      }
-      if(this.data.canbeuserdtime[currentindex].status==1){
-        //提示不可选
-        wx.showToast({
-          title: 'the room is booked',
-          icon: 'error',//
-          mask:true,
-          duration: 1000
-        })
-      }else{
-        // 变成选中状态
-        this.setData({
-          [`canbeuserdtime[${currentindex}].status`]:2,
-          chosedtime:this.data.canbeuserdtime[currentindex].bgintime+'-'+this.data.canbeuserdtime[currentindex].endtime
-        })
-      }
-    }
-  },
-  // 点击立即预约的处理事件
-  clickbtn(e){
-    var that = this
-    console.log(e)
-    var user = wx.getStorageSync('userinfo')
-    if(!user){
-      wx.showModal({
-        title: '提示',
-        content: '您需要登录并完善个人信息',
-        mask:true,
-        success (res) {
-          if (res.confirm) {
-            //点击确定后跳到tabbar登录页面
-            wx.switchTab({
-              url: '/pages/user/user'
-            })
-          }
-        }
-      })
-    }else if(!user.schoolid&&
-      !user.uname&&
-      !user.uphonenum&&
-      !user.profassionclass){
-        wx.showModal({
-          title: '提示',
-          content: '请完善个人信息',
-          mask:true,
-          success (res) {
-            if (res.confirm) {
-              //点击确定后跳到tabbar登录页面
-              wx.switchTab({
-                url: '/pages/user/user'
-              })
-            }
-          }
-        })
-    }else if(user.isreadedrules == 0){
-      wx.showModal({
-        title: '提示',
-        content: '请阅读借阅须知',
-        mask:true,
-        success (res) {
-          if (res.confirm) {
-            //点击确定后跳到tabbar登录页面
-            wx.switchTab({
-              url: '/pages/user/user'
-            })
-          }
-        }
-      })
-    }
-    else if(!this.data.roomusage){//检查教室用途没有有内容
-      wx.showToast({
-        title: '请填写教室用途',
-        icon: 'error',//
-        mask:true,
-        duration: 800
-      })
-    }else if(!this.data.chosedtime){
-      wx.showToast({
-        title: '请选择使用时间',
-        icon: 'error',//
-        mask:true,
-        duration: 800
-      })
-    }else if(this.data.isinner!=1&&this.data.imgs.length === 0){
-      wx.showToast({
-        title: '请上传签字图片',
-        icon: 'error',//
-        mask:true,
-        duration: 800
-      })
-    }
-    else{
-      // 得到数据
-      var data = {
-        roomusage:this.data.roomusage,
-        room_id:this.data.room.rid,
-        room2orgid:this.data.room.orgid,
-        usingtime:this.data.chosedtime,
-        user_id:user.uid,
-        verifyimg:this.data.imgs.join(';'),
-        usingdate:this.data.datearray[this.data.dateindex]
-      }
-      console.log(data)
-      // 发送请求
-      request({url:"/orderitems/makeorder",method:"POST",data:data})
-      .then(result=>{
-        console.log(result)
-        if(result.data.code==1){
-          wx.showModal({
-            title: '提示',
-            content: '申请成功，请在我的预约中查看审核结果',
-            mask:true,
-            success (res) {
-              if (res.confirm) {
-                //跳到我的预约
-                console.log(wx.getStorageSync('userInfo'))
-                wx.redirectTo({
-                  url: `../myorders/myorders?uid=${user.uid}`
-                })
-              }
-            },fail(){
-              wx.navigateBack({
-                delta:1
-              })
-            }
-          })
-        }else{
-          wx.showToast({
-            title: '网络错误',
-            icon: 'error',//
-            mask:true,
-            duration: 800
-          })
-        }
-      })
-    }
-    
-    
-  },
-  /**
-   * 生命周期函数--监听页面显示
-   */
+  
   onShow: function () {
-    const that = this
-    const obj=wx.createSelectorQuery();
-    obj.select(".classinfo").boundingClientRect()
-    obj.exec(function(res){
-      that.setData({
-        "bodyheight":res[0].height*100/wx.getSystemInfoSync().screenWidth-18+"vw"
-      })
-      // console.log(wx.getSystemInfoSync().screenWidth)
-    })
+    const app = getApp(); 
+    app.fetchUserID(this); 
+    
   },
-
-  /**
-   * 生命周期函数--监听页面隐藏
-   */
+  
   onHide: function () {
 
   },
-
-  /**
-   * 生命周期函数--监听页面卸载
-   */
+  
   onUnload: function () {
 
   },
-
-  /**
-   * 页面相关事件处理函数--监听用户下拉动作
-   */
+  
   onPullDownRefresh: function () {
-    getroomusedtime(this,this.data.room.rid,formatDate(new Date()))
 
   },
-  /**
-   * 页面上拉触底事件的处理函数
-   */
+  
   onReachBottom: function () {
-  },
 
-  /**
-   * 用户点击右上角分享
-   */
+  },
+  
   onShareAppMessage: function () {
 
-  }
-})
-//formatDate(new Date())
-function getroomusedtime(that,rid,date){
-  request({url:"/orderitems/roomusertoday",method:"GET",data:{rid:rid,date:date}})
-  .then(result=>{
-    var usedtimelist = []
-    var canbeuserdtime = []
-    console.log(result)
-    if(result.data.code==1){
-      usedtimelist = result.data.responsedata.sort(
-        (a,b)=>{
-          if(a.length<b.length) return -1
-          else return a<b?-1:1
+  },
+  
+  getSchedulesByRoom: function(roomId) {
+    wx.request({
+      url: `http://47.113.186.66:8080/api/schedules/room/${roomId}`,  
+      method: 'GET',  
+      success: (res) => {
+        if (res.statusCode === 200) {
+
+          this.setData({
+            schedules: res.data
+          }, () => {
+            
+            let timetable = this.getTimetable();
+            this.setData({ timetable });
+          });
+        } else {
+          console.log('request fail', res.statusCode);
         }
-      )
-      that.setData({
-        usedtimelist:usedtimelist
-      })
-    } 
-    else{
-      wx.showModal({
-        title: '提示',
-        content: '可用时间获取失败请刷新重试',
-        success (res) {
-          if (res.confirm) {
-            getroomusedtime(that,rid,date)
-          } else if (res.cancel) {
-            wx.navigateBack({
-              delta: 1
-            })
-          }
-        }
-      })
-    }
-    let j=0
-    for(let i = 0;i<that.data.rcanbeusetimes.length;i++){
-      if(that.data.rcanbeusetimes[i]){
-        if(j<usedtimelist.length&&that.data.rcanbeusetimes[i]==usedtimelist[j]){
-          canbeuserdtime.push({
-            "bgintime":that.data.rcanbeusetimes[i].split('-')[0],
-            "endtime":that.data.rcanbeusetimes[i].split('-')[1],
-            "status":1
-          })
-          j++
-        }
-        else{
-          canbeuserdtime.push({
-            "bgintime":that.data.rcanbeusetimes[i].split('-')[0],
-            "endtime":that.data.rcanbeusetimes[i].split('-')[1],
-            "status":0
-          })
-        }
+      },
+      fail: (error) => {
+        console.log('request fail:', error);  
       }
+    });
+  },
+  getTimetable() {
+    let timetable = [
+      [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], [], []
+    ];
+    this.data.schedules.forEach(schedules => {
+      const week = schedules.weekNumber;
+      const courseData = {
+        name: schedules.courseName,
+        id: schedules.id,
+        period:schedules.period,
+        weekday:schedules.weekday
+      };
+      if (week >= 1 && week <= 22) {
+        timetable[week - 1].push(courseData);
+      }
+    });
+    return timetable;
+  },
+
+getWeekDates: function(selectedWeek) {
+    const startDate = new Date(2025, 1, 17);  
+    const weekStart = new Date(startDate);
+    weekStart.setDate(startDate.getDate() + (selectedWeek - 1) * 7);
+  
+    const weekDates = [];
+    for (let i = 0; i < 7; i++) {
+      const currentDay = new Date(weekStart);
+      currentDay.setDate(weekStart.getDate() + i);
+      weekDates.push(this.formatDate(currentDay));
     }
-    that.setData({
-      canbeuserdtime
-    })
-  })
-}
+  
+    return weekDates;
+  },
+
+formatDate: function(date) {
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `(${month}.${day})`;
+  },
+  
+  
+
+  
+
+  
+})
+
+
+

@@ -1,0 +1,35 @@
+<!--pages/createUser/createUser.wxml-->
+<view class="main">
+  <view class="container">
+    <view class="icon-row">
+      <image src="http://st2sjmp3d.hn-bkt.clouddn.com/DII.jpg" class="icon" />
+    </view>
+
+    <!-- place to input the user data -->
+    <text class="title">Create New Account</text>
+    <form  report-submit="true">
+      <view class="input-group">
+        <input  placeholder="Please enter your email" bindinput="setEmail" value="{{email}}" />
+      </view>      
+      <view class="input-group">
+        <input placeholder="Please enter nickname"  bindinput="setNickName" value="{{nickname}}" />
+      </view>
+      <view class="input-group">
+        <input placeholder="Please enter 'firstname.lastname'" bindinput="setName" value="{{name}}" />
+      </view>
+      <view class="input-group">
+        <input placeholder="Please enter your phone number" bindinput="setPhoneNumber" value="{{phone}}" />
+      </view>
+      <view class="input-group">
+        <input placeholder="Please enter your password" bindinput="setPassword" value="{{password}}" />
+      </view>
+      <!-- the set of buttons -->
+      <view class="buttons">
+        <picker mode="selector" range="{{roleNameColumn}}" bindchange="bindRoleChange">
+          <text>SetRole</text>
+        </picker>
+        <button  class="login-btn" bind:tap="newUser"><text>Create</text></button>
+      </view>
+    </form>
+  </view>
+</view>

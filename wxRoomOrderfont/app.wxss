@@ -14,7 +14,8 @@ page,view,text,swiper,weip-item,image,navigator{
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-family: 'Courier New', Courier, monospace;
+  /* font-family: 'Comic Sans','Courier New', Courier, monospace; */
+  font-family:initial;
 }
 
 page{

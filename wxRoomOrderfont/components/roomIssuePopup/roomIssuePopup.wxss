@@ -1,0 +1,94 @@
+/*drawer 的格式*/
+.block {
+  position: relative;
+  width: 240px;
+  height: 360px;
+  background: var(--td-bg-color-container);
+  border-radius: 5px;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* drawer 中的关闭*/
+.close-btn {
+  position: absolute;
+  left: 50%;
+  margin-left: -32rpx;
+  bottom: calc(-1 * (48rpx + 64rpx));
+}
+
+/*drawer 中的title*/
+.drawer-title{
+  padding: 20rpx;
+  font-weight: bold;
+  font-size: 40rpx;
+  color: #3b3cac;
+}
+
+/* Drawer 横线 */
+.drawer-divider {
+  width: 100%;
+  height: 1rpx;
+  background-color: #e4e4e4; /* 灰色 */
+  margin-bottom: 5px;
+}
+
+.drawer-tag{
+  font-size: 20rpx;
+  padding: 10px 10px 0 10px;
+  margin-left: 5px ;
+  font-weight: bold;
+
+}
+
+
+/* 多行输入框 */
+.drawer-textarea {
+  width: 220px;
+  height: 100px;
+  border: 2rpx solid #e4e4e4; /* 添加边框 */
+  border-radius: 5px;
+  margin: 10px;
+  font-size: 16px;
+  line-height: 1.5;
+  outline: none;
+  resize: none;
+}
+
+/* 单行输入框 */
+.drawer-text{
+  width: 220px;
+  height: 25px;
+  border: 2rpx solid #e4e4e4;
+  border-radius: 5px;
+  margin: 10px;
+  font-size: 16px;
+  outline: none;
+}
+
+.drawer-btn-line{
+  width: 220px;
+  height: 30px;
+  margin: 30px 10px 10px 10px;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+}
+
+.drawer-btn-left{
+  height: 100%;
+  width: 80px;
+  font-size: 13px;
+  background-color: #f8f8f8;
+  border: 1rpx #3b3cac;
+  color: #3b3cac;
+  box-shadow: 0 0 5px #b8b8b8;
+}
+
+.drawer-btn-right{
+  height: 100%;
+  width: 80px;
+  font-size: 13px;
+  background-color: #3b3cac;
+  color: #f8f8f8;
+  box-shadow: 0 0 5px #3b3cac;
+}
