@@ -40,6 +40,7 @@ const RoomSchedule = () => {
   const [isModalVisible, setIsModalVisible] = useState(false);
   const [currentWeek, setCurrentWeek] = useState(moment().diff(scheduleStartDate, "weeks") + 1);
 
+  // 获取 schedule 数据
   useEffect(() => {
     const fetchSchedules = async () => {
       try {

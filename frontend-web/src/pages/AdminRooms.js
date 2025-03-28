@@ -41,7 +41,6 @@ const AdminRooms = () => {
 
   const [issuesModalVisible, setIssuesModalVisible] = useState(false);
   const [roomIssues, setRoomIssues] = useState([]);
-
   const [permissionModalVisible, setPermissionModalVisible] = useState(false);
   const [permissionForm] = Form.useForm();
   const [teachers, setTeachers] = useState([]);
@@ -71,6 +70,7 @@ const AdminRooms = () => {
     }
   };
 
+  // 搜索：原先的 inline 搜索，增加了所有搜索项
   const handleSearch = async (values) => {
     try {
       const queryParams = {};
@@ -110,6 +110,7 @@ const AdminRooms = () => {
       capacity: values.capacity,
       location: values.location,
       available: values.available,
+      // restricted 值：0=所有用户，1=所有教师，2=特定教师
       restricted: values.restricted,
     };
 
@@ -292,6 +293,7 @@ const AdminRooms = () => {
 
   const handleEdit = (record) => {
     setEditingRoom(record);
+    // 设置初始值时，将 restricted 值直接传递（0,1,2）
     form.setFieldsValue({
       id: record.id,
       name: record.name,
@@ -315,7 +317,6 @@ const AdminRooms = () => {
         <HomeOutlined style={{ marginRight: 8 }} /> Room Management
       </Title>
 
-      {}
       <Card title="Search Rooms" style={{ marginBottom: 24, padding: 16 }}>
         <Form form={searchForm} layout="inline" onFinish={handleSearch}>
           <Form.Item name="roomName" label="Room Name">
@@ -370,7 +371,6 @@ const AdminRooms = () => {
         <Table columns={columns} dataSource={rooms} rowKey="id" pagination={{ pageSize: 6 }} />
       </Card>
 
-      {}
       <Modal
         title={editingRoom ? "Edit Room" : "Add New Room"}
         visible={modalVisible}
@@ -401,7 +401,6 @@ const AdminRooms = () => {
               <Select.Option value={2}>Specific Teachers</Select.Option>
             </Select>
           </Form.Item>
-          {}
           <Form.Item shouldUpdate={(prev, cur) => prev.restricted !== cur.restricted}>
             {() =>
               editingRoom && form.getFieldValue("restricted") === 2 && (
@@ -417,7 +416,6 @@ const AdminRooms = () => {
         </Form>
       </Modal>
 
-      {}
       <Modal
         title={`Set Room ${selectedRoomForMaintenance ? selectedRoomForMaintenance.name : ""} Under Maintenance`}
         visible={maintenanceModalVisible}
@@ -435,7 +433,6 @@ const AdminRooms = () => {
         </Form>
       </Modal>
 
-      {}
       <Modal
         title="Room Issues"
         visible={issuesModalVisible}
@@ -460,7 +457,6 @@ const AdminRooms = () => {
         )}
       </Modal>
 
-      {}
       <Modal
         title="Add Room Permission"
         visible={permissionModalVisible}
