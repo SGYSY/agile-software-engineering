@@ -23,6 +23,11 @@ public class UserController {
         return ResponseEntity.ok(userService.getAllUsers());
     }
 
+    @GetMapping("/teachers")
+    public ResponseEntity<List<User>> getAllTeachers() {
+        return ResponseEntity.ok(userService.getAllTeachers());
+    }
+
     @GetMapping("/{id}")
     public ResponseEntity<User> getUserById(@PathVariable Long id) {
         Optional<User> user = userService.getUserById(id);

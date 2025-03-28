@@ -10,11 +10,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.UnsupportedEncodingException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.time.format.DateTimeFormatter;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/bookings")
@@ -42,7 +43,8 @@ public class BookingController {
     @GetMapping("/user/{userId}")
     public ResponseEntity<List<Booking>> getBookingsByUser(@PathVariable Long userId) {
         List<Booking> bookings = bookingService.getBookingsByUser(userId);
-        return ResponseEntity.ok(bookings);
+        List<Booking> sortedBookings = sortBookings(bookings);
+        return ResponseEntity.ok(sortedBookings);
     }
 
     @GetMapping("/room/{roomId}")
@@ -91,6 +93,14 @@ public class BookingController {
 
     @PostMapping
     public ResponseEntity<?> createBooking(@RequestBody Booking booking) {
+        String semesterStartDate = "2025-02-17";
+        LocalDate semesterStart = LocalDate.parse(semesterStartDate, DateTimeFormatter.ISO_DATE);
+
+        LocalDate targetDate = semesterStart.plusWeeks(booking.getWeekNumber() - 1).plusDays(booking.getDayOfWeek() - 1);
+
+        if (LocalDate.now().plusDays(1).isAfter(targetDate)) {
+            return ResponseEntity.badRequest().body("Cannot book for past dates");
+        }
         try {
             Booking createdBooking = bookingService.createBooking(booking);
             return ResponseEntity.status(HttpStatus.CREATED).body(createdBooking);
@@ -149,6 +159,7 @@ public class BookingController {
     @GetMapping("/search")
     public ResponseEntity<?> searchBookings(
         @RequestParam(required = false) Long userId,
+        @RequestParam(required = false) String roomName,
         @RequestParam(required = false) Long roomId,
         @RequestParam(required = false) Integer weekNumber,
         @RequestParam(required = false) Integer dayOfWeek,
@@ -172,6 +183,14 @@ public class BookingController {
                     .filter(booking -> booking.getUser() != null && userId.equals(booking.getUser().getId()))
                     .toList();
                 System.out.println("After filtering by user " + resultBookings.size() + " left");
+            }
+
+            if (roomName != null && !roomName.isEmpty()) {
+                resultBookings = resultBookings.stream()
+                        .filter(booking -> booking.getRoom() != null && booking.getRoom().getName() != null &&
+                                booking.getRoom().getName().toLowerCase().startsWith(roomName.toLowerCase()))
+                        .toList();
+                System.out.println("After filtering by room name " + resultBookings.size() + " left");
             }
 
             if (roomId != null) {
@@ -281,5 +300,33 @@ public class BookingController {
             default: throw new IllegalArgumentException("Invalid time slot number: " + timeSlot);
         }
     }
+
+    private static final LocalDate FIRST_WEEK_MONDAY = LocalDate.of(2025, 2, 17);
+
+    public static List<Booking> sortBookings(List<Booking> bookings) {
+        LocalDateTime now = LocalDateTime.now();
+
+        return bookings.stream()
+                .sorted((b1, b2) -> {
+                    LocalDateTime dt1 = getBookingDateTime(b1);
+                    LocalDateTime dt2 = getBookingDateTime(b2);
+
+                    boolean isAfterNow1 = !dt1.isBefore(now);
+                    boolean isAfterNow2 = !dt2.isBefore(now);
+
+                    if (isAfterNow1 && !isAfterNow2) return -1;
+                    if (!isAfterNow1 && isAfterNow2) return 1;
+
+                    return dt1.compareTo(dt2);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static LocalDateTime getBookingDateTime(Booking booking) {
+        int daysOffset = (booking.getWeekNumber() - 1) * 7 + (booking.getDayOfWeek() - 1);
+        LocalDate bookingDate = FIRST_WEEK_MONDAY.plusDays(daysOffset);
+        return LocalDateTime.of(bookingDate, booking.getStartTime());
+    }
+
     
 }

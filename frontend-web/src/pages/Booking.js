@@ -19,7 +19,6 @@ const timeSlots = [
   "19:55 - 20:40",
 ];
 
-// 固定排课起始日期：第一周的周一为 2025-02-17
 const scheduleStartDate = moment("2025-02-17", "YYYY-MM-DD");
 
 const Booking = () => {
@@ -78,21 +77,15 @@ const Booking = () => {
       return message.error("Please enter a purpose for the booking!");
     }
 
-    // 将用户选择的日期转换为字符串格式
     const dateStr = date.format("YYYY-MM-DD");
 
-    // 根据固定的 scheduleStartDate 计算 weekNumber：
-    // 差值的周数 + 1 即为 weekNumber
     const weekNumber = date.diff(scheduleStartDate, "weeks") + 1;
-    // 直接使用 isoWeekday 得到 dayOfWeek，Monday = 1, ..., Sunday = 7
     const dayOfWeek = date.isoWeekday();
 
-    // 处理 timeSlot，转换为 HH:mm:ss 格式
     const [startStr, endStr] = timeSlot.split(" - ");
     const formattedStartTime = startStr.length === 5 ? startStr + ":00" : startStr;
     const formattedEndTime = endStr.length === 5 ? endStr + ":00" : endStr;
 
-    // 构造预定请求体
     const bookingRequest = {
       user: { id: userId },
       room: { id: room.id },
@@ -119,11 +112,11 @@ const Booking = () => {
         return response.json();
       })
       .then((data) => {
-        message.success("Booking submitted successfully!"); // 显示成功消息
-        navigate("/"); // 跳转到 Home 页面
+        message.success("Booking submitted successfully!");
+        navigate("/");
       })
       .catch((err) => {
-        message.error("Booking failed: " + err.message); // 失败时显示错误消息
+        message.error("Booking failed: " + err.message);
       });
   };
 

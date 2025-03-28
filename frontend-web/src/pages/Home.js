@@ -7,7 +7,6 @@ import { Tabs } from "antd";  // Add this import
 
 const API_BASE = "http://47.113.186.66:8080/api";
 
-// 星期映射
 const dayOfWeekMap = {
   1: 'Monday',
   2: 'Tuesday',
@@ -36,7 +35,6 @@ const Home = () => {
   const navigate = useNavigate();
   const [searchForm] = Form.useForm();
 
-  // 默认调用用户权限接口（/rooms/restricted/{userId}）获取房间
   const fetchRooms = async () => {
     try {
       const userToken = localStorage.getItem("userToken");
@@ -52,7 +50,6 @@ const Home = () => {
     }
   };
 
-  // 搜索接口，组合条件搜索（roomName、minCapacity、weekNumber、dayOfWeek、timeSlotStart、timeSlotEnd）
   const handleSearch = async (values) => {
     try {
       const queryParams = {};
@@ -120,7 +117,7 @@ const Home = () => {
         </Button>
       </div>
 
-      {/* 搜索区域 */}
+      {}
       <Card title="Search Rooms" style={{ marginBottom: 24, padding: 16 }}>
         <Form form={searchForm} layout="inline" onFinish={handleSearch}>
           <Form.Item name="roomName" label="Room Name">

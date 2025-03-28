@@ -29,28 +29,22 @@ const { Title } = Typography;
 const AdminRooms = () => {
   const API_BASE = "http://47.113.186.66:8080/api";
 
-  // 房间管理状态
   const [rooms, setRooms] = useState([]);
   const [modalVisible, setModalVisible] = useState(false);
   const [editingRoom, setEditingRoom] = useState(null);
   const [form] = Form.useForm();
   const [searchForm] = Form.useForm();
 
-  // 维护相关状态：设置房间为 under maintenance
   const [maintenanceModalVisible, setMaintenanceModalVisible] = useState(false);
   const [maintenanceForm] = Form.useForm();
   const [selectedRoomForMaintenance, setSelectedRoomForMaintenance] = useState(null);
 
-  // 用于查看房间问题
   const [issuesModalVisible, setIssuesModalVisible] = useState(false);
   const [roomIssues, setRoomIssues] = useState([]);
-
-  // 房间权限相关状态（针对特定教师权限）
   const [permissionModalVisible, setPermissionModalVisible] = useState(false);
   const [permissionForm] = Form.useForm();
   const [teachers, setTeachers] = useState([]);
 
-  // 获取教师列表（roleid 为 2）
   const fetchTeachers = async () => {
     try {
       const response = await fetch(`${API_BASE}/users?roleId=2`);
@@ -143,9 +137,6 @@ const AdminRooms = () => {
     }
   };
 
-  // -------------------------------
-  // 维护 / Room Issue 操作
-  // -------------------------------
   const openMaintenanceModal = (room) => {
     setSelectedRoomForMaintenance(room);
     maintenanceForm.resetFields();
@@ -204,9 +195,6 @@ const AdminRooms = () => {
     }
   };
 
-  // -------------------------------
-  // Room Permission 操作（针对特定教师权限）
-  // -------------------------------
   const openPermissionModal = () => {
     permissionForm.resetFields();
     setPermissionModalVisible(true);
@@ -235,9 +223,6 @@ const AdminRooms = () => {
     }
   };
 
-  // -------------------------------
-  // 表格列设置
-  // -------------------------------
   const columns = [
     { title: "Room ID", dataIndex: "id", key: "id" },
     { title: "Name", dataIndex: "name", key: "name" },
@@ -332,7 +317,6 @@ const AdminRooms = () => {
         <HomeOutlined style={{ marginRight: 8 }} /> Room Management
       </Title>
 
-      {/* 搜索区域 */}
       <Card title="Search Rooms" style={{ marginBottom: 24, padding: 16 }}>
         <Form form={searchForm} layout="inline" onFinish={handleSearch}>
           <Form.Item name="roomName" label="Room Name">
@@ -387,7 +371,6 @@ const AdminRooms = () => {
         <Table columns={columns} dataSource={rooms} rowKey="id" pagination={{ pageSize: 6 }} />
       </Card>
 
-      {/* 添加/编辑房间 Modal */}
       <Modal
         title={editingRoom ? "Edit Room" : "Add New Room"}
         visible={modalVisible}
@@ -418,7 +401,6 @@ const AdminRooms = () => {
               <Select.Option value={2}>Specific Teachers</Select.Option>
             </Select>
           </Form.Item>
-          {/* 仅当正在编辑且 restricted 为 2 时显示添加权限区域 */}
           <Form.Item shouldUpdate={(prev, cur) => prev.restricted !== cur.restricted}>
             {() =>
               editingRoom && form.getFieldValue("restricted") === 2 && (
@@ -434,7 +416,6 @@ const AdminRooms = () => {
         </Form>
       </Modal>
 
-      {/* 设置为维修中 Modal */}
       <Modal
         title={`Set Room ${selectedRoomForMaintenance ? selectedRoomForMaintenance.name : ""} Under Maintenance`}
         visible={maintenanceModalVisible}
@@ -452,7 +433,6 @@ const AdminRooms = () => {
         </Form>
       </Modal>
 
-      {/* 查看房间问题 Modal */}
       <Modal
         title="Room Issues"
         visible={issuesModalVisible}
@@ -477,7 +457,6 @@ const AdminRooms = () => {
         )}
       </Modal>
 
-      {/* 添加房间权限 Modal（仅针对特定教师） */}
       <Modal
         title="Add Room Permission"
         visible={permissionModalVisible}

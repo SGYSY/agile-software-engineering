@@ -136,7 +136,7 @@ const RoomIssue = () => {
                 background: "#ffffff",
               }}
               actions={
-                userRole === "admin" ? [ // 只有管理员可以看到删除按钮
+                userRole === "admin" ? [
                   <Tooltip title="Delete this issue">
                     <Button
                       icon={<DeleteOutlined />}
@@ -146,7 +146,7 @@ const RoomIssue = () => {
                       Delete
                     </Button>
                   </Tooltip>,
-                ] : [] // 对于其他角色，不显示删除按钮
+                ] : []
               }
             >
               <List.Item.Meta

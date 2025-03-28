@@ -3,7 +3,6 @@ import { useParams, useNavigate } from "react-router-dom";
 import { Table, Modal, Tag, Card, Button, message } from "antd";
 import moment from "moment";
 
-// 固定时间段（对应 schedule 的 period 字段，假设 period 从 1 开始）
 const timeSlots = [
   "08:00 - 08:45",
   "08:55 - 09:40",
@@ -17,7 +16,6 @@ const timeSlots = [
   "19:55 - 20:40",
 ];
 
-// 星期数组与对应的数字（API 返回 weekday：1=Monday,...,7=Sunday）
 const weekdays = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 const weekdayMap = {
   Monday: 1,
@@ -29,7 +27,6 @@ const weekdayMap = {
   Sunday: 7,
 };
 
-// 固定排课起始日期：第一周的周一为2月17日
 const scheduleStartDate = moment("2025-02-17", "YYYY-MM-DD");
 
 const RoomSchedule = () => {
@@ -41,7 +38,6 @@ const RoomSchedule = () => {
   const [bookings, setBookings] = useState([]);
   const [selectedItem, setSelectedItem] = useState(null);
   const [isModalVisible, setIsModalVisible] = useState(false);
-  // 当前周次：根据当前日期与起始日期的周数差计算
   const [currentWeek, setCurrentWeek] = useState(moment().diff(scheduleStartDate, "weeks") + 1);
 
   // 获取 schedule 数据
@@ -56,14 +52,13 @@ const RoomSchedule = () => {
         setSchedules(data);
       } catch (error) {
         console.error("Error fetching schedules:", error);
-        message.error("获取课程安排失败");
+        message.error("Fail to get schedule information");
       }
     };
 
     fetchSchedules();
   }, [roomId]);
 
-  // 获取 booking 数据
   useEffect(() => {
     const fetchBookings = async () => {
       try {
@@ -75,26 +70,22 @@ const RoomSchedule = () => {
         setBookings(data);
       } catch (error) {
         console.error("Error fetching bookings:", error);
-        message.error("获取预定信息失败");
+        message.error("Fail to get booking information");
       }
     };
 
     fetchBookings();
   }, [roomId]);
 
-  // 如果接口返回数据不为空，从第一个 schedule 中获取房间信息，否则使用 roomId 作为默认信息
   const roomInfo = schedules.length > 0 ? schedules[0].room : { id: roomId, name: `Room ${roomId}` };
 
-  // 修改后的 getDateOfNextWeekday：基于固定起始日期和当前周次，返回 moment 对象
   const getDateOfNextWeekday = (weekday) => {
-    // 基准日期为第一周的周一加上 (currentWeek - 1) 周
     const baseDate = scheduleStartDate.clone().add(currentWeek - 1, "weeks");
     const diff = weekdayMap[weekday] - baseDate.isoWeekday();
     const targetDate = baseDate.clone().add(diff, "days");
     return targetDate;
   };
 
-  // 辅助函数：判断 booking 是否与时间段重叠
   const isBookingInTimeSlot = (slot, booking) => {
     const [slotStartStr, slotEndStr] = slot.split(" - ");
     const slotStart = moment(slotStartStr, "HH:mm");
@@ -104,17 +95,14 @@ const RoomSchedule = () => {
     return bookingStart.isBefore(slotEnd) && bookingEnd.isAfter(slotStart);
   };
 
-  // 构造课表数据：每个时间段为一行，每个星期为一列，只显示当前周的记录，同时合并 schedule 与 booking 数据
   const scheduleData = timeSlots.map((slot, index) => {
-    const period = index + 1; // 对应 schedule.period
+    const period = index + 1;
     const row = { key: slot, time: slot };
     weekdays.forEach((day) => {
       const dayNumber = weekdayMap[day];
-      // 筛选 schedule 数据
       const cellSchedules = schedules.filter(
         (s) => s.period === period && s.weekday === dayNumber && s.weekNumber === currentWeek
       );
-      // 筛选 booking 数据
       const cellBookings = bookings.filter(
         (b) => b.dayOfWeek === dayNumber && b.weekNumber === currentWeek && isBookingInTimeSlot(slot, b)
       );
@@ -123,7 +111,6 @@ const RoomSchedule = () => {
     return row;
   });
 
-  // 通用点击事件，根据 item 类型显示详情
   const handleItemClick = (item) => {
     if (userRole !== "admin") {
       Modal.info({
@@ -136,16 +123,13 @@ const RoomSchedule = () => {
     setIsModalVisible(true);
   };
 
-  // 当单元格为空时，点击跳转到预定页面；这里不再弹窗，而是在单元格显示时区分颜色
   const handleCellClick = (record, day) => {
     navigateToBooking(record, day);
   };
 
   const navigateToBooking = (record, day) => {
     const targetDate = getDateOfNextWeekday(day);
-    // 如果目标日期早于今天，则不进行预定操作
     if (targetDate.isBefore(moment(), "day")) {
-      // 此处只改变显示颜色，不执行跳转
       return;
     }
     const dateStr = targetDate.format("YYYY-MM-DD");
@@ -166,9 +150,7 @@ const RoomSchedule = () => {
       dataIndex: day,
       key: day,
       render: (cellData, record) => {
-        // 计算该单元格对应的日期（moment 对象）
         const targetDate = getDateOfNextWeekday(day);
-        // 如果目标日期早于今天，则统一显示为灰色不可预订状态
         if (targetDate.isBefore(moment(), "day")) {
           return (
             <Tag color="default">
@@ -200,7 +182,6 @@ const RoomSchedule = () => {
                 </Tag>
               );
             } else if (item.status) {
-              // 根据状态设置不同颜色：pending 显示紫色，confirmed 显示橙色，其它状态默认
               let tagColor = "default";
               if (item.status === "pending") {
                 tagColor = "purple";
@@ -237,7 +218,7 @@ const RoomSchedule = () => {
       }}
       headStyle={{ background: "#E8F3FF", color: "#165DFF", fontWeight: "bold" }}
     >
-      {/* 周次切换控件 */}
+      {}
       <div style={{ marginBottom: 20, textAlign: "center" }}>
         <Button onClick={() => setCurrentWeek(currentWeek - 1)} style={{ marginRight: 10 }}>
           Previous Week

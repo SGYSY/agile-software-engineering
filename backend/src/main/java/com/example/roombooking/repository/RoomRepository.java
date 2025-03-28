@@ -15,6 +15,9 @@ import java.util.List;
 public interface RoomRepository extends JpaRepository<Room, Long> {
     List<Room> findByAvailableTrue();
     List<Room> findByCapacityGreaterThanEqual(int capacity);
+
+    @Query(value = "SELECT r.room_id FROM rooms r", nativeQuery = true)
+    List<Long> findAllRoomIds();
     
     // revised query to find available rooms, avoid time variable type conversion error
     @Query(value = "SELECT DISTINCT r.* " +
@@ -89,8 +92,14 @@ public interface RoomRepository extends JpaRepository<Room, Long> {
     @Query(value = "SELECT * FROM rooms WHERE restricted = 1", nativeQuery = true)
     List<Room> findRestrictedRooms();
 
+    @Query(value = "SELECT * FROM rooms WHERE restricted = :type", nativeQuery = true)
+    List<Room> findRoomsByRestrictedType(@Param("type") int type);
+
     // Find available and unrestricted room IDs
     @Query(value = "SELECT room_id FROM rooms WHERE room_id IN :roomIds AND available = 1 AND restricted = 0", 
            nativeQuery = true)
     List<Long> findAvailableAndNotRestrictedRoomIds(@Param("roomIds") List<Long> roomIds);
+
+    @Query(value = "SELECT room_id, COUNT(*) FROM room_issue GROUP BY room_id", nativeQuery = true)
+    List<Object[]> countRoomIssues();
 }

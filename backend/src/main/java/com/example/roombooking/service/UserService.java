@@ -1,5 +1,6 @@
 package com.example.roombooking.service;
 
+import com.example.roombooking.entity.Role;
 import com.example.roombooking.entity.User;
 import com.example.roombooking.repository.RoleRepository;
 import com.example.roombooking.repository.UserRepository;
@@ -22,8 +23,16 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public Optional<Role> getRoleById(Long id) {
+        return roleRepository.findById(id);
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public List<User> getAllTeachers() {
+        return userRepository.findByRoleId(2L);
     }
 
     public Optional<User> getUserById(Long id) {

@@ -72,7 +72,6 @@ const Admin = () => {
       title: "Room Name",
       dataIndex: "roomName",
       valueType: "text",
-      // 搜索时显示，用于查询房间名称，后台需支持此字段查询
       hideInTable: true,
     },
     {

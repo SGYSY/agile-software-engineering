@@ -26,7 +26,7 @@ public class Room {
     
     private Boolean available;
     
-    private Boolean restricted;
+    private Long restricted;
     
     @OneToMany(mappedBy = "room")
     // @JsonManagedReference("room-equipment")
@@ -93,11 +93,11 @@ public class Room {
         this.available = available;
     }
     
-    public Boolean getRestricted() {
+    public Long getRestricted() {
         return restricted;
     }
     
-    public void setRestricted(Boolean restricted) {
+    public void setRestricted(Long restricted) {
         this.restricted = restricted;
     }
     

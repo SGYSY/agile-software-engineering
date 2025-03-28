@@ -1,10 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { List, Card, Badge, Button, message, Divider, Row, Col, Spin } from "antd";
 
-// API 基地址
 const API_BASE = "http://47.113.186.66:8080/api";
 
-// 获取当前用户的所有预订
 const fetchBookings = async (userId) => {
   try {
     const response = await fetch(`${API_BASE}/bookings/user/${userId}`);
@@ -22,12 +20,10 @@ const fetchBookings = async (userId) => {
 
 const MyBookings = () => {
   const [bookings, setBookings] = useState([]);
-  const [loading, setLoading] = useState(true);  // Loading 状态
+  const [loading, setLoading] = useState(true);
 
-  // 从 localStorage 获取当前用户ID，并确保它是数字类型
   const userId = parseInt(localStorage.getItem("userId"), 10);
 
-  // 星期几映射
   const dayOfWeekMap = {
     1: 'Monday',
     2: 'Tuesday',
@@ -50,9 +46,8 @@ const MyBookings = () => {
   }, [userId]);
 
   const handleDeleteBooking = (id) => {
-    // 删除预订操作
     message.success("Booking cancelled.");
-    fetchBookings(userId).then(setBookings);  // 刷新预订列表
+    fetchBookings(userId).then(setBookings);
   };
 
   return (
@@ -69,17 +64,17 @@ const MyBookings = () => {
       >
         <Divider orientation="left">Booking List</Divider>
 
-        {/* Loading 状态 */}
+        {}
         {loading ? (
           <Spin size="large" tip="Loading bookings..." />
         ) : (
           <List
             grid={{
               gutter: 16,
-              xs: 1, // 手机端显示一列
-              sm: 2, // 小屏幕显示两列
-              md: 3, // 中等屏幕显示三列
-              lg: 4, // 大屏幕显示四列
+              xs: 1,
+              sm: 2,
+              md: 3,
+              lg: 4,
             }}
             dataSource={bookings}
             locale={{ emptyText: "No bookings found" }}

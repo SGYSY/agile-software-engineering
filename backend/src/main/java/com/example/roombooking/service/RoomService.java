@@ -1,26 +1,30 @@
 package com.example.roombooking.service;
 
-import com.example.roombooking.entity.Booking;
 import com.example.roombooking.entity.Room;
+import com.example.roombooking.entity.RoomPermission;
+import com.example.roombooking.entity.User;
+import com.example.roombooking.repository.RoomPermissionRepository;
 import com.example.roombooking.repository.RoomRepository;
+import com.example.roombooking.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.sql.Time;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.time.format.DateTimeFormatter;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Optional;
-import java.util.Map;
+import java.util.*;
 
 @Service
 public class RoomService {
 
     @Autowired
     private RoomRepository roomRepository;
+
+    @Autowired
+    private RoomPermissionRepository roomPermissionRepository;
+
+    @Autowired
+    private UserRepository userRepository;
 
     @Autowired
     private WeekService weekService;
@@ -35,6 +39,35 @@ public class RoomService {
 
     public List<Room> getAvailableRooms() {
         return roomRepository.findByAvailableTrue();
+    }
+
+    public List<Room> getPermittedRooms(Long userId) {
+        List<Long> ll = roomRepository.findAllRoomIds();
+        User u = userRepository.findById(userId).get();
+        List<Room> allRoom = roomRepository.findRoomsByRestrictedType(0);
+
+        if(u.getRole().getId() == 2){
+            allRoom.addAll(roomRepository.findRoomsByRestrictedType(1));
+        }
+        if(u.getRole().getId() == 1){
+            allRoom.addAll(roomRepository.findRoomsByRestrictedType(1));
+            allRoom.addAll(roomRepository.findRoomsByRestrictedType(2));
+        }
+        for (Long roomId : ll) {
+            List<RoomPermission> rp = roomPermissionRepository.checkUserAccessToRoom(userId, roomId);
+            if (rp == null || rp.isEmpty())
+                continue;
+            Optional<Room> tr = roomRepository.findById(roomId);
+            if(tr.isEmpty())
+                continue;
+            allRoom.add(tr.get());
+        }
+        List<Room> allRooms = new ArrayList<>();
+        Set<Room> permissionSet = new HashSet<>(allRooms);
+        permissionSet.addAll(allRoom);
+
+        allRooms = new ArrayList<>(permissionSet);
+        return allRooms;
     }
 
     public List<Room> getRoomsByMinCapacity(int capacity) {
@@ -106,7 +139,7 @@ public class RoomService {
      * @param restrictionReason restriction reason
      * @return room
      */
-    public Optional<Room> setRoomRestriction(Long roomId, boolean restricted, String restrictionReason) {
+    public Optional<Room> setRoomRestriction(Long roomId, Long restricted, String restrictionReason) {
         Optional<Room> roomOpt = roomRepository.findById(roomId);
         if (roomOpt.isEmpty()) {
             return Optional.empty();
@@ -155,14 +188,31 @@ public class RoomService {
         }
         
         // check if room is restricted
-        if (room.getRestricted()) {
-            result.put("bookable", false);
-            result.put("message", "room is used for special purposes, not bookable");
-            return result;
-        }
+//        if (room.getRestricted() > 0) {
+//            result.put("bookable", false);
+//            result.put("message", "room is used for staff, not bookable");
+//            return result;
+//        }
         
         result.put("bookable", true);
         result.put("message", "room is bookable");
         return result;
+    }
+
+    /**
+     * get room issue count map
+     * @return 
+     */
+    public Map<Long, Integer> getRoomIssueCountMap() {
+        List<Object[]> results = roomRepository.countRoomIssues();
+        Map<Long, Integer> countMap = new HashMap<>();
+        
+        for (Object[] result : results) {
+            Long roomId = ((Number) result[0]).longValue();
+            Integer count = ((Number) result[1]).intValue();
+            countMap.put(roomId, count);
+        }
+        
+        return countMap;
     }
 }

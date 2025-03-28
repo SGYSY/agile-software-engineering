@@ -65,7 +65,7 @@ public class NotificationService {
     }
 
     public void createApprovalNotification(Booking booking) {
-        String weekAndDayInfo = "Week" + booking.getWeekNumber() + ", weekday is" + booking.getDayOfWeek();
+        String weekAndDayInfo = "Week" + booking.getWeekNumber() + ", " + mapNumberToWeekday(booking.getDayOfWeek());
         String timeInfo = booking.getStartTime() + " to " + booking.getEndTime();
         
         // create email notification
@@ -149,15 +149,6 @@ public class NotificationService {
         String endDateTime = targetDate + "T" + endTime + ":00";
 
         String subject = "Booking confirmation - Room reservation system";
-        String body = "Dear " + booking.getUser().getUsername() + ":\n\n" +
-                "Your room reservation has been confirmed!\n\n" +
-                "Here are the booking details:\n" +
-                "- Room: " + roomName + "\n" +
-                "- Date and Time: " + targetDate + ", " + timeInfo + "\n" +
-                "- State: confirmed\n\n" +
-                "If you have any questions, please feel free to contact the administrator.\n\n" +
-                "Best regards,\nRoom Reservation System";
-
         String message = "Dear " + booking.getUser().getUsername() + ":\n\n" +
                 "Your room reservation is confirmed!\n\n" +
                 "Booking detail:\n" +
