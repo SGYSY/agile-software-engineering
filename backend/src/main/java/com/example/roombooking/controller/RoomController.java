@@ -9,8 +9,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/rooms")
@@ -23,6 +27,11 @@ public class RoomController {
     @GetMapping
     public ResponseEntity<List<Room>> getAllRooms() {
         return ResponseEntity.ok(roomService.getAllRooms());
+    }
+
+    @GetMapping("/restricted/{id}")
+    public ResponseEntity<List<Room>> getPermittedRooms(@PathVariable Long id) {
+        return ResponseEntity.ok(roomService.getPermittedRooms(id));
     }
 
     @GetMapping("/{id}")
@@ -90,6 +99,17 @@ public class RoomController {
         return ResponseEntity.ok(updatedRoom);
     }
 
+    @PutMapping("/{id}/{typeId}")
+    public ResponseEntity<Room> updateRoomType(@PathVariable Long id, @PathVariable Long typeId) {
+        if (roomService.getRoomById(id).isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Room room = roomService.getRoomById(id).get();
+        room.setRestricted(typeId);
+        Room updatedRoom = roomService.saveRoom(room);
+        return ResponseEntity.ok(updatedRoom);
+    }
+
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteRoom(@PathVariable Long id) {
         if (roomService.getRoomById(id).isEmpty()) {
@@ -98,5 +118,224 @@ public class RoomController {
         
         roomService.deleteRoom(id);
         return ResponseEntity.noContent().build();
+    }
+
+    @GetMapping("/available-with-capacity")
+    public ResponseEntity<?> getAvailableRoomsWithCapacity(
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime start,
+        @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime end,
+        @RequestParam(required = false) Integer capacity) {
+        try {
+            System.out.println("Search request received - start: " + start + ", end: " + end + ", capacity: " + capacity);
+
+            if (start == null && end == null && capacity == null) {
+                List<Room> allRooms = roomService.getAllRooms();
+                System.out.println("No search criteria provided. Returning all " + allRooms.size() + " rooms");
+                return ResponseEntity.ok(allRooms);
+            }
+            
+            List<Room> resultRooms;
+
+            if (start != null && end != null) {
+                if (start.isAfter(end)) {
+                    return ResponseEntity.badRequest().body("Start time cannot be later than the ending time");
+                }
+
+                resultRooms = roomService.getAvailableRoomsBetween(start, end);
+                System.out.println("Found " + resultRooms.size() + " rooms available between " + start + " and " + end);
+            } else if (start != null || end != null) {
+                return ResponseEntity.badRequest().body("Both start and end times must be provided for time-based queries");
+            } else {
+                resultRooms = roomService.getAllRooms();
+            }
+
+            if (capacity != null) {
+                if (capacity <= 0) {
+                    return ResponseEntity.badRequest().body("Capacity must be greater than zero");
+                }
+                
+                final List<Room> roomsBeforeFilter = resultRooms;
+                resultRooms = resultRooms.stream()
+                    .filter(room -> room.getCapacity() >= capacity)
+                    .toList();
+                
+                System.out.println("Filtered from " + roomsBeforeFilter.size() + " to " + 
+                    resultRooms.size() + " rooms with minimum capacity of " + capacity);
+            }
+            
+            return ResponseEntity.ok(resultRooms);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Search failure: " + e.getMessage());
+        }
+    }
+
+    /**
+     * check if a room is bookable
+     */
+    @GetMapping("/{roomId}/bookable")
+    public ResponseEntity<?> checkRoomBookable(@PathVariable Long roomId) {
+        Map<String, Object> result = roomService.checkRoomBookable(roomId);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchRooms(
+        @RequestParam(required = false) Integer weekNumber,
+        @RequestParam(required = false) Integer dayOfWeek,
+        @RequestParam(required = false) Integer timeSlotStart,
+        @RequestParam(required = false) Integer timeSlotEnd,
+        @RequestParam(required = false) String roomName,
+        @RequestParam(required = false) Integer minCapacity,
+        @RequestParam(required = false) Boolean hasIssues) {
+        
+        try {
+            System.out.println("Search room requirement - weekNumber: " + weekNumber + ", dayOfWeek: " + dayOfWeek +
+                ", timeSlot: " + timeSlotStart + "-" + timeSlotEnd + 
+                ", roomName: " + roomName + ", minCapacity: " + minCapacity);
+
+            List<Room> resultRooms = roomService.getAllRooms();
+            int originalCount = resultRooms.size();
+
+            if (roomName != null && !roomName.trim().isEmpty()) {
+                final String searchName = roomName.toLowerCase().trim();
+                resultRooms = resultRooms.stream()
+                    .filter(room -> room.getName() != null && room.getName().toLowerCase().contains(searchName))
+                    .toList();
+                System.out.println("After filtering by user name " + resultRooms.size() + " left");
+            }
+
+            if (minCapacity != null && minCapacity > 0) {
+                resultRooms = resultRooms.stream()
+                    .filter(room -> room.getCapacity() >= minCapacity)
+                    .toList();
+                System.out.println("After filtering by capacity " + resultRooms.size() + " left");
+            }
+
+            if (hasIssues != null) {
+                Map<Long, Integer> roomIssueCountMap = roomService.getRoomIssueCountMap();
+                
+                resultRooms = resultRooms.stream()
+                    .filter(room -> {
+                        Integer issueCount = roomIssueCountMap.getOrDefault(room.getId(), 0);
+                        return hasIssues ? issueCount > 0 : issueCount == 0;
+                    })
+                    .toList();
+                System.out.println("After filtering by issues " + resultRooms.size() + " left");
+            }
+
+            if (weekNumber != null && dayOfWeek != null && timeSlotStart != null && timeSlotEnd != null) {
+                if (dayOfWeek < 1 || dayOfWeek > 7) {
+                    return ResponseEntity.badRequest().body("The day of the week must be between 1 and 7");
+                }
+                
+                if (timeSlotStart < 1 || timeSlotEnd > 12 || timeSlotStart > timeSlotEnd) {
+                    return ResponseEntity.badRequest().body("The time slot must be between 1 and 12, and the start time cannot be greater than the end time.");
+                }
+
+                LocalTime startTime = convertTimeSlotToLocalTime(timeSlotStart);
+                LocalTime endTime;
+                if (timeSlotEnd < 12) {
+                    endTime = convertTimeSlotToLocalTime(timeSlotEnd + 1);
+                } else {
+                    endTime = LocalTime.of(22, 30);
+                }
+
+                List<Room> availableRooms = new ArrayList<>();
+
+                List<Long> roomIds = resultRooms.stream()
+                    .map(Room::getId)
+                    .collect(Collectors.toList());
+                
+                if (!roomIds.isEmpty()) {
+                    List<Long> availableRoomIds = roomService.getAvailableRoomIdsByTimeSlot(
+                        weekNumber, dayOfWeek, startTime, endTime, roomIds);
+                    
+                    if (availableRoomIds.isEmpty()) {
+                        System.out.println("No available rooms in the specified time slot");
+                        return ResponseEntity.ok(new ArrayList<Room>());
+                    }
+
+                    resultRooms = resultRooms.stream()
+                        .filter(room -> availableRoomIds.contains(room.getId()))
+                        .toList();
+                    
+                    System.out.println("After filtering by time slot " + resultRooms.size() + " left");
+                }
+            }
+            
+            System.out.println("Total " + originalCount + " room(s) after filtering " + resultRooms.size() + " left");
+            return ResponseEntity.ok(resultRooms);
+            
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body("Search failed: " + e.getMessage());
+        }
+    }
+    
+    /**
+     * 1: 8:00-8:45
+     * 2: 8:55-9:40
+     * 3: 10:00-10:45
+     * 4: 10:55-11:40
+     * 5: 14:00-14:45
+     * 6: 14:55-15:40
+     * 7: 16:00-16:45
+     * 8: 16:55-17:40
+     * 9: 19:00-19:45
+     * 10: 19:55-20:40
+     * 11: 20:50-21:35
+     * 12: 21:45-22:30
+     */
+    private LocalTime convertTimeSlotToLocalTime(Integer timeSlot) {
+        switch (timeSlot) {
+            case 1: return LocalTime.of(8, 0);
+            case 2: return LocalTime.of(8, 55);
+            case 3: return LocalTime.of(10, 0);
+            case 4: return LocalTime.of(10, 55);
+            case 5: return LocalTime.of(14, 0);
+            case 6: return LocalTime.of(14, 55);
+            case 7: return LocalTime.of(16, 0);
+            case 8: return LocalTime.of(16, 55);
+            case 9: return LocalTime.of(19, 0);
+            case 10: return LocalTime.of(19, 55);
+            case 11: return LocalTime.of(20, 50);
+            case 12: return LocalTime.of(21, 45);
+            default: throw new IllegalArgumentException("Invalid time slot number: " + timeSlot);
+        }
+    }
+
+    /**
+     * get all bookable rooms
+     */
+    @GetMapping("/bookable")
+    public ResponseEntity<List<Room>> getBookableRooms() {
+        return ResponseEntity.ok(roomService.getAllBookableRooms());
+    }
+    
+    /**
+     * Set room restricted status (only available to administrators)
+     */
+    @PatchMapping("/{roomId}/restriction")
+    public ResponseEntity<?> setRoomRestriction(
+            @PathVariable Long roomId,
+            @RequestBody Map<String, Object> request) {
+        
+        Long restricted = Long.parseLong(request.get("restricted").toString());
+        String reason = (String) request.get("reason");
+        
+        Optional<Room> updatedRoom = roomService.setRoomRestriction(roomId, restricted, reason);
+        
+        if (updatedRoom.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        String message = restricted > 0 ? "Room has been restricted for staff" :
+                                    "Room restriction has been removed";
+        
+        return ResponseEntity.ok().body(Map.of(
+            "message", message,
+            "room", updatedRoom.get()
+        ));
     }
 }

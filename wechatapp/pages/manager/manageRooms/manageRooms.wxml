@@ -1,0 +1,66 @@
+<navigation-bar title="DIICSU Room Booking" back="{{true}}" color="#e2e4e6" background="#2b4b6b"></navigation-bar>
+<view class="container">
+  <!-- 自习室列表（可滚动） -->
+  <scroll-view class="room-list" scroll-y="true">
+    <block wx:for="{{roomList}}" wx:key="id">
+      <view class="room-card">
+        <view class="room-info">
+          <text class="info-item">名称：{{item.name}}</text>
+          <text class="info-item">容量：{{item.capacity}}</text>
+          <text class="info-item">位置：{{item.location}}</text>
+          <text class="info-item">教师专用：{{item.teacherOnly ? '是' : '否'}}</text>
+        </view>
+        <view class="action-buttons">
+          <button data-id="{{item.id}}" bindtap="editRoom" class="btn-edit">编辑</button>
+          <button data-id="{{item.id}}" bindtap="deleteRoom" class="btn-delete">删除</button>
+        </view>
+      </view>
+    </block>
+  </scroll-view>
+
+  <!-- 新增自习室按钮 -->
+  <button class="btn-add" bindtap="addRoom">新增自习室</button>
+
+  <!-- 编辑/新增弹窗（只有在 showEditForm=true 时显示） -->
+  <view class="modal-overlay" wx:if="{{showEditForm}}">
+    <view class="modal-content">
+      <text class="form-title">
+        {{editMode === 'add' ? '新增自习室' : '编辑自习室'}}
+      </text>
+      <form bindsubmit="submitForm">
+        <input
+          name="name"
+          type="text"
+          placeholder="请输入自习室名称"
+          value="{{formData.name}}"
+          required
+        />
+        <input
+          name="capacity"
+          type="number"
+          placeholder="请输入自习室容量"
+          value="{{formData.capacity}}"
+          required
+        />
+        <input
+          name="location"
+          type="text"
+          placeholder="请输入自习室位置"
+          value="{{formData.location}}"
+          required
+        />
+        <view class="switch-group">
+          <text>仅供教师使用：</text>
+          <switch
+            checked="{{formData.teacherOnly}}"
+            bindchange="onTeacherOnlyChange"
+          />
+        </view>
+        <button formType="submit" class="btn-submit">
+          {{editMode === 'add' ? '新增' : '保存修改'}}
+        </button>
+      </form>
+      <button class="btn-close" bindtap="closeForm">关闭</button>
+    </view>
+  </view>
+</view>

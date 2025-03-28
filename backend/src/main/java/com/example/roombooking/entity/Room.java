@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 import java.util.Set;
 
+
 @Entity
 @Table(name = "rooms")
 @Data
@@ -25,7 +26,7 @@ public class Room {
     
     private Boolean available;
     
-    private Boolean restricted;
+    private Long restricted;
     
     @OneToMany(mappedBy = "room")
     // @JsonManagedReference("room-equipment")
@@ -41,6 +42,7 @@ public class Room {
     // @JsonManagedReference("room-schedule")
     @JsonIgnore
     private Set<Schedule> schedules;
+
 
     // Getters and Setters
     public Long getId() {
@@ -91,11 +93,11 @@ public class Room {
         this.available = available;
     }
     
-    public Boolean getRestricted() {
+    public Long getRestricted() {
         return restricted;
     }
     
-    public void setRestricted(Boolean restricted) {
+    public void setRestricted(Long restricted) {
         this.restricted = restricted;
     }
     
@@ -122,6 +124,7 @@ public class Room {
     public void setSchedules(Set<Schedule> schedules) {
         this.schedules = schedules;
     }
+
     
     // equals, hashCode and toString methods
     @Override

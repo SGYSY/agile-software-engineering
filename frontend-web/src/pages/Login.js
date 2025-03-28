@@ -28,7 +28,7 @@ const Login = () => {
         role = "admin";
       else if(response.data.role === "Student")
         role = "student";
-      else if(response.data.role === "Teacher")
+      else if(response.data.role === "Faculty")
         role = "teacher";
       localStorage.setItem("userToken", response.data.token);
       localStorage.setItem("userRole", role);
@@ -55,7 +55,7 @@ const Login = () => {
     try {
       const email = form.getFieldValue("email");
       console.log(email);
-      await validateDundeeEmail(null, email); // 验证格式
+      await validateDundeeEmail(null, email);
       await axios.post(
         "http://47.113.186.66:8080/api/auth/send-code",
         { email },
@@ -73,7 +73,7 @@ const Login = () => {
 
   const handleVerifyLogin = async () => {
     try {
-      const values = await form.validateFields(); // 获取 email 和 code
+      const values = await form.validateFields();
       const { email, code } = values;
   
       const response = await axios.post(
@@ -93,7 +93,7 @@ const Login = () => {
       if (response.data.role === "Administrator") role = "admin";
       else if (response.data.role === "Student") role = "student";
       else if (response.data.role === "Teacher") role = "teacher";
-      else if (response.data.role === "Faculty") role = "teacher"; // ← 这里根据接口响应映射角色
+      else if (response.data.role === "Faculty") role = "teacher";
   
       localStorage.setItem("userToken", response.data.token);
       localStorage.setItem("userRole", role);

@@ -26,13 +26,24 @@ const MainLayout = () => {
   const [notifications, setNotifications] = useState([]);
 
   useEffect(() => {
-    // 获取 pending 通知
-    fetch(`${API_BASE}/notifications/pending`)
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+  
+    fetch(`${API_BASE}/notifications/user/${userId}`)
       .then((res) => res.json())
       .then((data) => setNotifications(data || []))
       .catch((err) => console.error("Failed to fetch notifications:", err));
   }, []);
 
+  useEffect(() => {
+    const userId = localStorage.getItem("userId");
+    if (!userId) return;
+  
+    fetch(`${API_BASE}/notifications/user/${userId}`)
+      .then((res) => res.json())
+      .then((data) => setNotifications(data || []))
+      .catch((err) => console.error("Failed to fetch notifications:", err));
+  }, []);
   const handleLogout = () => {
     localStorage.removeItem("userRole");
     localStorage.removeItem("displayName");
@@ -74,13 +85,19 @@ const MainLayout = () => {
   }
 
   const notificationContent = (
-    <div style={{ maxWidth: 300 }}>
+    <div
+      style={{
+        maxWidth: 300,
+        maxHeight: 200,
+        overflowY: "auto",
+      }}
+    >
       {notifications.length === 0 ? (
         <p style={{ margin: 0 }}>No new notifications.</p>
       ) : (
         <List
           size="small"
-          dataSource={notifications}
+          dataSource={notifications.slice(0, 3)}
           renderItem={(item) => (
             <List.Item style={{ whiteSpace: "normal" }}>
               {item.message}
@@ -90,6 +107,7 @@ const MainLayout = () => {
       )}
     </div>
   );
+  
 
   return (
     <Layout style={{ minHeight: "100vh", backgroundColor: "#F7F8FA" }}>

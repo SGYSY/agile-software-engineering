@@ -1,5 +1,6 @@
 package com.example.roombooking.service;
 
+import com.example.roombooking.entity.Role;
 import com.example.roombooking.entity.User;
 import com.example.roombooking.repository.RoleRepository;
 import com.example.roombooking.repository.UserRepository;
@@ -22,8 +23,16 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
+    public Optional<Role> getRoleById(Long id) {
+        return roleRepository.findById(id);
+    }
+
     public List<User> getAllUsers() {
         return userRepository.findAll();
+    }
+
+    public List<User> getAllTeachers() {
+        return userRepository.findByRoleId(2L);
     }
 
     public Optional<User> getUserById(Long id) {
@@ -36,19 +45,15 @@ public class UserService {
 
     public User saveUser(User user) {
         if (user.getId() == null) {  
-            // 创建用户时，如果密码不是哈希格式，则进行加密
             if (user.getPasswordHash() != null && !user.getPasswordHash().startsWith("$2a$")) {
                 user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
             }
-        } else {  
-            // 更新用户时，避免密码被覆盖成明文
+        } else {
             Optional<User> existingUser = userRepository.findById(user.getId());
             if (existingUser.isPresent()) {
-                // 如果请求体中的密码为空，则保持原密码
                 if (user.getPasswordHash() == null || user.getPasswordHash().isBlank()) {
                     user.setPasswordHash(existingUser.get().getPasswordHash());
                 } else if (!user.getPasswordHash().startsWith("$2a$")) {
-                    // 只有当密码不是哈希格式时，才进行加密
                     user.setPasswordHash(passwordEncoder.encode(user.getPasswordHash()));
                 }
             }
@@ -66,6 +71,10 @@ public class UserService {
     
     public boolean existsByEmail(String email) {
         return userRepository.existsByEmail(email);
+    }
+
+    public Optional<User> getUserByEmail(String email) {
+        return userRepository.findByEmail(email);
     }
 
 }

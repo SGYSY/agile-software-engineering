@@ -9,7 +9,6 @@ const AdminSchedule = () => {
   const [bookings, setBookings] = useState([]);
 
   useEffect(() => {
-    // 只展示已批准的预定
     setBookings(getBookings().filter(b => b.status === "approved"));
   }, []);
 

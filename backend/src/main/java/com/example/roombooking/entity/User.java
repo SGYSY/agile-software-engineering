@@ -38,6 +38,10 @@ public class User {
     @JsonIgnore
     private Set<Booking> bookings;
 
+    @Column(name = "school_number")
+    private String schoolNumber;
+
+
 
     // Getters and Setters
     public Long getId() {
@@ -110,6 +114,14 @@ public class User {
     
     public void setBookings(Set<Booking> bookings) {
         this.bookings = bookings;
+    }
+
+    public String getSchoolNumber() {
+        return schoolNumber;
+    }
+    
+    public void setSchoolNumber(String schoolNumber) {
+        this.schoolNumber = schoolNumber;
     }
     
     // equals, hashCode and toString methods

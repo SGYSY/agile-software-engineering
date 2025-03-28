@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Card, Button, Popconfirm, message, Typography, Modal, Form, Input, Select } from "antd";
 import ProTable from "@ant-design/pro-table";
+import { HomeOutlined } from "@ant-design/icons";  // Import HomeOutlined icon
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -112,7 +113,9 @@ const AdminUsers = () => {
 
   return (
     <div style={{ padding: 40, background: "#eef1f7", minHeight: "100vh" }}>
-      <Title level={2} style={{ color: "#4161d9", marginBottom: 24 }}>User Management</Title>
+      <Title level={2} style={{ color: "#4161d9", marginBottom: 24 }}>
+        <HomeOutlined style={{ marginRight: 8 }} /> User Management {/* Add the icon here */}
+      </Title>
       <Card
         style={{ borderRadius: 12, boxShadow: "0 4px 16px rgba(0,0,0,0.08)", background: "#fff" }}
         extra={
@@ -132,7 +135,7 @@ const AdminUsers = () => {
           dataSource={filteredUsers}
           rowKey="id"
           search={false}
-          pagination={{ pageSize: 5 }}
+          pagination={{ pageSize: 7 }}
           toolBarRender={false}
         />
       </Card>
