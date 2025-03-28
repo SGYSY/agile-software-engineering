@@ -135,7 +135,7 @@ const AdminUsers = () => {
           dataSource={filteredUsers}
           rowKey="id"
           search={false}
-          pagination={{ pageSize: 5 }}
+          pagination={{ pageSize: 7 }}
           toolBarRender={false}
         />
       </Card>

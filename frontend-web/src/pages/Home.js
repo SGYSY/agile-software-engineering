@@ -1,8 +1,21 @@
 import React, { useState, useEffect } from "react";
-import { Card, Row, Col, Button, message, Badge, List, Tabs } from "antd";
+import { Card, Row, Col, Button, message, Badge, List, Form, Input, InputNumber, Select } from "antd";  // Keep these imports
 import { useNavigate } from "react-router-dom";
+import { SearchOutlined } from "@ant-design/icons";
+import { Tabs } from "antd";  // Add this import
+
 
 const API_BASE = "http://47.113.186.66:8080/api";
+
+const dayOfWeekMap = {
+  1: 'Monday',
+  2: 'Tuesday',
+  3: 'Wednesday',
+  4: 'Thursday',
+  5: 'Friday',
+  6: 'Saturday',
+  7: 'Sunday'
+};
 
 const getRoomImage = (roomId) => {
   const idNum = parseInt(roomId, 10);
@@ -20,8 +33,8 @@ const Home = () => {
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [selectedTab, setSelectedTab] = useState("all");
   const navigate = useNavigate();
+  const [searchForm] = Form.useForm();
 
-  // 修改：使用 restricted 接口获取当前用户能预定的房间
   const fetchRooms = async () => {
     try {
       const userToken = localStorage.getItem("userToken");
@@ -34,6 +47,23 @@ const Home = () => {
       setRooms(data);
     } catch {
       message.error("Failed to fetch room information");
+    }
+  };
+
+  const handleSearch = async (values) => {
+    try {
+      const queryParams = {};
+      Object.keys(values).forEach((key) => {
+        if (values[key] !== undefined && values[key] !== null && values[key] !== "") {
+          queryParams[key] = values[key];
+        }
+      });
+      const query = new URLSearchParams(queryParams).toString();
+      const response = await fetch(`${API_BASE}/rooms/search?${query}`);
+      const data = await response.json();
+      setRooms(Array.isArray(data) ? data : []);
+    } catch (error) {
+      message.error("Failed to search rooms.");
     }
   };
 
@@ -86,6 +116,50 @@ const Home = () => {
           My Bookings
         </Button>
       </div>
+
+      {}
+      <Card title="Search Rooms" style={{ marginBottom: 24, padding: 16 }}>
+        <Form form={searchForm} layout="inline" onFinish={handleSearch}>
+          <Form.Item name="roomName" label="Room Name">
+            <Input placeholder="Search by room name" />
+          </Form.Item>
+          <Form.Item name="minCapacity" label="Min Capacity">
+            <InputNumber placeholder="Min capacity" />
+          </Form.Item>
+          <Form.Item name="weekNumber" label="Week Number">
+            <InputNumber placeholder="Week number" />
+          </Form.Item>
+          <Form.Item name="dayOfWeek" label="Day of Week">
+            <Select placeholder="Day of week" style={{ width: 120 }}>
+              <Select.Option value={1}>Monday</Select.Option>
+              <Select.Option value={2}>Tuesday</Select.Option>
+              <Select.Option value={3}>Wednesday</Select.Option>
+              <Select.Option value={4}>Thursday</Select.Option>
+              <Select.Option value={5}>Friday</Select.Option>
+              <Select.Option value={6}>Saturday</Select.Option>
+              <Select.Option value={7}>Sunday</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item name="timeSlotStart" label="Time Slot Start">
+            <InputNumber placeholder="Start time" />
+          </Form.Item>
+          <Form.Item name="timeSlotEnd" label="Time Slot End">
+            <InputNumber placeholder="End time" />
+          </Form.Item>
+          <Form.Item name="hasIssues" label="Has Issues">
+            <Select placeholder="All" style={{ width: 120 }}>
+              <Select.Option value="">All</Select.Option>
+              <Select.Option value="true">Yes</Select.Option>
+              <Select.Option value="false">No</Select.Option>
+            </Select>
+          </Form.Item>
+          <Form.Item>
+            <Button type="primary" htmlType="submit" icon={<SearchOutlined />}>
+              Search
+            </Button>
+          </Form.Item>
+        </Form>
+      </Card>
 
       <Row gutter={[24, 24]}>
         {rooms.length > 0 ? (
@@ -186,7 +260,10 @@ const Home = () => {
                 >
                   <h4 style={{ marginBottom: 4 }}>{item.room.name}</h4>
                   <p style={{ marginBottom: 4 }}>
-                    <strong>Time:</strong> {new Date(item.startTime).toLocaleString()} - {new Date(item.endTime).toLocaleString()}
+                    <strong>Date:</strong> {"Week " + item.weekNumber}, {dayOfWeekMap[item.dayOfWeek]}
+                  </p>
+                  <p style={{ marginBottom: 4 }}>
+                    <strong>Time:</strong> {item.startTime} - {item.endTime}
                   </p>
                   <p style={{ marginBottom: 0 }}>
                     <strong>Status: </strong>

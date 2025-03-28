@@ -88,8 +88,8 @@ const MainLayout = () => {
     <div
       style={{
         maxWidth: 300,
-        maxHeight: 200, // 最大高度限制
-        overflowY: "auto", // 启用垂直滚动
+        maxHeight: 200,
+        overflowY: "auto",
       }}
     >
       {notifications.length === 0 ? (
@@ -97,7 +97,7 @@ const MainLayout = () => {
       ) : (
         <List
           size="small"
-          dataSource={notifications.slice(0, 3)} // 限制显示最多 3 条通知
+          dataSource={notifications.slice(0, 3)}
           renderItem={(item) => (
             <List.Item style={{ whiteSpace: "normal" }}>
               {item.message}
