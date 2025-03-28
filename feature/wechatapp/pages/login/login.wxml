@@ -1,0 +1,3 @@
+<!--pages/login/login.wxml-->
+<navigation-bar title="DIICSU Room Booking" back="{{false}}" color="#e2e4e6" background="#2b4b6b"></navigation-bar>
+<text>pages/login/login.wxml</text>
