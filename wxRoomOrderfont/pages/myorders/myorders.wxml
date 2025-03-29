@@ -1,25 +1,98 @@
-<view class="orderlists" hover-class="none" hover-stop-propagation="false">
-    <view class="orderitem" hover-class="none" hover-stop-propagation="false" wx:for="{{orderlist}}" wx:for-index="index" wx:for-item="item" data-index="{{index}}" bindtap="showdetailoforder" data-item="{{item}}">
-        <text wx:if="{{item.status==0}}" class="status iconfont icon-weitongguo"></text>
-        <text wx:elif="{{item.status==1}}" class="status iconfont icon-yitongguo"></text>
-        <text wx:else class="status iconfont icon-daishenhe"></text>
-        <view class="roomname">
-            <text class="iconfont icon-jiaoshi "></text>
-            {{item.roomname}}
-        </view>
-        <view class="ordertime">
-            <text class="iconfont icon-weizhi "></text>
-            {{item.address}}
-        </view>
-        <view class="usingtime">
-            <text class="iconfont icon-shijiantemai "></text>
-            <view class="tt">使用时间</view>
-            <view class="t">{{item.usingtime}}</view>
-        </view>
-        <view class="ordertime">
-            <text class="iconfont icon-shijian1 "></text>
-            <view class="tt">申请时间</view>
-            <view class="t">{{item.ordertime}}</view>
-        </view>
+<!-- advanced filter -->
+<view class="filterMask" wx:if="{{showfilter}}">
+  <view class="advancedFilter">
+    <view class="title"> Filter with details </view>
+    <picker mode="selector" range="{{locationPicker.column}}" bindchange="locationPickerChange">
+      <view class="display">
+        <view><t-icon name="location"></t-icon> Location: </view>
+        <view>{{locationPicker.column[locationPicker.columnIndex]}}</view>
+      </view>
+    </picker>
+    <picker mode="selector" range="{{weekPicker.column}}" bindchange="weekPickerChange">
+      <view class="display">
+        <view><t-icon name="calendar-1"></t-icon> Week: </view>
+        <view>{{weekPicker.column[weekPicker.columnIndex]}}</view>
+      </view>
+    </picker>    
+    <picker mode="selector" range="{{statusPicker.column}}" bindchange="statusPickerChange">
+      <view class="display">      
+        <view><t-icon name="check-circle"></t-icon> Status: </view>
+        <view>{{statusPicker.column[statusPicker.columnIndex]}}</view>
+      </view>
+    </picker>
+    <view class="buttons">
+      <button bind:tap="unshowFilter">Cancel</button> 
+      <button bind:tap="filtOrders">Filt</button> 
     </view>
+  </view>
+</view>
+
+<view class="main">
+  <view class="searchBar">
+    <input type="text" placeholder="Please input room name" bindinput="handleInput" />
+    <image src="http://st2sjmp3d.hn-bkt.clouddn.com/Search-256.png" alt="" mode="aspectFit" bind:tap="filtWithName" />
+    <image src="http://st2sjmp3d.hn-bkt.clouddn.com/Row-256.png" alt="" mode="aspectFit" bind:tap="showFilter" />
+  </view>
+  <view class="orderlists" hover-class="none" hover-stop-propagation="false">
+      <view class="orderitem" hover-class="none" hover-stop-propagation="false" wx:for="{{filtedOrders}}" wx:for-index="index" wx:for-item="item" data-index="{{index}}" bindtap="showdetailoforder" data-item="{{item}}" wx:key="item.id">
+          <view class="status">            
+            <view wx:if="{{item.status=='unconfirmed'}}">
+              <t-icon  name="task-error" style="color: red;"></t-icon>
+              <text style="color: red;">rejected</text>
+            </view>
+            <view wx:elif="{{item.status=='confirmed'}}">
+              <t-icon  style="color: green;" name="task-checked"></t-icon>
+              <text style="color: green;">Passed</text>
+            </view>
+            <view wx:else>
+              <t-icon  name="hourglass" style="color: orange;"></t-icon>
+              <text style="color: orange;">pending</text>
+            </view>
+          </view>
+          <view class="classInfo">
+              <t-icon name="city-11" ></t-icon>
+              {{item.room.name}}
+          </view>
+          <view class="classInfo">
+              <t-icon name="location"></t-icon>
+              {{item.room.location}}
+          </view>
+          <view class="classInfo">
+            <view>
+                <t-icon name="calendar-1"></t-icon>
+                <view class="tt">Date:</view>
+                <view class="t">Week:{{item.weekNumber}}, Day:
+                  <block wx:if="{{item.dayOfWeek === 0}}">
+                    <text>Sunday</text>
+                  </block>
+                  <block wx:elif="{{item.dayOfWeek === 1}}">
+                    <text>Monday</text>
+                  </block>
+                  <block wx:elif="{{item.dayOfWeek === 2}}">
+                    <text>Tuesday</text>
+                  </block>
+                  <block wx:elif="{{item.dayOfWeek === 3}}">
+                    <text>Wednesday</text>
+                  </block>
+                  <block wx:elif="{{item.dayOfWeek === 4}}">
+                    <text>Thursday</text>
+                  </block>
+                  <block wx:elif="{{item.dayOfWeek === 5}}">
+                    <text>Friday</text>
+                  </block>
+                  <block wx:else>
+                    <text>Saturday</text>
+                  </block>
+                </view>
+            </view>
+          </view>
+          <view class="classInfo">
+            <view>
+                <t-icon name="time"></t-icon>
+                <view class="tt">StartTime:</view>
+            </view>
+            <view class="t">{{item.startTime}}</view>
+          </view>
+      </view>
+  </view>
 </view>

@@ -1,71 +1,102 @@
 <view class="orderdetails" hover-class="none" hover-stop-propagation="false">
   <view class="orderdetailscontant" hover-class="none" hover-stop-propagation="false">
-    <text wx:if="{{order.status==0}}" class="status iconfont icon-weitongguo"></text>
-    <text wx:elif="{{order.status==1}}" class="status iconfont icon-yitongguo"></text>
-    <text wx:else class="status iconfont icon-daishenhe"></text>
+    <view>
+      <view wx:if="{{order.status=='unconfirmed'}}">
+        <t-icon  name="task-error" style="color: red;"></t-icon>
+        <text style="color: red;">rejected</text>
+      </view>
+      <view wx:elif="{{order.status=='confirmed'}}">
+        <t-icon  style="color: green;" name="task-checked"></t-icon>
+        <text style="color: green;">Passed</text>
+      </view>
+      <view wx:else>
+        <t-icon  name="hourglass" style="color: orange;"></t-icon>
+        <text style="color: orange;">pending</text>
+      </view>
+    </view>
     <view class="roomname">
-      <text class="iconfont icon-jiaoshi "></text>
-      {{order.roomname}}
+      <view>
+        <t-icon name="city-11" ></t-icon>Name:
+      </view>
+      <view>{{order.room.name}}</view>
     </view>
     <view class="ordertime">
-      <text class="iconfont icon-weizhi "></text>
-      {{order.address}}
+      <view>
+        <t-icon name="location"></t-icon>Location:
+      </view>      
+      <view>{{order.room.location}}</view>
     </view>
-    <!-- <span id="divLine"></span> -->
     <view class="usingtime">
-      <text class="iconfont icon-shijiantemai "></text>
-      <view class="tt">使用时间</view>
-      <view class="t">{{order.usingtime}}</view>
+      <view>
+        <t-icon name="calendar-1"></t-icon>Date:
+      </view>
+      <view>Week:{{order.weekNumber}},Day:
+        <block wx:if="{{order.dayOfWeek === 0}}">
+          <text>Sunday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 1}}">
+          <text>Monday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 2}}">
+          <text>Tuesday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 3}}">
+          <text>Wednesday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 4}}">
+          <text>Thursday</text>
+        </block>
+        <block wx:elif="{{order.dayOfWeek === 5}}">
+          <text>Friday</text>
+        </block>
+        <block wx:else>
+          <text>Saturday</text>
+        </block>
+      </view>
     </view>
-    <view class="ordertime">
-      <text class="iconfont icon-shijian1 "></text>
-      <view class="tt">申请时间</view>
-      <view class="t">{{order.ordertime}}</view>
+    <view class="startTime">
+      <view class="name">
+        <t-icon name="time"></t-icon> Start time:
+      </view>
+      <view>{{order.startTime}}</view>
     </view>
-    <view class="checkername">
-      <text class="iconfont icon-shenhe "></text>
-      <view class="tt">审核人</view>
-      <view class="t">{{order.checkername}}</view>
-    </view>
-    <view class="ochecktime">
-      <text class="iconfont icon-shenhe1 "></text>
-      <view class="tt">审核时间</view>
-      <view class="t">{{order.ochecktime}}</view>
-    </view>
-    <view class="rejectreasion" wx:if="{{order.rejectreasion}}">
-      <text class="iconfont icon-buhegeyuanyindangan "></text>
-      <view class="tt">拒绝原因</view>
-      <view class="t">{{order.rejectreasion}}</view>
+    <view class="endTime">
+      <view class="name"> 
+        <t-icon name="time"></t-icon>End time:
+      </view>
+      <view>{{order.endTime}}</view>
     </view>
     <view class="username" wx:if="{{!zhankai}}">
-      <text class="iconfont icon-wodexuanzhong "></text>
-      <view class="tt">用户姓名</view>
-      <view class="t">{{order.username}}</view>
+      <view class="name">
+        <t-icon name="user"></t-icon>User name: 
+      </view>
+      <view>{{order.user.firstName}}</view>
     </view>
-    <view class="schoolid" wx:if="{{!zhankai}}">
-      <text class="iconfont icon-huiyuanqia "></text>
-      <view class="tt">用户学号</view>
-      <view class="t">{{order.schoolid}}</view>
+    <view wx:if="{{!zhankai}}">
+      <view class="name">
+        <t-icon name="certificate"></t-icon>User ID
+      </view>
+      <view>{{order.user.id}}</view>
     </view>
-    <view class="uphonenum" wx:if="{{!zhankai}}">
-      <text class="iconfont icon-shouji "></text>
-      <view class="tt">用户手机</view>
-      <view class="t">{{order.uphonenum}}</view>
+    <view wx:if="{{!zhankai}}">
+      <view class="name"> 
+        <t-icon name="call-1"></t-icon>User phone:
+      </view>
+      <view>{{order.user.phoneNumber}}</view>
     </view>
-    <view class="roomusage" wx:if="{{!zhankai}}">
-      <text class="iconfont icon-yongtu "></text>
-      <view class="tt">教室用途</view>
-      <view class="t">{{order.roomusage}}</view>
-    </view>
-    <view class="image" wx:if="{{!zhankai}}">
+    <view wx:if="{{!zhankai}}">
       <view class="imgcontant" wx:if="{{order.userinner !=1}}">
         <image bindtap="imgYu" data-list="{{order.autograph}}" data-src="{{item}}" class="" wx:for="{{order.autograph}}" wx:for-index="index" wx:for-item="item" wx:key="item" src="{{item}}" alt="" mode="scaleToFill"></image>
       </view>
-      <view class="tt" wx:else>内部人员无需照片</view>
+      <view class="tt" wx:else>Insiders don't need photos</view>
     </view>
     <span id="btn" bindtap="clickzhankai">
-      <text wx:if="{{zhankai}}" class="iconfont icon-double-arrow-down-full"></text>
-      <text wx:else class="iconfont icon-double-arrow-up-full"></text>
+      
+      <t-icon wx:if="{{zhankai}}" class="expand" name="chevron-down-double-s"></t-icon>
+      <t-icon wx:else class="expand" name="chevron-up-double-s"></t-icon>
     </span>
+  </view>
+  <view class="action">
+  <button bind:tap="cancelOrder"><text>cancel</text></button>
   </view>
 </view>
